@@ -526,15 +526,20 @@
             <input type="date" id="plantAdoptDate" required class="w-full cartoon-border-sm rounded-xl p-2 text-xs sm:text-sm">
           </div>
           <div>
-            <label class="block text-xs font-bold text-gray-700 mb-0.5">두는 장소</label>
-            <select id="plantLocation" class="w-full cartoon-border-sm rounded-xl p-2 text-xs sm:text-sm">
-              <option value="거실 창가 (부드러운 햇살)">거실 창가 (부드러운 햇살)</option>
-              <option value="베란다 (시원한 바람과 햇살)">베란다 (시원한 바람과 햇살)</option>
-              <option value="거실 안쪽 (간접광)">거실 안쪽 (간접광)</option>
-              <option value="침실/서재 (실내 조명)">침실/서재 (실내 조명)</option>
-              <option value="주방/화장실">주방/화장실</option>
-            </select>
+            <label class="block text-xs font-bold text-blue-950 mb-0.5">🚿 마지막 물 준 날짜 *</label>
+            <input type="date" id="plantLastWatered" required class="w-full cartoon-border-sm rounded-xl p-2 text-xs sm:text-sm font-bold bg-blue-50/50">
           </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-0.5">두는 장소</label>
+          <select id="plantLocation" class="w-full cartoon-border-sm rounded-xl p-2 text-xs sm:text-sm">
+            <option value="거실 창가 (부드러운 햇살)">거실 창가 (부드러운 햇살)</option>
+            <option value="베란다 (시원한 바람과 햇살)">베란다 (시원한 바람과 햇살)</option>
+            <option value="거실 안쪽 (간접광)">거실 안쪽 (간접광)</option>
+            <option value="침실/서재 (실내 조명)">침실/서재 (실내 조명)</option>
+            <option value="주방/화장실">주방/화장실</option>
+          </select>
         </div>
 
         <div class="bg-gray-50 p-3 rounded-xl cartoon-border-sm space-y-1.5 text-xs">
@@ -1196,6 +1201,7 @@
       const today = getTodayStr();
       document.getElementById('todayDateStr').innerText = formatDateKorean(today);
       document.getElementById('plantAdoptDate').value = today;
+      document.getElementById('plantLastWatered').value = today;
       document.getElementById('diaryDate').value = today;
 
       updateWeatherDisplay();
@@ -1694,7 +1700,7 @@
               </button>
             </div>
             <h2 class="text-2xl font-cartoon text-green-950 mt-0.5">${plant.nickname}</h2>
-            <p class="text-xs text-gray-600 font-medium">${plant.species} · ${plant.location}</p>
+            <p class="text-xs text-gray-600 font-medium">${plant.species} · ${plant.location} · 🚿 최근 물 준 날: <b>${plant.lastWatered || '기록 없음'}</b></p>
             
             <div class="mt-2 p-2.5 bg-amber-50 rounded-xl cartoon-border-sm text-left">
               <p class="text-[11px] font-bold text-amber-900 mb-0.5">🌿 꽃말과 감성 스토리</p>
@@ -1755,6 +1761,7 @@
       document.getElementById('plantForm').reset();
       document.getElementById('editPlantId').value = '';
       document.getElementById('plantAdoptDate').value = getTodayStr();
+      document.getElementById('plantLastWatered').value = getTodayStr();
       document.getElementById('plantPhotoData').value = '';
       document.getElementById('photoPreviewContainer').classList.add('hidden');
       document.getElementById('lookupFeedback').classList.add('hidden');
@@ -1774,6 +1781,7 @@
       document.getElementById('plantNickname').value = plant.nickname || '';
       document.getElementById('plantWaterCycle').value = plant.waterCycle || 7;
       document.getElementById('plantAdoptDate').value = plant.adoptDate || getTodayStr();
+      document.getElementById('plantLastWatered').value = plant.lastWatered || getTodayStr();
       document.getElementById('plantLocation').value = plant.location || '거실 창가 (부드러운 햇살)';
       document.getElementById('plantTempRange').value = plant.tempRange || '';
       document.getElementById('plantSunLight').value = plant.sunLight || '반양지 (커튼 햇빛 권장)';
@@ -1870,7 +1878,7 @@
         nickname: document.getElementById('plantNickname').value,
         adoptDate: document.getElementById('plantAdoptDate').value,
         waterCycle: parseInt(document.getElementById('plantWaterCycle').value) || 7,
-        lastWatered: existingPlant ? existingPlant.lastWatered : getTodayStr(),
+        lastWatered: document.getElementById('plantLastWatered').value || (existingPlant ? existingPlant.lastWatered : getTodayStr()),
         location: document.getElementById('plantLocation').value,
         tempRange: document.getElementById('plantTempRange').value,
         sunLight: document.getElementById('plantSunLight').value,
