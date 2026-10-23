@@ -129,10 +129,10 @@
         </div>
       </div>
 
-      <!-- 클라우드 동기화 뱃지 (클릭 시 동기화 설정 팝업) -->
-      <button onclick="openSyncModal()" id="syncStatusBadge" class="flex items-center gap-1.5 bg-amber-100 cartoon-border-sm px-2.5 sm:px-3 py-1 rounded-full text-xs font-bold shadow-cartoon-sm hover:bg-amber-200 transition">
-        <span id="syncStatusDot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-        <span id="syncStatusText" class="truncate max-w-[100px] sm:max-w-none">☁️ 로컬 모드</span>
+      <!-- 클라우드 실시간 동기화 상태 뱃지 (클릭 시 가든 코드 변경 가능) -->
+      <button onclick="openSyncModal()" id="syncStatusBadge" class="flex items-center gap-1.5 bg-green-100 cartoon-border-sm px-2.5 sm:px-3 py-1 rounded-full text-xs font-bold shadow-cartoon-sm hover:bg-green-200 transition cursor-pointer text-green-950">
+        <span id="syncStatusDot" class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+        <span id="syncStatusText" class="truncate max-w-[110px] sm:max-w-none">☁️ 실시간 동기화 중</span>
       </button>
 
       <!-- 새 식물 추가 버튼 -->
@@ -173,19 +173,6 @@
     <!-- ============================================== -->
     <div id="tab-home" class="space-y-4 sm:space-y-5">
 
-      <!-- 동기화 배너 알림 (클라우드 미연동 시 안내) -->
-      <div id="syncBannerNotice" class="cartoon-card bg-amber-50 p-3.5 flex items-center justify-between gap-2 border-amber-800">
-        <div class="flex items-center gap-2.5 min-w-0">
-          <span class="text-2xl flex-shrink-0">📲</span>
-          <p class="text-xs sm:text-sm text-amber-950 font-medium truncate">
-            <b>PC와 모바일을 실시간 동기화</b>하고 싶으신가요?
-          </p>
-        </div>
-        <button onclick="openSyncModal()" class="cartoon-btn bg-amber-400 text-green-950 font-cartoon text-xs px-3 py-1 rounded-lg flex-shrink-0">
-          동기화 연결 ⚙️
-        </button>
-      </div>
-
       <!-- 상단 식물 말풍선 & 인사 -->
       <div class="cartoon-card bg-gradient-to-r from-green-50 to-emerald-50 p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-3 sm:gap-5 text-center sm:text-left">
         <div class="relative flex-shrink-0">
@@ -199,12 +186,14 @@
             💬 식물의 한마디
           </div>
           <p id="plantMoodBubble" class="text-base sm:text-lg font-bold text-gray-800 leading-snug break-words">
-            "주인님 반가워요! 오늘 햇살이 참 포근하네요. 잎에 쌓인 먼지를 톡톡 털어주시면 숨쉬기 더 편할 것 같아요! 🍃"
+            "주인님 반가워요! PC와 스마트폰이 실시간으로 연결되었어요. 언제 어디서든 사랑을 전해주세요! 🍃"
           </p>
           <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2 text-xs text-gray-600 font-medium">
             <span>등록 식물: <b id="homePlantCount" class="text-green-800">3개</b></span>
             <span>·</span>
             <span>오늘 물주기: <b id="homeWaterNeededCount" class="text-rose-600">1개</b></span>
+            <span>·</span>
+            <span class="text-emerald-700 font-bold">☁️ 클라우드 연결됨</span>
           </div>
         </div>
       </div>
@@ -480,70 +469,38 @@
   <!-- MODALS (팝업창 모음)                            -->
   <!-- ============================================== -->
 
-  <!-- 0. 클라우드 동기화 설정 모달 (핵심 신규 추가!) -->
+  <!-- 0. 클라우드 동기화 모달 (자동 내장 완료 상태) -->
   <div id="syncModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="cartoon-card max-w-lg w-full max-h-[88vh] overflow-y-auto p-4 sm:p-5 bg-white relative animate-in fade-in zoom-in duration-150">
       <button onclick="closeModal('syncModal')" class="absolute top-3 right-3 text-2xl font-bold hover:scale-110 p-1">✕</button>
       <h3 class="text-xl sm:text-2xl font-cartoon text-green-900 mb-2 flex items-center gap-1.5 pr-8">
-        <span>☁️</span> PC ↔ 모바일 실시간 동기화 설정
+        <span>☁️</span> 실시간 클라우드 동기화 상태
       </h3>
       <p class="text-xs text-gray-600 mb-4 leading-relaxed">
-        PC와 스마트폰에서 <b>동일한 비밀 정원 코드</b>를 입력하면, 한쪽에서 물주기/등록한 기록이 0.5초 만에 다른 쪽 화면에도 똑같이 나타납니다!
+        Firebase 데이터베이스가 <b>자동 연결</b>되었습니다! PC와 스마트폰에서 동일한 <b>정원 코드</b>로 실시간 동기화됩니다.
       </p>
 
       <div class="space-y-4 text-sm">
-        <!-- 1단계: 정원 공유 비밀 코드 -->
         <div class="bg-plant-light/70 p-3.5 rounded-xl cartoon-border-sm">
-          <label class="block text-xs font-bold text-green-950 mb-1">🔑 1. 우리 집 정원 비밀 코드 (Sync Key)</label>
+          <label class="block text-xs font-bold text-green-950 mb-1">🔑 우리 집 정원 코드 (Sync Key)</label>
           <div class="flex gap-2">
             <input type="text" id="syncGardenCodeInput" placeholder="예: my-green-garden" class="flex-grow cartoon-border-sm rounded-xl p-2 font-cartoon text-base text-green-900 bg-white">
-            <button onclick="generateRandomSyncCode()" class="cartoon-btn bg-white text-xs px-2.5 py-1 rounded-xl font-bold flex-shrink-0">
-              랜덤 생성 🎲
+            <button onclick="applyCustomSyncCode()" class="cartoon-btn bg-plant-primary text-white text-xs px-3 py-1 rounded-xl font-bold flex-shrink-0">
+              코드 변경
             </button>
           </div>
-          <p class="text-[11px] text-gray-600 mt-1">※ 모바일폰에서도 이와 똑같은 코드를 입력해 연결해 주세요.</p>
+          <p class="text-[11px] text-gray-600 mt-1">※ 모바일폰과 PC에서 이 코드가 서로 같으면 실시간으로 함께 갱신됩니다.</p>
         </div>
 
-        <!-- 2단계: Firebase Config 설정창 -->
-        <div class="bg-gray-50 p-3.5 rounded-xl cartoon-border-sm">
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-xs font-bold text-gray-800">⚙️ 2. Firebase 설정 (Config JSON)</label>
-            <button type="button" onclick="toggleFirebaseHelp()" class="text-xs text-green-700 underline font-bold">
-              무료 키 발급 3분 가이드 ❓
-            </button>
-          </div>
-          <textarea id="firebaseConfigInput" rows="4" placeholder='const firebaseConfig = {
-  apiKey: "AIzaSy...",
-  authDomain: "...",
-  projectId: "...",
-  storageBucket: "...",
-  messagingSenderId: "...",
-  appId: "..."
-};' class="w-full cartoon-border-sm rounded-xl p-2 font-mono text-xs bg-white"></textarea>
-          <p class="text-[11px] text-gray-500 mt-1">
-            구글 Firebase 콘솔의 <code>firebaseConfig</code>를 통째로 붙여넣으시면 됩니다.
-          </p>
-
-          <!-- 접혀있는 가이드 -->
-          <div id="firebaseHelpBox" class="hidden mt-3 p-3 bg-white rounded-xl cartoon-border-sm text-xs space-y-1.5 text-gray-700">
-            <p class="font-bold text-green-900">📌 Firebase 무료 키 만드는 순서 (1회만 하면 평생 무료):</p>
-            <ol class="list-decimal pl-4 space-y-1">
-              <li><a href="https://console.firebase.google.com/" target="_blank" class="text-blue-600 underline font-bold">Firebase 콘솔</a>에 구글 로그인</li>
-              <li><b>[프로젝트 추가]</b> 클릭 → 이름 입력 (예: planty) → 프로젝트 만들기</li>
-              <li>좌측 <b>[빌드] → [Firestore Database]</b> 클릭 → <b>[데이터베이스 만들기]</b> (테스트 모드 시작)</li>
-              <li>프로젝트 개요에서 <b>웹(&lt;/&gt;) 아이콘</b> 클릭 → 앱 등록 → 나오는 <code>firebaseConfig</code> 복사해서 위 칸에 붙여넣기!</li>
-            </ol>
-          </div>
+        <div class="p-3 bg-green-50 rounded-xl cartoon-border-sm text-xs text-green-900 space-y-1">
+          <p class="font-bold">🟢 Firebase 연동 정상 작동 중</p>
+          <p class="text-gray-600">프로젝트: <b>planty-garden</b></p>
+          <p class="text-gray-500">PC와 모바일 양쪽에서 물주기/등록 시 0.5초 만에 상호 자동 반영됩니다.</p>
         </div>
 
-        <!-- 동기화 활성화 / 연결 버튼 -->
-        <div class="flex gap-2">
-          <button onclick="saveAndConnectFirebase()" class="w-full py-3 cartoon-btn bg-plant-primary text-white rounded-xl font-cartoon text-base flex items-center justify-center gap-1.5">
-            <span>🚀</span> 동기화 저장 및 실시간 연결하기
-          </button>
-        </div>
-
-        <div id="syncLogMessage" class="text-xs text-center font-bold text-green-800 hidden py-1"></div>
+        <button onclick="closeModal('syncModal')" class="w-full py-2.5 cartoon-btn bg-plant-primary text-white rounded-xl font-cartoon text-base">
+          확인 완료 🌿
+        </button>
       </div>
     </div>
   </div>
@@ -738,16 +695,24 @@
 
 
   <!-- ============================================== -->
-  <!-- JAVASCRIPT APP LOGIC & FIREBASE SYNC ENGINE   -->
+  <!-- JAVASCRIPT APP LOGIC & AUTO CLOUD SYNC ENGINE  -->
   <!-- ============================================== -->
   <script>
     /* ============================================================
-       0. 로컬 스토리지 키 & 기본 데이터
+       0. 내장 Firebase Config (사용자 프로젝트 직결)
     ============================================================ */
+    const BUILTIN_FIREBASE_CONFIG = {
+      apiKey: "AIzaSyACS3jrmsh2_LYoobKXdPDoOuYE92wYzzI",
+      authDomain: "planty-garden.firebaseapp.com",
+      projectId: "planty-garden",
+      storageBucket: "planty-garden.firebasestorage.app",
+      messagingSenderId: "796033005464",
+      appId: "1:796033005464:web:065b225c256c0b7b2bdded"
+    };
+
     const STORAGE_KEY_PLANTS = 'planty_plants_v1';
     const STORAGE_KEY_LOGS = 'planty_care_logs_v1';
     const STORAGE_KEY_DIARY = 'planty_growth_diary_v1';
-    const STORAGE_KEY_FIREBASE_CONFIG = 'planty_firebase_config_v1';
     const STORAGE_KEY_GARDEN_CODE = 'planty_garden_sync_code_v1';
 
     const DEFAULT_PLANTS = [
@@ -911,14 +876,12 @@
     let currentTab = 'home';
     let currentScenario = 'spring_mild';
 
-    // Firebase 상태 변수
     let db = null;
     let syncUnsubscribe = null;
     let gardenSyncCode = '';
-    let isRemoteUpdate = false; // 루프 방지 플래그
+    let isRemoteUpdate = false;
 
     function initApp() {
-      // 로컬 스토리지 데이터 로드
       const savedPlants = localStorage.getItem(STORAGE_KEY_PLANTS);
       plants = savedPlants ? JSON.parse(savedPlants) : [...DEFAULT_PLANTS];
 
@@ -928,13 +891,11 @@
       const savedDiary = localStorage.getItem(STORAGE_KEY_DIARY);
       growthDiary = savedDiary ? JSON.parse(savedDiary) : [...DEFAULT_DIARY];
 
-      // 날짜 세팅
       const today = getTodayStr();
       document.getElementById('todayDateStr').innerText = formatDateKorean(today);
       document.getElementById('plantAdoptDate').value = today;
       document.getElementById('diaryDate').value = today;
 
-      // 화면 렌더링
       updateWeatherDisplay();
       renderHomeCareList();
       renderWaterSchedule();
@@ -944,8 +905,8 @@
       renderHistoryArticles();
       updateMoodBubble();
 
-      // Firebase 동기화 자동 시작 시도
-      initFirebaseSync();
+      // 내장 Firebase Config로 자동 실시간 연결 시작!
+      startAutoFirebaseSync();
     }
 
     function saveLocal() {
@@ -954,7 +915,6 @@
       localStorage.setItem(STORAGE_KEY_DIARY, JSON.stringify(growthDiary));
     }
 
-    // 로컬 변경 발생 시 클라우드로 전송
     function notifyDataChanged() {
       saveLocal();
       if (db && gardenSyncCode && !isRemoteUpdate) {
@@ -964,55 +924,24 @@
 
 
     /* ============================================================
-       2. Firebase 실시간 동기화 (Cloud Sync)
+       2. Firebase 실시간 동기화 (Auto Cloud Sync Engine)
     ============================================================ */
-    function initFirebaseSync() {
-      const savedConfig = localStorage.getItem(STORAGE_KEY_FIREBASE_CONFIG);
-      const savedCode = localStorage.getItem(STORAGE_KEY_GARDEN_CODE) || 'my-green-garden';
+    function startAutoFirebaseSync() {
+      const savedCode = localStorage.getItem(STORAGE_KEY_GARDEN_CODE) || 'planty-family-garden';
       gardenSyncCode = savedCode;
-
       document.getElementById('syncGardenCodeInput').value = gardenSyncCode;
-      if (savedConfig) {
-        document.getElementById('firebaseConfigInput').value = savedConfig;
-        connectToFirebase(savedConfig, gardenSyncCode, false);
-      } else {
-        updateSyncBadge(false, '로컬 모드 (미연동)');
-      }
-    }
 
-    function connectToFirebase(configStr, code, showSuccessAlert = true) {
       try {
-        let configObj = null;
-        // JSON 또는 JS 객체 형태 파싱
-        if (configStr.trim().startsWith('{')) {
-          configObj = JSON.parse(configStr);
-        } else {
-          // 'const firebaseConfig = { ... }' 형식에서 추출
-          const match = configStr.match(/\{[\s\S]*\}/);
-          if (match) {
-            configObj = (new Function(`return ${match[0]}`))();
-          } else {
-            throw new Error('올바른 Firebase Config 형식이 아닙니다.');
-          }
-        }
-
-        if (!configObj || !configObj.projectId) {
-          throw new Error('projectId가 누락되었습니다.');
-        }
-
-        // Firebase 초기화 (중복 방지)
         if (!firebase.apps.length) {
-          firebase.initializeApp(configObj);
+          firebase.initializeApp(BUILTIN_FIREBASE_CONFIG);
         }
         db = firebase.firestore();
 
-        updateSyncBadge(true, `동기화 중: ${code}`);
-        document.getElementById('syncBannerNotice').classList.add('hidden');
+        updateSyncBadge(true, `동기화: ${gardenSyncCode}`);
 
-        // 실시간 리스너 구독 (onSnapshot)
         if (syncUnsubscribe) syncUnsubscribe();
-        
-        const docRef = db.collection('planty_gardens').doc(code);
+
+        const docRef = db.collection('planty_gardens').doc(gardenSyncCode);
 
         syncUnsubscribe = docRef.onSnapshot(doc => {
           if (doc.exists) {
@@ -1024,7 +953,6 @@
               if (data.growthDiary) growthDiary = data.growthDiary;
               saveLocal();
 
-              // UI 갱신
               renderHomeCareList();
               renderWaterSchedule();
               renderGarden();
@@ -1033,24 +961,15 @@
               setTimeout(() => { isRemoteUpdate = false; }, 300);
             }
           } else {
-            // 원격 문서가 없으면 현재 로컬 데이터를 클라우드에 최초 업로드
             uploadToCloud();
           }
         }, err => {
           console.error("Firebase Snapshot Error:", err);
-          updateSyncBadge(false, '연결 오류');
+          updateSyncBadge(false, '동기화 연결대기');
         });
-
-        if (showSuccessAlert) {
-          alert(`🎉 축하합니다! 클라우드 실시간 동기화가 연결되었습니다!\n정원 코드: [${code}]\n스마트폰에서도 동일한 코드를 입력하시면 실시간으로 연동됩니다.`);
-          closeModal('syncModal');
-        }
       } catch (err) {
-        console.error(err);
-        updateSyncBadge(false, '설정 확인 필요');
-        if (showSuccessAlert) {
-          alert(`동기화 연결 실패: ${err.message}\n가이드를 참고하여 올바른 Firebase Config를 입력해 주세요.`);
-        }
+        console.error("Firebase Init Error:", err);
+        updateSyncBadge(false, '로컬 모드');
       }
     }
 
@@ -1067,33 +986,13 @@
       });
     }
 
-    function saveAndConnectFirebase() {
-      const code = document.getElementById('syncGardenCodeInput').value.trim() || 'my-green-garden';
-      const configStr = document.getElementById('firebaseConfigInput').value.trim();
-
-      if (!configStr) {
-        alert('Firebase Config를 입력해 주세요!\n(구글 Firebase 콘솔에서 무료 생성 가능)');
-        return;
-      }
-
-      gardenSyncCode = code;
-      localStorage.setItem(STORAGE_KEY_GARDEN_CODE, code);
-      localStorage.setItem(STORAGE_KEY_FIREBASE_CONFIG, configStr);
-
-      connectToFirebase(configStr, code, true);
-    }
-
-    function generateRandomSyncCode() {
-      const words = ['green', 'garden', 'sprout', 'leaf', 'flower', 'tree', 'forest'];
-      const randomWord = words[Math.floor(Math.random() * words.length)];
-      const randomNum = Math.floor(1000 + Math.random() * 9000);
-      const code = `${randomWord}-${randomNum}`;
-      document.getElementById('syncGardenCodeInput').value = code;
-    }
-
-    function toggleFirebaseHelp() {
-      const box = document.getElementById('firebaseHelpBox');
-      box.classList.toggle('hidden');
+    function applyCustomSyncCode() {
+      const newCode = document.getElementById('syncGardenCodeInput').value.trim() || 'planty-family-garden';
+      gardenSyncCode = newCode;
+      localStorage.setItem(STORAGE_KEY_GARDEN_CODE, newCode);
+      startAutoFirebaseSync();
+      closeModal('syncModal');
+      alert(`🔑 정원 코드가 [${newCode}]로 변경 및 동기화되었습니다!`);
     }
 
     function updateSyncBadge(isConnected, text) {
@@ -1113,9 +1012,7 @@
     }
 
     function openSyncModal() {
-      document.getElementById('syncGardenCodeInput').value = gardenSyncCode || 'my-green-garden';
-      const savedConfig = localStorage.getItem(STORAGE_KEY_FIREBASE_CONFIG);
-      if (savedConfig) document.getElementById('firebaseConfigInput').value = savedConfig;
+      document.getElementById('syncGardenCodeInput').value = gardenSyncCode || 'planty-family-garden';
       document.getElementById('syncModal').classList.remove('hidden');
     }
 
