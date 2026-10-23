@@ -172,6 +172,9 @@
     <!-- ============================================== -->
     <div id="tab-home" class="space-y-4 sm:space-y-5">
 
+      <!-- 물주기 스마트 알림 배너 (식물의 한마디 바로 위에 눈에 잘 보이도록 배치!) -->
+      <div id="waterNoticeBannerContainer"></div>
+
       <!-- 상단 식물 말풍선 & 인사 -->
       <div class="cartoon-card bg-gradient-to-r from-green-50 to-emerald-50 p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-3 sm:gap-5 text-center sm:text-left">
         <div class="relative flex-shrink-0">
@@ -258,7 +261,7 @@
       </section>
 
       <!-- 오늘의 활동 체크보드 -->
-      <section class="cartoon-card p-4 sm:p-5 bg-[#FCFDF9]">
+      <section id="todayCareSection" class="cartoon-card p-4 sm:p-5 bg-[#FCFDF9]">
         <div class="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5 mb-3 border-b-2 border-gray-100 pb-2.5">
           <div>
             <h2 class="text-lg sm:text-xl font-cartoon text-green-900 flex items-center gap-1.5">
@@ -2615,6 +2618,153 @@
       document.getElementById('homePlantCount').innerText = `${plants.length}개`;
       const needWaterCount = plants.filter(p => calcDaysUntilWater(p) <= 0).length;
       document.getElementById('homeWaterNeededCount').innerText = `${needWaterCount}개`;
+
+      renderWaterBanner();
+    }
+
+    function renderWaterBanner() {
+      const container = document.getElementById('waterNoticeBannerContainer');
+      if (!container) return;
+
+      if (!plants || plants.length === 0) {
+        container.innerHTML = `
+          <div class="cartoon-card p-3.5 sm:p-4 bg-plant-light/80 border-green-800 flex items-center justify-between gap-3 shadow-cartoon-sm">
+            <div class="flex items-center gap-2.5">
+              <span class="text-3xl">🪴</span>
+              <div>
+                <h4 class="font-cartoon text-sm sm:text-base text-green-950">등록된 반려식물이 아직 없어요</h4>
+                <p class="text-xs text-gray-600">새 식물을 등록하고 맞춤 물주기 알림을 받아보세요!</p>
+              </div>
+            </div>
+            <button onclick="openAddPlantModal()" class="cartoon-btn bg-plant-primary text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl font-cartoon flex-shrink-0">
+              🌱 식물 등록
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      // 오늘 물 줘야 하는데 아직 안 준 식물 찾기 (daysLeft <= 0 && !log.water)
+      const needWaterPlants = [];
+      let anyWateredToday = false;
+
+      plants.forEach(p => {
+        const daysLeft = calcDaysUntilWater(p);
+        const log = getTodayLog(p.id);
+        if (log.water) {
+          anyWateredToday = true;
+        }
+        if (daysLeft <= 0 && !log.water) {
+          needWaterPlants.push(p);
+        }
+      });
+
+      if (needWaterPlants.length > 0) {
+        // [조건 1]: 오늘 물을 줘야 하는 식물이 있는 경우 눈에 확 띄게 강조!
+        const namesText = needWaterPlants.map(p => `<strong>[${p.nickname}]</strong>`).join(', ');
+        container.innerHTML = `
+          <div class="cartoon-card p-3.5 sm:p-4 bg-gradient-to-r from-rose-100 via-amber-50 to-rose-50 border-rose-800 shadow-cartoon animate-in fade-in zoom-in duration-150">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-rose-500 text-white cartoon-border-sm flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 animate-bounce">
+                  🚿
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 mb-0.5">
+                    <span class="bg-rose-500 text-white font-bold text-[10px] sm:text-xs px-2 py-0.5 rounded-full cartoon-border-sm animate-pulse">
+                      물주기 알림
+                    </span>
+                    <span class="text-xs text-rose-900 font-bold">목마른 식물 ${needWaterPlants.length}개</span>
+                  </div>
+                  <h3 class="font-cartoon text-base sm:text-lg text-rose-950 truncate leading-snug">
+                    ${namesText} 물주세요!
+                  </h3>
+                  <p class="text-xs text-rose-900/80 font-medium truncate">오늘 흙을 확인하시고 시원하게 물을 주세요 🌱</p>
+                </div>
+              </div>
+              <button onclick="scrollToCareList()" class="cartoon-btn bg-rose-500 hover:bg-rose-600 text-white font-cartoon text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl flex-shrink-0 flex items-center gap-1 shadow-cartoon-sm">
+                <span>🚿</span>
+                <span class="hidden xs:inline">물주러 가기</span>
+                <span class="xs:hidden">물주기</span>
+              </button>
+            </div>
+          </div>
+        `;
+      } else {
+        // [조건 2]: 오늘 물줄 식물이 없거나 모두 완료된 경우 -> 다음으로 물주는 날짜가 가장 임박한 식물 계산
+        let nextPlantInfo = null;
+        let minDays = 999999;
+
+        plants.forEach(p => {
+          const log = getTodayLog(p.id);
+          const cycle = parseInt(p.waterCycle) || 7;
+          let remainingDays = 0;
+          let targetDate = null;
+
+          if (log.water) {
+            // 오늘 이미 물을 줬다면 오늘로부터 cycle 일 뒤!
+            const today = new Date(getTodayStr());
+            targetDate = new Date(today);
+            targetDate.setDate(today.getDate() + cycle);
+            remainingDays = cycle;
+          } else {
+            const daysLeft = calcDaysUntilWater(p);
+            remainingDays = daysLeft;
+            const last = p.lastWatered ? new Date(p.lastWatered) : new Date(getTodayStr());
+            targetDate = new Date(last);
+            targetDate.setDate(last.getDate() + cycle);
+          }
+
+          if (remainingDays < minDays) {
+            minDays = remainingDays;
+            const daysArr = ['일', '월', '화', '수', '목', '금', '토'];
+            nextPlantInfo = {
+              plant: p,
+              days: remainingDays,
+              dateStr: `${targetDate.getMonth() + 1}월 ${targetDate.getDate()}일 (${daysArr[targetDate.getDay()]})`
+            };
+          }
+        });
+
+        if (nextPlantInfo) {
+          container.innerHTML = `
+            <div class="cartoon-card p-3.5 sm:p-4 bg-gradient-to-r from-emerald-50 via-teal-50 to-blue-50 border-emerald-800 shadow-cartoon animate-in fade-in zoom-in duration-150">
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-emerald-500 text-white cartoon-border-sm flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0">
+                    ${anyWateredToday ? '🎉' : '💧'}
+                  </div>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5 mb-0.5">
+                      <span class="bg-emerald-600 text-white font-bold text-[10px] sm:text-xs px-2 py-0.5 rounded-full cartoon-border-sm">
+                        ${anyWateredToday ? '오늘 물주기 완료!' : '물주기 안심 상태'}
+                      </span>
+                      <span class="text-xs text-emerald-900 font-bold">다음 물주기 D-${nextPlantInfo.days}</span>
+                    </div>
+                    <h3 class="font-cartoon text-base sm:text-lg text-emerald-950 truncate leading-snug">
+                      다음 차례는 <span class="text-emerald-800 font-bold underline decoration-wavy">[${nextPlantInfo.plant.nickname}]</span> (${nextPlantInfo.days}일 남았어요)
+                    </h3>
+                    <p class="text-xs text-gray-600 font-medium truncate">다음 예정일: <b>${nextPlantInfo.dateStr}</b> (${nextPlantInfo.plant.nickname} · 주기 ${nextPlantInfo.plant.waterCycle}일)</p>
+                  </div>
+                </div>
+                <button onclick="scrollToCareList()" class="cartoon-btn bg-emerald-600 hover:bg-emerald-700 text-white font-cartoon text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl flex-shrink-0 flex items-center gap-1 shadow-cartoon-sm">
+                  <span>📋</span>
+                  <span class="hidden xs:inline">스케줄 보기</span>
+                  <span class="xs:hidden">스케줄</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }
+      }
+    }
+
+    function scrollToCareList() {
+      switchTab('home');
+      const el = document.getElementById('todayCareSection');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
     }
 
     function switchTab(tabId) {
