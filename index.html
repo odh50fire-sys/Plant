@@ -518,19 +518,8 @@
             <input type="text" id="plantNickname" required placeholder="예: 초록이, 죽백대장" class="w-full cartoon-border-sm rounded-xl p-2 text-xs sm:text-sm">
           </div>
           <div>
-            <label class="block text-xs font-bold text-gray-700 mb-0.5">물주기 주기(일) *</label>
-            <input type="number" id="plantWaterCycle" required min="1" max="90" value="7" class="w-full cartoon-border-sm rounded-xl p-2 text-xs sm:text-sm font-bold text-blue-900">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <div>
             <label class="block text-xs font-bold text-gray-700 mb-0.5">입양한 날짜 *</label>
             <input type="date" id="plantAdoptDate" required class="w-full cartoon-border-sm rounded-xl p-2 text-xs sm:text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-blue-950 mb-0.5">🚿 마지막 물 준 날짜 *</label>
-            <input type="date" id="plantLastWatered" required class="w-full cartoon-border-sm rounded-xl p-2 text-xs sm:text-sm font-bold bg-blue-50/50">
           </div>
         </div>
 
@@ -543,6 +532,86 @@
             <option value="침실/서재 (실내 조명)">침실/서재 (실내 조명)</option>
             <option value="주방/화장실">주방/화장실</option>
           </select>
+        </div>
+
+        <!-- 4대 초록 활동 관리 주기 및 최근 수행일 (D-Day 알림 및 자동 주기 관리) -->
+        <div class="bg-emerald-50/70 p-3 rounded-2xl cartoon-border-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-emerald-950 text-xs flex items-center gap-1">
+              <span>📅</span> 4가지 초록 활동 주기 & 최근 관리일
+            </span>
+            <span class="text-[10px] text-emerald-700 font-bold bg-white px-2 py-0.5 rounded-full cartoon-border-sm">주기별 D-Day 자동 알림</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <!-- 물주기 -->
+            <div class="bg-white p-2 rounded-xl cartoon-border-sm">
+              <span class="font-bold text-blue-900 block mb-1 flex items-center gap-1">
+                <span>🚿</span> 물주기
+              </span>
+              <div class="space-y-1">
+                <div>
+                  <span class="text-[10px] text-gray-500 block">주기(일단위) *</span>
+                  <input type="number" id="plantWaterCycle" required min="1" max="90" value="7" class="w-full cartoon-border-sm rounded-lg p-1 text-xs font-bold text-blue-900">
+                </div>
+                <div>
+                  <span class="text-[10px] text-gray-500 block">마지막 준 날짜 *</span>
+                  <input type="date" id="plantLastWatered" required class="w-full cartoon-border-sm rounded-lg p-1 text-[11px] font-bold bg-blue-50/50">
+                </div>
+              </div>
+            </div>
+
+            <!-- 베란다 외출 -->
+            <div class="bg-white p-2 rounded-xl cartoon-border-sm">
+              <span class="font-bold text-amber-900 block mb-1 flex items-center gap-1">
+                <span>☀️</span> 베란다 외출
+              </span>
+              <div class="space-y-1">
+                <div>
+                  <span class="text-[10px] text-gray-500 block">주기(일단위) *</span>
+                  <input type="number" id="plantBalconyCycle" required min="1" max="90" value="3" class="w-full cartoon-border-sm rounded-lg p-1 text-xs font-bold text-amber-900">
+                </div>
+                <div>
+                  <span class="text-[10px] text-gray-500 block">마지막 외출 날짜 *</span>
+                  <input type="date" id="plantLastBalcony" required class="w-full cartoon-border-sm rounded-lg p-1 text-[11px] font-bold bg-amber-50/50">
+                </div>
+              </div>
+            </div>
+
+            <!-- 통풍/환기 -->
+            <div class="bg-white p-2 rounded-xl cartoon-border-sm">
+              <span class="font-bold text-emerald-900 block mb-1 flex items-center gap-1">
+                <span>🍃</span> 통풍 / 환기
+              </span>
+              <div class="space-y-1">
+                <div>
+                  <span class="text-[10px] text-gray-500 block">주기(일단위) *</span>
+                  <input type="number" id="plantWindCycle" required min="1" max="90" value="1" class="w-full cartoon-border-sm rounded-lg p-1 text-xs font-bold text-emerald-900">
+                </div>
+                <div>
+                  <span class="text-[10px] text-gray-500 block">마지막 환기 날짜 *</span>
+                  <input type="date" id="plantLastWind" required class="w-full cartoon-border-sm rounded-lg p-1 text-[11px] font-bold bg-emerald-50/50">
+                </div>
+              </div>
+            </div>
+
+            <!-- 잎 닦기/분무 -->
+            <div class="bg-white p-2 rounded-xl cartoon-border-sm">
+              <span class="font-bold text-sky-900 block mb-1 flex items-center gap-1">
+                <span>💦</span> 잎 닦기 / 분무
+              </span>
+              <div class="space-y-1">
+                <div>
+                  <span class="text-[10px] text-gray-500 block">주기(일단위) *</span>
+                  <input type="number" id="plantSprayCycle" required min="1" max="90" value="2" class="w-full cartoon-border-sm rounded-lg p-1 text-xs font-bold text-sky-900">
+                </div>
+                <div>
+                  <span class="text-[10px] text-gray-500 block">마지막 닦은 날짜 *</span>
+                  <input type="date" id="plantLastSpray" required class="w-full cartoon-border-sm rounded-lg p-1 text-[11px] font-bold bg-sky-50/50">
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="bg-gray-50 p-3 rounded-xl cartoon-border-sm space-y-1.5 text-xs">
@@ -991,7 +1060,16 @@
       }
 
       if (recipe) {
-        document.getElementById('plantWaterCycle').value = recipe.waterCycle;
+        const waterCycle = recipe.waterCycle || 7;
+        const balconyCycle = recipe.balconyCycle || (waterCycle >= 15 ? 5 : 3);
+        const windCycle = recipe.windCycle || (recipe.windReq && recipe.windReq.includes('적당') ? 2 : 1);
+        const sprayCycle = recipe.sprayCycle || (waterCycle >= 15 ? 14 : (waterCycle <= 4 ? 1 : 2));
+
+        document.getElementById('plantWaterCycle').value = waterCycle;
+        if (document.getElementById('plantBalconyCycle')) document.getElementById('plantBalconyCycle').value = balconyCycle;
+        if (document.getElementById('plantWindCycle')) document.getElementById('plantWindCycle').value = windCycle;
+        if (document.getElementById('plantSprayCycle')) document.getElementById('plantSprayCycle').value = sprayCycle;
+
         document.getElementById('plantTempRange').value = recipe.tempRange;
         
         const sunSelect = document.getElementById('plantSunLight');
@@ -1384,6 +1462,88 @@
       return `${parts[0]}.${parts[1]}.${parts[2]} (${days[d.getDay()]})`;
     }
 
+    const CARE_ACTIONS_CONFIG = {
+      water: {
+        key: 'water',
+        name: '물주기',
+        emoji: '🚿',
+        cycleKey: 'waterCycle',
+        lastDateKey: 'lastWatered',
+        defaultCycle: 7,
+        labelDone: '물 완료!',
+        labelDDay: '물 D-Day! 🚿',
+        labelPrefix: '물주기',
+        activeClass: 'bg-blue-500 text-white shadow-cartoon-sm',
+        dDayClass: 'bg-rose-100 text-rose-900 border-2 border-rose-500 font-extrabold animate-pulse hover:bg-rose-200',
+        idleClass: 'bg-gray-50 text-gray-700 hover:bg-blue-50'
+      },
+      balcony: {
+        key: 'balcony',
+        name: '베란다 외출',
+        emoji: '☀️',
+        cycleKey: 'balconyCycle',
+        lastDateKey: 'lastBalcony',
+        defaultCycle: 3,
+        labelDone: '외출 완료!',
+        labelDDay: '외출 D-Day! ☀️',
+        labelPrefix: '외출',
+        activeClass: 'bg-amber-400 text-green-950 shadow-cartoon-sm',
+        dDayClass: 'bg-amber-100 text-amber-950 border-2 border-amber-500 font-extrabold animate-pulse hover:bg-amber-200',
+        idleClass: 'bg-gray-50 text-gray-700 hover:bg-amber-50'
+      },
+      wind: {
+        key: 'wind',
+        name: '통풍 / 환기',
+        emoji: '🍃',
+        cycleKey: 'windCycle',
+        lastDateKey: 'lastWind',
+        defaultCycle: 1,
+        labelDone: '통풍 완료!',
+        labelDDay: '환기 D-Day! 🍃',
+        labelPrefix: '환기',
+        activeClass: 'bg-emerald-500 text-white shadow-cartoon-sm',
+        dDayClass: 'bg-emerald-100 text-emerald-950 border-2 border-emerald-500 font-extrabold animate-pulse hover:bg-emerald-200',
+        idleClass: 'bg-gray-50 text-gray-700 hover:bg-emerald-50'
+      },
+      spray: {
+        key: 'spray',
+        name: '잎 닦기 / 분무',
+        emoji: '💦',
+        cycleKey: 'sprayCycle',
+        lastDateKey: 'lastSpray',
+        defaultCycle: 2,
+        labelDone: '분무 완료!',
+        labelDDay: '잎닦기 D-Day! 💦',
+        labelPrefix: '잎닦기',
+        activeClass: 'bg-sky-400 text-white shadow-cartoon-sm',
+        dDayClass: 'bg-sky-100 text-sky-950 border-2 border-sky-500 font-extrabold animate-pulse hover:bg-sky-200',
+        idleClass: 'bg-gray-50 text-gray-700 hover:bg-sky-50'
+      }
+    };
+
+    function getCareConfig(plant, actionType) {
+      const cfg = CARE_ACTIONS_CONFIG[actionType] || CARE_ACTIONS_CONFIG.water;
+      const cycle = parseInt(plant[cfg.cycleKey]) || cfg.defaultCycle;
+      const lastDate = plant[cfg.lastDateKey] || plant.lastWatered || plant.adoptDate || getTodayStr();
+      return { ...cfg, cycle, lastDate };
+    }
+
+    function calcDaysUntilCare(plant, actionType) {
+      const { cycle, lastDate } = getCareConfig(plant, actionType);
+      if (!lastDate) return 0;
+      const last = new Date(lastDate);
+      const next = new Date(last);
+      next.setDate(last.getDate() + cycle);
+      
+      const today = new Date(getTodayStr());
+      const diffTime = next - today;
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    function calcDaysUntilWater(plant) {
+      return calcDaysUntilCare(plant, 'water');
+    }
+
     function getTodayLog(plantId) {
       const today = getTodayStr();
       if (!careLogs[today]) careLogs[today] = {};
@@ -1397,10 +1557,14 @@
       const log = getTodayLog(plantId);
       log[actionType] = !log[actionType];
 
-      if (actionType === 'water' && log.water) {
-        const plant = plants.find(p => p.id === plantId);
-        if (plant) {
-          plant.lastWatered = getTodayStr();
+      const plant = plants.find(p => p.id === plantId);
+      if (plant) {
+        const cfg = CARE_ACTIONS_CONFIG[actionType];
+        if (cfg) {
+          if (log[actionType]) {
+            // 완료했을 때 마지막 수행 날짜를 오늘로 갱신!
+            plant[cfg.lastDateKey] = getTodayStr();
+          }
         }
       }
 
@@ -1430,16 +1594,64 @@
         return;
       }
 
+      const actions = ['water', 'balcony', 'wind', 'spray'];
       let html = '';
+
       plants.forEach(p => {
         const log = getTodayLog(p.id);
-        const daysLeft = calcDaysUntilWater(p);
-        let waterBadge = '';
-        if (daysLeft <= 0) {
-          waterBadge = `<span class="bg-rose-500 text-white font-bold text-[11px] px-2 py-0.5 rounded-full animate-bounce flex-shrink-0">물주기 D-Day! 🚿</span>`;
+
+        // 4대 활동의 D-day 및 완료/도래 상태 계산
+        const careStates = {};
+        let dueCount = 0;
+        let doneCount = 0;
+
+        actions.forEach(act => {
+          const cfg = getCareConfig(p, act);
+          const days = calcDaysUntilCare(p, act);
+          const isDone = !!log[act];
+          const isDue = days <= 0 && !isDone;
+          if (isDone) doneCount++;
+          if (isDue) dueCount++;
+          careStates[act] = { cfg, days, isDone, isDue };
+        });
+
+        // 식물 카드 우측 상단 상태 뱃지 생성
+        let statusBadge = '';
+        if (doneCount === 4) {
+          statusBadge = `<span class="bg-green-600 text-white font-bold text-[11px] px-2.5 py-0.5 rounded-full flex-shrink-0 flex items-center gap-1"><span>✨</span>오늘 올클리어</span>`;
+        } else if (careStates.water.isDue) {
+          statusBadge = `<span class="bg-rose-500 text-white font-bold text-[11px] px-2 py-0.5 rounded-full animate-bounce flex-shrink-0">물주기 D-Day! 🚿</span>`;
+        } else if (dueCount > 0) {
+          statusBadge = `<span class="bg-amber-500 text-white font-bold text-[11px] px-2 py-0.5 rounded-full animate-pulse flex-shrink-0">케어 D-Day (${dueCount}개) ⚡</span>`;
         } else {
-          waterBadge = `<span class="bg-blue-100 text-blue-900 font-bold text-[11px] px-2 py-0.5 rounded-full flex-shrink-0">물주기 D-${daysLeft}</span>`;
+          statusBadge = `<span class="bg-blue-100 text-blue-900 font-bold text-[11px] px-2 py-0.5 rounded-full flex-shrink-0">물주기 D-${careStates.water.days}</span>`;
         }
+
+        // 4대 활동 버튼 생성 헬퍼
+        const renderCareButton = (act) => {
+          const { cfg, days, isDone, isDue } = careStates[act];
+          let btnClass = '';
+          let btnLabel = '';
+
+          if (isDone) {
+            btnClass = cfg.activeClass;
+            btnLabel = `<span>${cfg.emoji}</span> <span>${cfg.labelDone}</span>`;
+          } else if (isDue) {
+            btnClass = cfg.dDayClass;
+            btnLabel = `<span>${cfg.emoji}</span> <span>${cfg.labelDDay}</span>`;
+          } else {
+            btnClass = cfg.idleClass;
+            btnLabel = `<span>${cfg.emoji}</span> <span>${cfg.labelPrefix} (D-${days})</span>`;
+          }
+
+          return `
+            <button onclick="toggleCareAction('${p.id}', '${act}')" 
+                    title="${cfg.name} (주기: ${cfg.cycle}일 / 최근: ${cfg.lastDate})" 
+                    class="py-2 px-1.5 sm:px-2 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm transition-all flex items-center justify-center gap-1 truncate ${btnClass}">
+              ${btnLabel}
+            </button>
+          `;
+        };
 
         html += `
           <div class="cartoon-border-sm bg-white rounded-2xl p-3 sm:p-4">
@@ -1459,29 +1671,15 @@
                   </div>
                 </div>
               </div>
-              ${waterBadge}
+              ${statusBadge}
             </div>
 
+            <!-- 4대 초록 활동 체크 버튼 그리드 (D-Day 자동 알림 & 남은 일수 표시) -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-              <button onclick="toggleCareAction('${p.id}', 'water')" class="py-2 px-2 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm transition flex items-center justify-center gap-1 ${log.water ? 'bg-blue-500 text-white shadow-cartoon-sm' : 'bg-gray-50 text-gray-700 hover:bg-blue-50'}">
-                <span>🚿</span>
-                <span>${log.water ? '물 완료!' : '물 줬어요'}</span>
-              </button>
-
-              <button onclick="toggleCareAction('${p.id}', 'balcony')" class="py-2 px-2 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm transition flex items-center justify-center gap-1 ${log.balcony ? 'bg-amber-400 text-green-950 shadow-cartoon-sm' : 'bg-gray-50 text-gray-700 hover:bg-amber-50'}">
-                <span>☀️</span>
-                <span>${log.balcony ? '베란다 완료' : '베란다 둠'}</span>
-              </button>
-
-              <button onclick="toggleCareAction('${p.id}', 'wind')" class="py-2 px-2 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm transition flex items-center justify-center gap-1 ${log.wind ? 'bg-emerald-500 text-white shadow-cartoon-sm' : 'bg-gray-50 text-gray-700 hover:bg-emerald-50'}">
-                <span>🍃</span>
-                <span>${log.wind ? '통풍 완료' : '바람 쐬어줌'}</span>
-              </button>
-
-              <button onclick="toggleCareAction('${p.id}', 'spray')" class="py-2 px-2 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm transition flex items-center justify-center gap-1 ${log.spray ? 'bg-sky-400 text-white shadow-cartoon-sm' : 'bg-gray-50 text-gray-700 hover:bg-sky-50'}">
-                <span>💦</span>
-                <span>${log.spray ? '분무 완료' : '잎 닦기/분무'}</span>
-              </button>
+              ${renderCareButton('water')}
+              ${renderCareButton('balcony')}
+              ${renderCareButton('wind')}
+              ${renderCareButton('spray')}
             </div>
 
             <div class="mt-2.5 pt-2 border-t border-gray-100 flex items-center gap-1.5">
@@ -1492,17 +1690,6 @@
         `;
       });
       container.innerHTML = html;
-    }
-
-    function calcDaysUntilWater(plant) {
-      if (!plant.lastWatered) return 0;
-      const last = new Date(plant.lastWatered);
-      const next = new Date(last);
-      next.setDate(last.getDate() + parseInt(plant.waterCycle));
-      
-      const today = new Date(getTodayStr());
-      const diffTime = next - today;
-      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
     function renderWaterSchedule() {
@@ -1541,6 +1728,12 @@
               </div>
               <p class="text-[11px] text-gray-500 mb-1.5">주기: <b>${p.waterCycle}일</b> (최근 준 날: ${p.lastWatered || '없음'})</p>
               <p class="text-xs text-gray-700 bg-white p-2 rounded-lg cartoon-border-sm leading-relaxed">${tipText}</p>
+              
+              <div class="mt-2 pt-1.5 border-t border-gray-200/60 grid grid-cols-3 gap-1 text-[10px] text-center font-bold">
+                <span class="bg-amber-50 text-amber-900 rounded p-0.5 cartoon-border-sm">☀️ 외출 D-${calcDaysUntilCare(p, 'balcony')}</span>
+                <span class="bg-emerald-50 text-emerald-900 rounded p-0.5 cartoon-border-sm">🍃 환기 D-${calcDaysUntilCare(p, 'wind')}</span>
+                <span class="bg-sky-50 text-sky-900 rounded p-0.5 cartoon-border-sm">💦 잎닦기 D-${calcDaysUntilCare(p, 'spray')}</span>
+              </div>
             </div>
             <button onclick="quickWaterPlant('${p.id}')" class="mt-2.5 w-full py-1.5 cartoon-btn bg-blue-500 text-white rounded-lg font-cartoon text-xs flex items-center justify-center gap-1">
               <span>🚿</span> 오늘 물주기 완료
@@ -1703,7 +1896,46 @@
               </button>
             </div>
             <h2 class="text-2xl font-cartoon text-green-950 mt-0.5">${plant.nickname}</h2>
-            <p class="text-xs text-gray-600 font-medium">${plant.species} · ${plant.location} · 🚿 최근 물 준 날: <b>${plant.lastWatered || '기록 없음'}</b></p>
+            <p class="text-xs text-gray-600 font-medium mb-2">${plant.species} · ${plant.location}</p>
+
+            <!-- 4대 초록 활동 주기 & 최근 관리 상태 카드 -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-center text-[11px] mb-2.5">
+              <div class="bg-blue-50 p-1.5 rounded-xl cartoon-border-sm">
+                <span class="font-bold text-blue-900 block">🚿 물주기</span>
+                <span class="text-gray-700 block text-[10px]">${plant.waterCycle || 7}일 주기</span>
+                <span class="text-[10px] font-bold block mt-0.5 ${calcDaysUntilCare(plant, 'water') <= 0 ? 'text-rose-600 animate-pulse' : 'text-blue-800'}">
+                  ${calcDaysUntilCare(plant, 'water') <= 0 ? '오늘 D-Day!' : `D-${calcDaysUntilCare(plant, 'water')}`}
+                </span>
+                <span class="text-[9px] text-gray-500 block truncate">최근: ${plant.lastWatered || '없음'}</span>
+              </div>
+
+              <div class="bg-amber-50 p-1.5 rounded-xl cartoon-border-sm">
+                <span class="font-bold text-amber-900 block">☀️ 베란다</span>
+                <span class="text-gray-700 block text-[10px]">${plant.balconyCycle || 3}일 주기</span>
+                <span class="text-[10px] font-bold block mt-0.5 ${calcDaysUntilCare(plant, 'balcony') <= 0 ? 'text-amber-800 animate-pulse' : 'text-amber-900'}">
+                  ${calcDaysUntilCare(plant, 'balcony') <= 0 ? '오늘 D-Day!' : `D-${calcDaysUntilCare(plant, 'balcony')}`}
+                </span>
+                <span class="text-[9px] text-gray-500 block truncate">최근: ${plant.lastBalcony || '없음'}</span>
+              </div>
+
+              <div class="bg-emerald-50 p-1.5 rounded-xl cartoon-border-sm">
+                <span class="font-bold text-emerald-900 block">🍃 통풍환기</span>
+                <span class="text-gray-700 block text-[10px]">${plant.windCycle || 1}일 주기</span>
+                <span class="text-[10px] font-bold block mt-0.5 ${calcDaysUntilCare(plant, 'wind') <= 0 ? 'text-emerald-700 animate-pulse' : 'text-emerald-900'}">
+                  ${calcDaysUntilCare(plant, 'wind') <= 0 ? '오늘 D-Day!' : `D-${calcDaysUntilCare(plant, 'wind')}`}
+                </span>
+                <span class="text-[9px] text-gray-500 block truncate">최근: ${plant.lastWind || '없음'}</span>
+              </div>
+
+              <div class="bg-sky-50 p-1.5 rounded-xl cartoon-border-sm">
+                <span class="font-bold text-sky-900 block">💦 잎닦기</span>
+                <span class="text-gray-700 block text-[10px]">${plant.sprayCycle || 2}일 주기</span>
+                <span class="text-[10px] font-bold block mt-0.5 ${calcDaysUntilCare(plant, 'spray') <= 0 ? 'text-sky-700 animate-pulse' : 'text-sky-900'}">
+                  ${calcDaysUntilCare(plant, 'spray') <= 0 ? '오늘 D-Day!' : `D-${calcDaysUntilCare(plant, 'spray')}`}
+                </span>
+                <span class="text-[9px] text-gray-500 block truncate">최근: ${plant.lastSpray || '없음'}</span>
+              </div>
+            </div>
             
             <div class="mt-2 p-2.5 bg-amber-50 rounded-xl cartoon-border-sm text-left">
               <p class="text-[11px] font-bold text-amber-900 mb-0.5">🌿 꽃말과 감성 스토리</p>
@@ -1765,6 +1997,12 @@
       document.getElementById('editPlantId').value = '';
       document.getElementById('plantAdoptDate').value = getTodayStr();
       document.getElementById('plantLastWatered').value = getTodayStr();
+      if (document.getElementById('plantLastBalcony')) document.getElementById('plantLastBalcony').value = getTodayStr();
+      if (document.getElementById('plantLastWind')) document.getElementById('plantLastWind').value = getTodayStr();
+      if (document.getElementById('plantLastSpray')) document.getElementById('plantLastSpray').value = getTodayStr();
+      if (document.getElementById('plantBalconyCycle')) document.getElementById('plantBalconyCycle').value = 3;
+      if (document.getElementById('plantWindCycle')) document.getElementById('plantWindCycle').value = 1;
+      if (document.getElementById('plantSprayCycle')) document.getElementById('plantSprayCycle').value = 2;
       document.getElementById('plantPhotoData').value = '';
       document.getElementById('photoPreviewContainer').classList.add('hidden');
       document.getElementById('lookupFeedback').classList.add('hidden');
@@ -1785,6 +2023,15 @@
       document.getElementById('plantWaterCycle').value = plant.waterCycle || 7;
       document.getElementById('plantAdoptDate').value = plant.adoptDate || getTodayStr();
       document.getElementById('plantLastWatered').value = plant.lastWatered || getTodayStr();
+      
+      const fallbackDate = plant.lastWatered || plant.adoptDate || getTodayStr();
+      if (document.getElementById('plantBalconyCycle')) document.getElementById('plantBalconyCycle').value = plant.balconyCycle || 3;
+      if (document.getElementById('plantLastBalcony')) document.getElementById('plantLastBalcony').value = plant.lastBalcony || fallbackDate;
+      if (document.getElementById('plantWindCycle')) document.getElementById('plantWindCycle').value = plant.windCycle || 1;
+      if (document.getElementById('plantLastWind')) document.getElementById('plantLastWind').value = plant.lastWind || fallbackDate;
+      if (document.getElementById('plantSprayCycle')) document.getElementById('plantSprayCycle').value = plant.sprayCycle || 2;
+      if (document.getElementById('plantLastSpray')) document.getElementById('plantLastSpray').value = plant.lastSpray || fallbackDate;
+
       document.getElementById('plantLocation').value = plant.location || '거실 창가 (부드러운 햇살)';
       document.getElementById('plantTempRange').value = plant.tempRange || '';
       document.getElementById('plantSunLight').value = plant.sunLight || '반양지 (커튼 햇빛 권장)';
@@ -1875,6 +2122,7 @@
         }
       }
 
+      const fallbackDate = existingPlant ? (existingPlant.lastWatered || existingPlant.adoptDate || getTodayStr()) : getTodayStr();
       const newPlant = {
         id: id,
         species: speciesName,
@@ -1882,6 +2130,12 @@
         adoptDate: document.getElementById('plantAdoptDate').value,
         waterCycle: parseInt(document.getElementById('plantWaterCycle').value) || 7,
         lastWatered: document.getElementById('plantLastWatered').value || (existingPlant ? existingPlant.lastWatered : getTodayStr()),
+        balconyCycle: parseInt(document.getElementById('plantBalconyCycle') ? document.getElementById('plantBalconyCycle').value : 3) || 3,
+        lastBalcony: (document.getElementById('plantLastBalcony') && document.getElementById('plantLastBalcony').value) || (existingPlant ? existingPlant.lastBalcony : fallbackDate),
+        windCycle: parseInt(document.getElementById('plantWindCycle') ? document.getElementById('plantWindCycle').value : 1) || 1,
+        lastWind: (document.getElementById('plantLastWind') && document.getElementById('plantLastWind').value) || (existingPlant ? existingPlant.lastWind : fallbackDate),
+        sprayCycle: parseInt(document.getElementById('plantSprayCycle') ? document.getElementById('plantSprayCycle').value : 2) || 2,
+        lastSpray: (document.getElementById('plantLastSpray') && document.getElementById('plantLastSpray').value) || (existingPlant ? existingPlant.lastSpray : fallbackDate),
         location: document.getElementById('plantLocation').value,
         tempRange: document.getElementById('plantTempRange').value,
         sunLight: document.getElementById('plantSunLight').value,
@@ -2616,8 +2870,15 @@
       }
 
       document.getElementById('homePlantCount').innerText = `${plants.length}개`;
-      const needWaterCount = plants.filter(p => calcDaysUntilWater(p) <= 0).length;
-      document.getElementById('homeWaterNeededCount').innerText = `${needWaterCount}개`;
+      
+      // 오늘 D-Day 미완료 케어가 1개라도 있는 식물 수 카운트
+      let needCarePlantCount = 0;
+      plants.forEach(p => {
+        const log = getTodayLog(p.id);
+        const hasDue = ['water', 'balcony', 'wind', 'spray'].some(act => calcDaysUntilCare(p, act) <= 0 && !log[act]);
+        if (hasDue) needCarePlantCount++;
+      });
+      document.getElementById('homeWaterNeededCount').innerText = `${needCarePlantCount}개`;
 
       renderWaterBanner();
     }
@@ -2633,7 +2894,7 @@
               <span class="text-3xl">🪴</span>
               <div>
                 <h4 class="font-cartoon text-sm sm:text-base text-green-950">등록된 반려식물이 아직 없어요</h4>
-                <p class="text-xs text-gray-600">새 식물을 등록하고 맞춤 물주기 알림을 받아보세요!</p>
+                <p class="text-xs text-gray-600">새 식물을 등록하고 4대 초록 활동 알림을 받아보세요!</p>
               </div>
             </div>
             <button onclick="openAddPlantModal()" class="cartoon-btn bg-plant-primary text-white text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl font-cartoon flex-shrink-0">
@@ -2644,24 +2905,36 @@
         return;
       }
 
-      // 오늘 물 줘야 하는데 아직 안 준 식물 찾기 (daysLeft <= 0 && !log.water)
+      // 오늘 D-Day 도래 및 미완료 케어 작업 분석
       const needWaterPlants = [];
-      let anyWateredToday = false;
+      const dueBalconyTasks = [];
+      const dueWindTasks = [];
+      const dueSprayTasks = [];
+      let anyCareDoneToday = false;
 
       plants.forEach(p => {
-        const daysLeft = calcDaysUntilWater(p);
         const log = getTodayLog(p.id);
-        if (log.water) {
-          anyWateredToday = true;
-        }
-        if (daysLeft <= 0 && !log.water) {
-          needWaterPlants.push(p);
-        }
+        if (log.water || log.balcony || log.wind || log.spray) anyCareDoneToday = true;
+
+        if (calcDaysUntilCare(p, 'water') <= 0 && !log.water) needWaterPlants.push(p);
+        if (calcDaysUntilCare(p, 'balcony') <= 0 && !log.balcony) dueBalconyTasks.push(p);
+        if (calcDaysUntilCare(p, 'wind') <= 0 && !log.wind) dueWindTasks.push(p);
+        if (calcDaysUntilCare(p, 'spray') <= 0 && !log.spray) dueSprayTasks.push(p);
       });
 
+      const totalDueTasks = needWaterPlants.length + dueBalconyTasks.length + dueWindTasks.length + dueSprayTasks.length;
+
       if (needWaterPlants.length > 0) {
-        // [조건 1]: 오늘 물을 줘야 하는 식물이 있는 경우 눈에 확 띄게 강조!
+        // [케이스 1]: 물주기 D-Day 식물이 있는 경우 최우선 알림!
         const namesText = needWaterPlants.map(p => `<strong>[${p.nickname}]</strong>`).join(', ');
+        
+        // 서브 안내 (베란다/환기/잎닦기도 함께 안내)
+        const subTasksArr = [];
+        if (dueBalconyTasks.length > 0) subTasksArr.push(`☀️ 외출 ${dueBalconyTasks.length}개`);
+        if (dueWindTasks.length > 0) subTasksArr.push(`🍃 통풍 ${dueWindTasks.length}개`);
+        if (dueSprayTasks.length > 0) subTasksArr.push(`💦 잎닦기 ${dueSprayTasks.length}개`);
+        const subTasksText = subTasksArr.length > 0 ? ` · 함께 할 케어: ${subTasksArr.join(' / ')}` : '';
+
         container.innerHTML = `
           <div class="cartoon-card p-3.5 sm:p-4 bg-gradient-to-r from-rose-100 via-amber-50 to-rose-50 border-rose-800 shadow-cartoon animate-in fade-in zoom-in duration-150">
             <div class="flex items-center justify-between gap-3">
@@ -2679,7 +2952,7 @@
                   <h3 class="font-cartoon text-base sm:text-lg text-rose-950 truncate leading-snug">
                     ${namesText} 물주세요!
                   </h3>
-                  <p class="text-xs text-rose-900/80 font-medium truncate">오늘 흙을 확인하시고 시원하게 물을 주세요 🌱</p>
+                  <p class="text-xs text-rose-900/80 font-medium truncate">오늘 흙을 확인하시고 시원하게 물을 주세요 🌱${subTasksText}</p>
                 </div>
               </div>
               <button onclick="scrollToCareList()" class="cartoon-btn bg-rose-500 hover:bg-rose-600 text-white font-cartoon text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl flex-shrink-0 flex items-center gap-1 shadow-cartoon-sm">
@@ -2690,67 +2963,122 @@
             </div>
           </div>
         `;
+      } else if (totalDueTasks > 0) {
+        // [케이스 2]: 물주기는 완료/미도래이나, 베란다/통풍/잎닦기 D-Day가 있는 경우!
+        const dueDescArr = [];
+        if (dueBalconyTasks.length > 0) dueDescArr.push(`☀️ 베란다 외출 [${dueBalconyTasks.map(p=>p.nickname).join(',')}]`);
+        if (dueWindTasks.length > 0) dueDescArr.push(`🍃 통풍 [${dueWindTasks.map(p=>p.nickname).join(',')}]`);
+        if (dueSprayTasks.length > 0) dueDescArr.push(`💦 잎 닦기 [${dueSprayTasks.map(p=>p.nickname).join(',')}]`);
+
+        container.innerHTML = `
+          <div class="cartoon-card p-3.5 sm:p-4 bg-gradient-to-r from-amber-100 via-emerald-50 to-amber-50 border-amber-800 shadow-cartoon animate-in fade-in zoom-in duration-150">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-amber-400 text-amber-950 cartoon-border-sm flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 animate-pulse">
+                  ☀️
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 mb-0.5">
+                    <span class="bg-amber-500 text-white font-bold text-[10px] sm:text-xs px-2 py-0.5 rounded-full cartoon-border-sm">
+                      초록 활동 D-Day
+                    </span>
+                    <span class="text-xs text-amber-950 font-bold">케어 ${totalDueTasks}건 예정</span>
+                  </div>
+                  <h3 class="font-cartoon text-base sm:text-lg text-amber-950 truncate leading-snug">
+                    오늘 초록 활동 주기 도래! (${dueDescArr.slice(0, 2).join(' · ')})
+                  </h3>
+                  <p class="text-xs text-amber-900/80 font-medium truncate">햇빛과 바람을 쐬어주고 잎을 닦아주면 숨구멍이 활짝 열려요 🌿</p>
+                </div>
+              </div>
+              <button onclick="scrollToCareList()" class="cartoon-btn bg-amber-400 hover:bg-amber-500 text-amber-950 font-cartoon text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl flex-shrink-0 flex items-center gap-1 shadow-cartoon-sm">
+                <span>🌿</span>
+                <span class="hidden xs:inline">활동 체크하기</span>
+                <span class="xs:hidden">체크</span>
+              </button>
+            </div>
+          </div>
+        `;
       } else {
-        // [조건 2]: 오늘 물줄 식물이 없거나 모두 완료된 경우 -> 다음으로 물주는 날짜가 가장 임박한 식물 계산
-        let nextPlantInfo = null;
-        let minDays = 999999;
+        // [케이스 3]: 오늘 해야 할 모든 활동이 완료되었거나 D-Day가 없는 경우 -> 다음 임박 케어 및 다음 물주기 안내!
+        let nextAnyCare = null;
+        let nextWaterCare = null;
+        let minAnyDays = 999999;
+        let minWaterDays = 999999;
+        const daysArr = ['일', '월', '화', '수', '목', '금', '토'];
 
         plants.forEach(p => {
           const log = getTodayLog(p.id);
-          const cycle = parseInt(p.waterCycle) || 7;
-          let remainingDays = 0;
-          let targetDate = null;
 
-          if (log.water) {
-            // 오늘 이미 물을 줬다면 오늘로부터 cycle 일 뒤!
-            const today = new Date(getTodayStr());
-            targetDate = new Date(today);
-            targetDate.setDate(today.getDate() + cycle);
-            remainingDays = cycle;
-          } else {
-            const daysLeft = calcDaysUntilWater(p);
-            remainingDays = daysLeft;
-            const last = p.lastWatered ? new Date(p.lastWatered) : new Date(getTodayStr());
-            targetDate = new Date(last);
-            targetDate.setDate(last.getDate() + cycle);
-          }
+          ['water', 'balcony', 'wind', 'spray'].forEach(act => {
+            const cfg = getCareConfig(p, act);
+            const cycle = cfg.cycle;
+            let remaining = 0;
+            let targetDate = null;
 
-          if (remainingDays < minDays) {
-            minDays = remainingDays;
-            const daysArr = ['일', '월', '화', '수', '목', '금', '토'];
-            nextPlantInfo = {
+            if (log[act]) {
+              const today = new Date(getTodayStr());
+              targetDate = new Date(today);
+              targetDate.setDate(today.getDate() + cycle);
+              remaining = cycle;
+            } else {
+              remaining = calcDaysUntilCare(p, act);
+              const last = cfg.lastDate ? new Date(cfg.lastDate) : new Date(getTodayStr());
+              targetDate = new Date(last);
+              targetDate.setDate(last.getDate() + cycle);
+            }
+
+            const info = {
               plant: p,
-              days: remainingDays,
+              act: act,
+              cfg: cfg,
+              days: remaining,
               dateStr: `${targetDate.getMonth() + 1}월 ${targetDate.getDate()}일 (${daysArr[targetDate.getDay()]})`
             };
-          }
+
+            // 전체 중 가장 빠른 다음 케어
+            if (remaining < minAnyDays) {
+              minAnyDays = remaining;
+              nextAnyCare = info;
+            }
+
+            // 물주기 중 가장 빠른 다음 케어
+            if (act === 'water' && remaining < minWaterDays) {
+              minWaterDays = remaining;
+              nextWaterCare = info;
+            }
+          });
         });
 
-        if (nextPlantInfo) {
+        if (nextAnyCare) {
+          const nextAnyStr = `${nextAnyCare.cfg.emoji} [${nextAnyCare.plant.nickname}] ${nextAnyCare.cfg.name} (D-${nextAnyCare.days})`;
+          const nextWaterStr = nextWaterCare ? `🚿 [${nextWaterCare.plant.nickname}] 물주기 (D-${nextWaterCare.days}, ${nextWaterCare.dateStr})` : '';
+
           container.innerHTML = `
             <div class="cartoon-card p-3.5 sm:p-4 bg-gradient-to-r from-emerald-50 via-teal-50 to-blue-50 border-emerald-800 shadow-cartoon animate-in fade-in zoom-in duration-150">
               <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3 min-w-0">
                   <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-emerald-500 text-white cartoon-border-sm flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0">
-                    ${anyWateredToday ? '🎉' : '💧'}
+                    ${anyCareDoneToday ? '🎉' : '✨'}
                   </div>
                   <div class="min-w-0">
                     <div class="flex items-center gap-1.5 mb-0.5">
                       <span class="bg-emerald-600 text-white font-bold text-[10px] sm:text-xs px-2 py-0.5 rounded-full cartoon-border-sm">
-                        ${anyWateredToday ? '오늘 물주기 완료!' : '물주기 안심 상태'}
+                        ${anyCareDoneToday ? '오늘 초록 케어 완료!' : '초록이들 케어 안심 상태'}
                       </span>
-                      <span class="text-xs text-emerald-900 font-bold">다음 물주기 D-${nextPlantInfo.days}</span>
+                      <span class="text-xs text-emerald-900 font-bold">가장 빠른 다음 케어: D-${nextAnyCare.days}</span>
                     </div>
                     <h3 class="font-cartoon text-base sm:text-lg text-emerald-950 truncate leading-snug">
-                      다음 차례는 <span class="text-emerald-800 font-bold underline decoration-wavy">[${nextPlantInfo.plant.nickname}]</span> (${nextPlantInfo.days}일 남았어요)
+                      다음 차례는 <span class="text-emerald-800 font-bold underline decoration-wavy">${nextAnyStr}</span> (${nextAnyCare.days === 1 ? '내일' : `${nextAnyCare.days}일 뒤`})
                     </h3>
-                    <p class="text-xs text-gray-600 font-medium truncate">다음 예정일: <b>${nextPlantInfo.dateStr}</b> (${nextPlantInfo.plant.nickname} · 주기 ${nextPlantInfo.plant.waterCycle}일)</p>
+                    <p class="text-xs text-gray-600 font-medium truncate">
+                      ${nextWaterStr ? `다음 물주기 예정: <b>${nextWaterStr}</b>` : '모든 식물이 넉넉한 수분과 바람을 누리고 있습니다.'}
+                    </p>
                   </div>
                 </div>
                 <button onclick="scrollToCareList()" class="cartoon-btn bg-emerald-600 hover:bg-emerald-700 text-white font-cartoon text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl flex-shrink-0 flex items-center gap-1 shadow-cartoon-sm">
                   <span>📋</span>
-                  <span class="hidden xs:inline">스케줄 보기</span>
-                  <span class="xs:hidden">스케줄</span>
+                  <span class="hidden xs:inline">일지 보기</span>
+                  <span class="xs:hidden">일지</span>
                 </button>
               </div>
             </div>
