@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="ko" class="overflow-x-hidden">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>플랜티(Planty) - 초보 식집사를 위한 감성 반려식물 비서</title>
+  
+  <!-- Favicon (초록 새싹) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- 웹폰트 (Pretendard & Jua) -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Pretendard', 'Gowun Dodum', 'sans-serif'],
+            cartoon: ['Jua', 'Gowun Dodum', 'cursive', 'sans-serif'],
+          },
+          colors: {
+            plant: {
+              light: '#E8F5E9',
+              primary: '#2E7D32',
+              dark: '#1B5E20',
+              accent: '#81C784',
+              cream: '#FDFBF7',
+              butter: '#FFF9C4',
+              sunny: '#FBC02D',
+              terracotta: '#E07A5F',
+              sky: '#E1F5FE',
+              skyDark: '#0288D1',
+              cardBg: '#FFFFFF',
+              border: '#2E382E'
+            }
+          },
+          boxShadow: {
+            'cartoon': '4px 4px 0px #2E382E',
+            'cartoon-sm': '2px 2px 0px #2E382E',
+            'cartoon-lg': '6px 6px 0px #2E382E',
+            'cartoon-hover': '2px 2px 0px #2E382E',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* 가로 스크롤 완전 방지 & 박스 사이징 */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
+      background-color: #F7F5EE;
+      font-family: 'Pretendard', sans-serif;
+      color: #2D3748;
+      -webkit-font-smoothing: antialiased;
+      touch-action: manipulation;
+    }
+    .cartoon-border {
+      border: 3px solid #2E382E;
+    }
+    .cartoon-border-sm {
+      border: 2px solid #2E382E;
+    }
+    .cartoon-btn {
+      border: 2.5px solid #2E382E;
+      box-shadow: 3px 3px 0px #2E382E;
+      transition: all 0.12s ease-in-out;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cartoon-btn:hover {
+      transform: translate(1px, 1px);
+      box-shadow: 2px 2px 0px #2E382E;
+    }
+    .cartoon-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: 0px 0px 0px #2E382E;
+    }
+    .cartoon-card {
+      border: 2.5px solid #2E382E;
+      box-shadow: 4px 4px 0px #2E382E;
+      border-radius: 20px;
+      background-color: #FFFFFF;
+      overflow: hidden;
+    }
+    /* 모바일 안전 영역 대응 */
+    .pb-safe {
+      padding-bottom: env(safe-area-inset-bottom, 20px);
+    }
+    /* 스크롤바 커스텀 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1EFE6;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #A5D6A7;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col text-base sm:text-lg pb-24 md:pb-12 w-full max-w-full">
+
+  <!-- 상단 네비게이션 헤더 -->
+  <header class="bg-[#FFFDF7] cartoon-border border-t-0 border-x-0 sticky top-0 z-40 px-3 sm:px-4 py-2.5 sm:py-3 shadow-md w-full">
+    <div class="max-w-5xl mx-auto flex items-center justify-between gap-2">
+      <!-- 로고 -->
+      <div class="flex items-center gap-2 cursor-pointer flex-shrink-0" onclick="switchTab('home')">
+        <span class="text-3xl filter drop-shadow">🪴</span>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-cartoon text-plant-dark tracking-wide flex items-center gap-1.5 leading-none">
+            플랜티
+            <span class="text-[11px] sm:text-xs bg-plant-butter cartoon-border-sm px-1.5 py-0.5 rounded-full text-green-900 font-sans font-bold">식집사 비서</span>
+          </h1>
+          <p class="text-[11px] sm:text-xs text-gray-500 font-medium mt-0.5 hidden xs:block">초보 식물 키우기 동반자</p>
+        </div>
+      </div>
+
+      <!-- 날씨 퀵 뱃지 (태블릿/PC) -->
+      <div id="quickWeatherBadge" class="hidden md:flex items-center gap-2 bg-plant-sky cartoon-border-sm px-3.5 py-1 rounded-full text-xs sm:text-sm font-bold shadow-cartoon-sm cursor-pointer" onclick="scrollToWeather()">
+        <span id="quickWeatherIcon" class="text-lg">☀️</span>
+        <span id="quickWeatherText">22°C · 베란다 좋음</span>
+      </div>
+
+      <!-- 새 식물 추가 퀵 버튼 -->
+      <button onclick="openAddPlantModal()" class="cartoon-btn bg-plant-primary text-white font-cartoon text-sm sm:text-base px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl flex items-center gap-1.5 hover:bg-green-700 flex-shrink-0">
+        <span>🌱</span>
+        <span>식물 등록</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 메인 탭 메뉴 (모바일 가로 스크롤 없이 4등분 균등 배치) -->
+  <nav class="max-w-5xl mx-auto w-full px-2 sm:px-4 pt-3">
+    <div class="grid grid-cols-4 gap-1 sm:gap-2 bg-[#E9E5D9] p-1.5 rounded-2xl cartoon-border-sm">
+      <button onclick="switchTab('home')" id="tabBtn-home" class="tab-button active-tab py-2 px-1 rounded-xl font-cartoon text-sm sm:text-base flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 transition-all bg-white cartoon-border-sm text-green-900 shadow-cartoon-sm">
+        <span class="text-base sm:text-lg">🏠</span>
+        <span class="truncate">오늘케어</span>
+      </button>
+      <button onclick="switchTab('garden')" id="tabBtn-garden" class="tab-button py-2 px-1 rounded-xl font-cartoon text-sm sm:text-base flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 transition-all text-gray-700 hover:bg-white/70">
+        <span class="text-base sm:text-lg">🪴</span>
+        <span class="truncate">내 정원</span>
+      </button>
+      <button onclick="switchTab('recommend')" id="tabBtn-recommend" class="tab-button py-2 px-1 rounded-xl font-cartoon text-sm sm:text-base flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 transition-all text-gray-700 hover:bg-white/70">
+        <span class="text-base sm:text-lg">✨</span>
+        <span class="truncate">추천도감</span>
+      </button>
+      <button onclick="switchTab('magazine')" id="tabBtn-magazine" class="tab-button py-2 px-1 rounded-xl font-cartoon text-sm sm:text-base flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 transition-all text-gray-700 hover:bg-white/70">
+        <span class="text-base sm:text-lg">📖</span>
+        <span class="truncate">매거진</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- 컨텐츠 메인 영역 -->
+  <main class="max-w-5xl mx-auto w-full px-2.5 sm:px-4 py-4 sm:py-6 flex-grow space-y-5">
+
+    <!-- ============================================== -->
+    <!-- TAB 1: 오늘의 케어 & 홈 대시보드                -->
+    <!-- ============================================== -->
+    <div id="tab-home" class="space-y-4 sm:space-y-5">
+
+      <!-- 상단 식물 말풍선 & 인사 (모바일 최적화) -->
+      <div class="cartoon-card bg-gradient-to-r from-green-50 to-emerald-50 p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-3 sm:gap-5 text-center sm:text-left">
+        <div class="relative flex-shrink-0">
+          <div class="w-16 h-16 sm:w-20 sm:h-20 bg-plant-accent/30 rounded-full cartoon-border flex items-center justify-center text-3xl sm:text-4xl animate-bounce" style="animation-duration: 3s;">
+            🪴
+          </div>
+          <span class="absolute -bottom-1 -right-1 bg-white cartoon-border-sm text-[10px] font-bold px-1.5 py-0.2 rounded-full">비서봇</span>
+        </div>
+        <div class="flex-grow w-full">
+          <div class="inline-block bg-white cartoon-border-sm px-3 py-1 rounded-xl text-green-900 font-cartoon text-xs sm:text-sm mb-1.5 shadow-cartoon-sm">
+            💬 식물의 한마디
+          </div>
+          <p id="plantMoodBubble" class="text-base sm:text-lg font-bold text-gray-800 leading-snug break-words">
+            "주인님 반가워요! 오늘 햇살이 참 포근하네요. 잎에 쌓인 먼지를 톡톡 털어주시면 숨쉬기 더 편할 것 같아요! 🍃"
+          </p>
+          <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-2 text-xs text-gray-600 font-medium">
+            <span>등록 식물: <b id="homePlantCount" class="text-green-800">3개</b></span>
+            <span>·</span>
+            <span>오늘 물주기: <b id="homeWaterNeededCount" class="text-rose-600">1개</b></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 날씨 연동 & 베란다 외출 신호등 카드 -->
+      <section id="weatherSection" class="cartoon-card p-4 sm:p-5 bg-white">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b-2 border-gray-100 pb-3 mb-4">
+          <div>
+            <h2 class="text-lg sm:text-xl font-cartoon text-green-900 flex items-center gap-1.5">
+              <span>🌤️</span> 오늘 날씨 & 베란다 외출 신호등
+            </h2>
+            <p class="text-xs text-gray-500 font-medium">날씨에 따라 베란다에 내놓아도 될지 알려드려요!</p>
+          </div>
+          <!-- 날씨 시뮬레이션/선택 셀렉트 -->
+          <div class="flex items-center gap-1.5 w-full sm:w-auto">
+            <span class="text-xs font-bold text-gray-500 flex-shrink-0">날씨모드:</span>
+            <select id="weatherSelect" onchange="changeWeatherScenario(this.value)" class="w-full sm:w-auto cartoon-border-sm bg-plant-light rounded-xl px-2.5 py-1 text-xs font-bold text-green-900 focus:outline-none">
+              <option value="spring_mild">봄/가을 온화함 (22°C 맑음)</option>
+              <option value="summer_hot">한여름 폭염/직사광선 (32°C 강렬)</option>
+              <option value="rainy">비 오는 날 (18°C 습도 88%)</option>
+              <option value="winter_cold">늦가을/겨울 한파 (6°C 쌀쌀)</option>
+              <option value="windy">바람 강한 날 (19°C 강풍)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 신호등 배너 (모바일 가로폭 100% 핏) -->
+        <div id="balconyAlertBox" class="p-4 rounded-2xl cartoon-border transition-all flex flex-row items-center gap-3.5 bg-green-100 border-green-800 mb-4">
+          <div id="balconyLightIcon" class="w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-2xl sm:text-3xl cartoon-border-sm bg-green-400 shadow-cartoon-sm flex-shrink-0 animate-pulse">
+            🟢
+          </div>
+          <div class="flex-grow min-w-0">
+            <div class="flex flex-wrap items-center gap-1.5 mb-0.5">
+              <span id="balconyLightStatus" class="font-cartoon text-base sm:text-lg text-green-950 truncate">외출 추천 (초록불)</span>
+              <span id="balconyLightBadge" class="bg-green-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0">쾌적</span>
+            </div>
+            <p id="balconyLightDesc" class="text-xs sm:text-sm text-gray-800 font-medium leading-relaxed break-words">
+              기온 22°C, 포근한 바람! 오전~낮 시간에 2~3시간 베란다 일광욕을 시켜주면 식물이 아주 튼튼해집니다.
+            </p>
+          </div>
+        </div>
+
+        <!-- 세부 날씨 지표 4개 그리드 -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+          <div class="bg-plant-light/60 p-2 sm:p-2.5 rounded-xl cartoon-border-sm">
+            <span class="text-gray-500 text-[10px] sm:text-xs font-bold block">기온</span>
+            <span id="statTemp" class="text-lg sm:text-xl font-cartoon text-green-800">22°C</span>
+            <span id="statTempGuide" class="text-[10px] text-gray-600 block mt-0.5">적정 (18~25°C)</span>
+          </div>
+          <div class="bg-plant-sky/50 p-2 sm:p-2.5 rounded-xl cartoon-border-sm">
+            <span class="text-gray-500 text-[10px] sm:text-xs font-bold block">습도</span>
+            <span id="statHumidity" class="text-lg sm:text-xl font-cartoon text-sky-800">50%</span>
+            <span id="statHumidityGuide" class="text-[10px] text-gray-600 block mt-0.5">상쾌한 환경</span>
+          </div>
+          <div class="bg-amber-50 p-2 sm:p-2.5 rounded-xl cartoon-border-sm">
+            <span class="text-gray-500 text-[10px] sm:text-xs font-bold block">바람/환기</span>
+            <span id="statWind" class="text-lg sm:text-xl font-cartoon text-amber-800">1.8 m/s</span>
+            <span id="statWindGuide" class="text-[10px] text-gray-600 block mt-0.5">산들바람 적기</span>
+          </div>
+          <div class="bg-yellow-50 p-2 sm:p-2.5 rounded-xl cartoon-border-sm">
+            <span class="text-gray-500 text-[10px] sm:text-xs font-bold block">햇빛 강도</span>
+            <span id="statSun" class="text-lg sm:text-xl font-cartoon text-orange-800">부드러움</span>
+            <span id="statSunGuide" class="text-[10px] text-gray-600 block mt-0.5">간접광 추천</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 오늘의 가드닝 원터치 활동 체크보드 -->
+      <section class="cartoon-card p-4 sm:p-5 bg-[#FCFDF9]">
+        <div class="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5 mb-3 border-b-2 border-gray-100 pb-2.5">
+          <div>
+            <h2 class="text-lg sm:text-xl font-cartoon text-green-900 flex items-center gap-1.5">
+              <span>✅</span> 오늘의 초록 활동 일지 체크
+            </h2>
+            <p class="text-xs text-gray-500 font-medium">오늘 해 준 보살핌을 도장 깨듯 톡톡 체크하세요!</p>
+          </div>
+          <span class="text-xs bg-plant-light cartoon-border-sm px-2.5 py-0.5 rounded-full font-bold text-green-800 self-start xs:self-auto" id="todayDateStr">
+            2026. 10. 23 (금)
+          </span>
+        </div>
+
+        <div id="todayCareList" class="space-y-3">
+          <!-- JS 렌더링 -->
+        </div>
+      </section>
+
+      <!-- 빠른 물주기 알림 섹션 -->
+      <section class="cartoon-card p-4 sm:p-5 bg-white">
+        <h2 class="text-lg sm:text-xl font-cartoon text-green-900 flex items-center gap-1.5 mb-3">
+          <span>🚿</span> 다가오는 물주기 스케줄
+        </h2>
+        <div id="waterScheduleGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <!-- JS 렌더링 -->
+        </div>
+      </section>
+
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- TAB 2: 내 정원 & 성장 일지                      -->
+    <!-- ============================================== -->
+    <div id="tab-garden" class="space-y-4 sm:space-y-5 hidden">
+      
+      <!-- 내 정원 상단 바 -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl cartoon-border">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-cartoon text-green-900 flex items-center gap-1.5">
+            <span>🪴</span> 우리 집 반려식물 가족 (<span id="gardenPlantTotal">0</span>)
+          </h2>
+          <p class="text-xs sm:text-sm text-gray-600 mt-0.5">식물 카드를 탭하면 <b>4대 생육 가이드</b>와 <b>성장 사진첩</b>을 볼 수 있어요.</p>
+        </div>
+        <button onclick="openAddPlantModal()" class="cartoon-btn bg-plant-primary text-white font-cartoon text-sm sm:text-base px-4 py-2 rounded-xl flex items-center justify-center gap-1.5 flex-shrink-0">
+          <span>➕</span> 새 식물 입양하기
+        </button>
+      </div>
+
+      <!-- 내 식물 카드 목록 -->
+      <div id="gardenPlantGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- JS 렌더링 -->
+      </div>
+
+      <!-- 최근 성장 기록 타임라인 사진 앨범 모음 -->
+      <section class="cartoon-card p-4 sm:p-5 bg-white mt-6">
+        <div class="flex items-center justify-between mb-3 border-b-2 border-gray-100 pb-2.5">
+          <div>
+            <h3 class="text-lg sm:text-xl font-cartoon text-green-900 flex items-center gap-1.5">
+              <span>📸</span> 전체 성장 포토 타임라인
+            </h3>
+            <p class="text-xs text-gray-500">시간과 함께 쑥쑥 자라는 초록이의 순간들</p>
+          </div>
+          <button onclick="openAddDiaryModal()" class="cartoon-btn bg-amber-400 text-green-950 font-cartoon px-3 py-1 rounded-xl text-xs sm:text-sm">
+            📷 사진 남기기
+          </button>
+        </div>
+
+        <div id="globalPhotoTimeline" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
+          <!-- JS 렌더링 -->
+        </div>
+      </section>
+
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- TAB 3: 추천 식물 & 감성 도감                   -->
+    <!-- ============================================== -->
+    <div id="tab-recommend" class="space-y-4 sm:space-y-5 hidden">
+
+      <div class="cartoon-card p-4 sm:p-5 bg-gradient-to-r from-amber-50 to-orange-50">
+        <h2 class="text-xl sm:text-2xl font-cartoon text-amber-950 flex items-center gap-1.5">
+          <span>✨</span> 초보자를 위한 감성 식물 큐레이션
+        </h2>
+        <p class="text-xs sm:text-sm text-gray-700 mt-1 leading-relaxed">
+          키우기 쉬운 것은 기본! 잎이 주는 위안과 식물이 품은 아름다운 이야기를 만나보세요.
+        </p>
+      </div>
+
+      <!-- 카테고리 필터 탭 -->
+      <div class="flex flex-wrap gap-1.5">
+        <button onclick="filterRecommend('all')" id="recFilter-all" class="rec-filter active-filter px-3 py-1.5 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm bg-plant-primary text-white shadow-cartoon-sm">전체 보기</button>
+        <button onclick="filterRecommend('beginner')" id="recFilter-beginner" class="rec-filter px-3 py-1.5 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm bg-white text-gray-800 hover:bg-gray-100">🌿 초보 불패</button>
+        <button onclick="filterRecommend('season')" id="recFilter-season" class="rec-filter px-3 py-1.5 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm bg-white text-gray-800 hover:bg-gray-100">🍁 계절 맞춤</button>
+        <button onclick="filterRecommend('pairing')" id="recFilter-pairing" class="rec-filter px-3 py-1.5 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm bg-white text-gray-800 hover:bg-gray-100">🪴 페어링</button>
+        <button onclick="filterRecommend('unique')" id="recFilter-unique" class="rec-filter px-3 py-1.5 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm bg-white text-gray-800 hover:bg-gray-100">🎨 이색 식물</button>
+      </div>
+
+      <!-- 추천 식물 카드 리스트 -->
+      <div id="recommendGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- JS 렌더링 -->
+      </div>
+
+    </div>
+
+
+    <!-- ============================================== -->
+    <!-- TAB 4: 매거진 & 식물 닥터 (인문학 & 응급실)      -->
+    <!-- ============================================== -->
+    <div id="tab-magazine" class="space-y-4 sm:space-y-5 hidden">
+
+      <!-- 식물 응급실 (자가진단 Plant Doctor) 배너 -->
+      <section class="cartoon-card p-4 sm:p-5 bg-rose-50 border-rose-900">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-rose-200 pb-3 mb-3">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl sm:text-4xl">🚑</span>
+            <div>
+              <h2 class="text-lg sm:text-xl font-cartoon text-rose-900 flex items-center gap-1.5">
+                식물 응급실 (Plant Doctor 자가진단)
+              </h2>
+              <p class="text-xs text-gray-700">잎이 노랗게 변했나요? 증상을 누르면 처방을 드려요!</p>
+            </div>
+          </div>
+          <span class="text-[10px] sm:text-xs bg-rose-200 text-rose-950 font-bold px-2.5 py-0.5 rounded-full cartoon-border-sm self-start sm:self-auto">초보 안심</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <button onclick="showClinicModal('yellow_leaves')" class="cartoon-card p-3 text-center hover:bg-rose-100 transition">
+            <span class="text-2xl block mb-1">🍂</span>
+            <span class="font-bold text-xs sm:text-sm text-gray-900 block truncate">잎이 노래져요</span>
+            <span class="text-[10px] text-rose-700 block mt-0.5">과습/노화</span>
+          </button>
+          <button onclick="showClinicModal('drooping')" class="cartoon-card p-3 text-center hover:bg-rose-100 transition">
+            <span class="text-2xl block mb-1">🥀</span>
+            <span class="font-bold text-xs sm:text-sm text-gray-900 block truncate">줄기가 처져요</span>
+            <span class="text-[10px] text-rose-700 block mt-0.5">갈증/냉해</span>
+          </button>
+          <button onclick="showClinicModal('burnt_tips')" class="cartoon-card p-3 text-center hover:bg-rose-100 transition">
+            <span class="text-2xl block mb-1">🔥</span>
+            <span class="font-bold text-xs sm:text-sm text-gray-900 block truncate">잎 끝이 타요</span>
+            <span class="text-[10px] text-rose-700 block mt-0.5">직사광선/건조</span>
+          </button>
+          <button onclick="showClinicModal('mold')" class="cartoon-card p-3 text-center hover:bg-rose-100 transition">
+            <span class="text-2xl block mb-1">🍄</span>
+            <span class="font-bold text-xs sm:text-sm text-gray-900 block truncate">흙에 곰팡이가</span>
+            <span class="text-[10px] text-rose-700 block mt-0.5">통풍 부족</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 식물 성향 테스트 (식물 MBTI) 카드 -->
+      <section class="cartoon-card p-4 sm:p-5 bg-plant-butter/70 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl sm:text-4xl">🔮</span>
+          <div>
+            <h3 class="text-base sm:text-lg font-cartoon text-green-950">나의 식집사 유형 & 맞춤 식물 찾기</h3>
+            <p class="text-xs text-gray-700">3가지 질문으로 알아보는 나의 가드닝 스타일!</p>
+          </div>
+        </div>
+        <button onclick="openMbtiModal()" class="w-full sm:w-auto cartoon-btn bg-plant-primary text-white font-cartoon text-sm px-4 py-2 rounded-xl flex-shrink-0 text-center">
+          테스트 시작하기 🌿
+        </button>
+      </section>
+
+      <!-- 식물 역사와 사건, 뉴스 인문학 피드 -->
+      <section class="space-y-3">
+        <h2 class="text-lg sm:text-xl font-cartoon text-green-900 flex items-center gap-1.5">
+          <span>📜</span> 식물 오디세이: 역사와 사건 & 뉴스
+        </h2>
+        <div id="historyArticleGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- JS 렌더링 -->
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- 하단 플로팅 바 (모바일 네비게이션 - 손쉬운 원터치) -->
+  <footer class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md cartoon-border border-b-0 border-x-0 py-2 px-3 z-30 md:hidden flex justify-around items-center shadow-lg pb-safe">
+    <button onclick="switchTab('home')" class="flex flex-col items-center text-[11px] font-bold text-green-900 flex-1">
+      <span class="text-xl">🏠</span>
+      <span>오늘케어</span>
+    </button>
+    <button onclick="switchTab('garden')" class="flex flex-col items-center text-[11px] font-bold text-gray-600 flex-1">
+      <span class="text-xl">🪴</span>
+      <span>내 정원</span>
+    </button>
+    <button onclick="openAddPlantModal()" class="flex flex-col items-center text-[11px] font-bold text-green-800 -mt-5 flex-1">
+      <span class="w-11 h-11 rounded-full bg-plant-primary text-white cartoon-border flex items-center justify-center text-xl shadow-cartoon">➕</span>
+      <span class="mt-0.5">등록</span>
+    </button>
+    <button onclick="switchTab('recommend')" class="flex flex-col items-center text-[11px] font-bold text-gray-600 flex-1">
+      <span class="text-xl">✨</span>
+      <span>추천도감</span>
+    </button>
+    <button onclick="switchTab('magazine')" class="flex flex-col items-center text-[11px] font-bold text-gray-600 flex-1">
+      <span class="text-xl">📖</span>
+      <span>매거진</span>
+    </button>
+  </footer>
+
+
+  <!-- ============================================== -->
+  <!-- MODALS (팝업창 모음)                            -->
+  <!-- ============================================== -->
+
+  <!-- 1. 새 식물 등록 / 수정 모달 -->
+  <div id="plantModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="cartoon-card max-w-lg w-full max-h-[88vh] overflow-y-auto p-4 sm:p-5 bg-white relative animate-in fade-in zoom-in duration-150">
+      <button onclick="closeModal('plantModal')" class="absolute top-3 right-3 text-2xl font-bold hover:scale-110 p-1">✕</button>
+      <h3 id="plantModalTitle" class="text-xl sm:text-2xl font-cartoon text-green-900 mb-3 flex items-center gap-1.5 pr-8">
+        <span>🌱</span> 새 반려식물 입양 등록
+      </h3>
+
+      <form id="plantForm" onsubmit="handlePlantSubmit(event)" class="space-y-3 text-sm">
+        <input type="hidden" id="editPlantId" value="">
+
+        <!-- 추천 템플릿 빠른 선택 -->
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">식물 종류 빠른 템플릿 선택</label>
+          <select id="plantTemplateSelect" onchange="applyPlantTemplate(this.value)" class="w-full cartoon-border-sm rounded-xl p-2 bg-plant-light/60 font-medium text-xs sm:text-sm">
+            <option value="">-- 직접 입력 or 아래에서 선택 --</option>
+            <option value="monstera">몬스테라 (물 7일 / 반음지 / 18~27°C)</option>
+            <option value="scindapsus">스킨답서스 (물 5~7일 / 음지가능 / 16~25°C)</option>
+            <option value="stuckyi">스투키 (물 25~30일 / 건조강함 / 15~30°C)</option>
+            <option value="tablepalm">테이블야자 (물 5일 / 반음지 / 18~24°C)</option>
+            <option value="sansevieria">산세베리아 (물 20일 / 공기정화 / 15~28°C)</option>
+            <option value="rubber">고무나무 (물 7~10일 / 양지·반양지 / 18~28°C)</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-0.5">식물 이름(품종) *</label>
+            <input type="text" id="plantSpecies" required placeholder="예: 몬스테라" class="w-full cartoon-border-sm rounded-xl p-2 text-xs sm:text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-0.5">애칭 (별명) *</label>
+            <input type="text" id="plantNickname" required placeholder="예: 몬이" class="w-full cartoon-border-sm rounded-xl p-2 text-xs sm:text-sm">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-0.5">입양한 날짜 *</label>
+            <input type="date" id="plantAdoptDate" required class="w-full cartoon-border-sm rounded-xl p-2 text-xs sm:text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-700 mb-0.5">물주기 주기(일) *</label>
+            <input type="number" id="plantWaterCycle" required min="1" max="90" value="7" class="w-full cartoon-border-sm rounded-xl p-2 text-xs sm:text-sm">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-0.5">두는 장소</label>
+          <select id="plantLocation" class="w-full cartoon-border-sm rounded-xl p-2 text-xs sm:text-sm">
+            <option value="거실 창가 (부드러운 햇살)">거실 창가 (부드러운 햇살)</option>
+            <option value="베란다 (시원한 바람과 햇살)">베란다 (시원한 바람과 햇살)</option>
+            <option value="거실 안쪽 (간접광)">거실 안쪽 (간접광)</option>
+            <option value="침실/서재 (실내 조명)">침실/서재 (실내 조명)</option>
+            <option value="주방/화장실">주방/화장실</option>
+          </select>
+        </div>
+
+        <!-- 4대 환경 레시피 커스텀 -->
+        <div class="bg-gray-50 p-3 rounded-xl cartoon-border-sm space-y-1.5 text-xs">
+          <span class="font-bold text-green-900 block">🌿 초보자 환경 맞춤 레시피</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <span class="text-[11px] text-gray-600 block">적정 온도 범위</span>
+              <input type="text" id="plantTempRange" value="18~27°C (10°C 이하 냉해 주의)" class="w-full cartoon-border-sm rounded-lg p-1.5 text-xs">
+            </div>
+            <div>
+              <span class="text-[11px] text-gray-600 block">햇빛(채광) 권장</span>
+              <select id="plantSunLight" class="w-full cartoon-border-sm rounded-lg p-1.5 text-xs">
+                <option value="반양지 (커튼을 거친 부드러운 햇빛)">반양지 (커튼 햇빛 권장)</option>
+                <option value="양지 (직사광선도 거뜬)">양지 (직사광선 환영)</option>
+                <option value="반음지 (실내 형광등으로도 충분)">반음지 (형광등도 충분)</option>
+              </select>
+            </div>
+            <div>
+              <span class="text-[11px] text-gray-600 block">바람(통풍)</span>
+              <select id="plantWindReq" class="w-full cartoon-border-sm rounded-lg p-1.5 text-xs">
+                <option value="매일 1~2시간 이상 환기 필수">매일 1~2시간 환기 필수</option>
+                <option value="적당한 실내 공기 순환이면 충분">보통 순환이면 충분</option>
+              </select>
+            </div>
+            <div>
+              <span class="text-[11px] text-gray-600 block">실내 전용 가능 여부</span>
+              <select id="plantIndoorOnly" class="w-full cartoon-border-sm rounded-lg p-1.5 text-xs">
+                <option value="실내에서만 키워도 무방함">실내 전용 가능 (튼튼함)</option>
+                <option value="주 1~2회 베란다 바람 권장">가끔 베란다 바람 권장</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 사진 업로드 -->
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-0.5">대표 사진</label>
+          <input type="file" id="plantPhotoFile" accept="image/*" onchange="previewPlantPhoto(event)" class="text-xs w-full">
+          <input type="hidden" id="plantPhotoData" value="">
+          <div id="photoPreviewContainer" class="mt-1.5 hidden">
+            <img id="photoPreviewImg" src="" alt="미리보기" class="w-16 h-16 object-cover rounded-xl cartoon-border-sm">
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          <button type="button" onclick="closeModal('plantModal')" class="flex-1 py-2.5 cartoon-border-sm rounded-xl font-cartoon bg-gray-200 hover:bg-gray-300 text-sm">
+            취소
+          </button>
+          <button type="submit" class="flex-1 py-2.5 cartoon-btn bg-plant-primary text-white rounded-xl font-cartoon text-base">
+            저장 완료 🌱
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- 2. 식물 상세 보기 모달 -->
+  <div id="detailModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="cartoon-card max-w-2xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-5 bg-white relative animate-in zoom-in duration-150">
+      <button onclick="closeModal('detailModal')" class="absolute top-3 right-3 text-2xl font-bold hover:scale-110 p-1">✕</button>
+
+      <div id="detailContent" class="space-y-4">
+        <!-- JS 렌더링 -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 3. 성장 사진 일지 추가 모달 -->
+  <div id="diaryModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="cartoon-card max-w-md w-full p-4 sm:p-5 bg-white relative">
+      <button onclick="closeModal('diaryModal')" class="absolute top-3 right-3 text-2xl font-bold hover:scale-110 p-1">✕</button>
+      <h3 class="text-xl font-cartoon text-green-900 mb-2.5 flex items-center gap-1.5 pr-8">
+        <span>📸</span> 성장 사진 일지 기록
+      </h3>
+
+      <form id="diaryForm" onsubmit="handleDiarySubmit(event)" class="space-y-3 text-sm">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-0.5">식물 선택 *</label>
+          <select id="diaryPlantSelect" required class="w-full cartoon-border-sm rounded-xl p-2 bg-plant-light/50 font-bold text-xs sm:text-sm">
+            <!-- JS 옵션 -->
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-0.5">기록 날짜 *</label>
+          <input type="date" id="diaryDate" required class="w-full cartoon-border-sm rounded-xl p-2 text-xs sm:text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-0.5">사진 첨부 (카메라/파일) *</label>
+          <input type="file" id="diaryFile" accept="image/*" required onchange="previewDiaryPhoto(event)" class="text-xs w-full">
+          <input type="hidden" id="diaryPhotoData" value="">
+          <div id="diaryPreviewBox" class="mt-1.5 hidden text-center">
+            <img id="diaryPreviewImg" src="" alt="일지 미리보기" class="w-24 h-24 object-cover rounded-xl cartoon-border-sm mx-auto">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-1">이벤트 스탬프</label>
+          <div class="flex flex-wrap gap-1" id="stampSelector">
+            <button type="button" onclick="selectStamp(this, '새 잎 돋음🌱')" class="stamp-btn px-2 py-0.5 text-xs font-bold cartoon-border-sm rounded-lg bg-green-100 ring-2 ring-green-800">새 잎 돋음🌱</button>
+            <button type="button" onclick="selectStamp(this, '분갈이 완료🪴')" class="stamp-btn px-2 py-0.5 text-xs font-bold cartoon-border-sm rounded-lg bg-amber-100">분갈이 완료🪴</button>
+            <button type="button" onclick="selectStamp(this, '첫 꽃망울🌸')" class="stamp-btn px-2 py-0.5 text-xs font-bold cartoon-border-sm rounded-lg bg-pink-100">첫 꽃망울🌸</button>
+            <button type="button" onclick="selectStamp(this, '영양제 냠냠💊')" class="stamp-btn px-2 py-0.5 text-xs font-bold cartoon-border-sm rounded-lg bg-blue-100">영양제 냠냠💊</button>
+          </div>
+          <input type="hidden" id="diaryStamp" value="새 잎 돋음🌱">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 mb-0.5">오늘의 한 줄 메모</label>
+          <textarea id="diaryMemo" rows="2" placeholder="예: 돌돌 말려있던 연두색 새 잎이 드디어 활짝 펴졌어요!" class="w-full cartoon-border-sm rounded-xl p-2 text-xs"></textarea>
+        </div>
+        <button type="submit" class="w-full py-2.5 cartoon-btn bg-plant-primary text-white rounded-xl font-cartoon text-base">
+          순간 저장하기 🌿
+        </button>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- 4. 식물 닥터 (자가진단 처방전 모달) -->
+  <div id="clinicModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="cartoon-card max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-5 bg-white relative animate-in zoom-in duration-150">
+      <button onclick="closeModal('clinicModal')" class="absolute top-3 right-3 text-2xl font-bold hover:scale-110 p-1">✕</button>
+      <div id="clinicModalContent">
+        <!-- JS 렌더링 -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 5. 식물 MBTI 퀴즈 모달 -->
+  <div id="mbtiModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="cartoon-card max-w-md w-full p-4 sm:p-5 bg-white relative">
+      <button onclick="closeModal('mbtiModal')" class="absolute top-3 right-3 text-2xl font-bold hover:scale-110 p-1">✕</button>
+      <div id="mbtiModalContent">
+        <h3 class="text-xl font-cartoon text-green-900 mb-1 pr-8">🌿 나의 맞춤 식물 찾기</h3>
+        <p class="text-xs text-gray-600 mb-3">질문에 가장 마음에 드는 답변을 골라주세요!</p>
+        
+        <div id="mbtiQuestionArea" class="space-y-3">
+          <!-- JS 퀴즈 렌더링 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================== -->
+  <!-- JAVASCRIPT APP LOGIC                           -->
+  <!-- ============================================== -->
+  <script>
+    /* ============================================================
+       0. 기본 데이터 및 상태 관리
+    ============================================================ */
+    const STORAGE_KEY_PLANTS = 'planty_plants_v1';
+    const STORAGE_KEY_LOGS = 'planty_care_logs_v1';
+    const STORAGE_KEY_DIARY = 'planty_growth_diary_v1';
+
+    const DEFAULT_PLANTS = [
+      {
+        id: 'plant_1',
+        species: '몬스테라 델리시오사',
+        nickname: '몬이',
+        adoptDate: '2026-09-15',
+        waterCycle: 7,
+        lastWatered: '2026-10-18',
+        location: '거실 창가 (부드러운 햇살)',
+        tempRange: '18~27°C (10°C 이하 냉해 주의)',
+        sunLight: '반양지 (커튼 햇빛 권장, 직사광선 주의)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '실내 가능하나 가끔 베란다 바람 권장',
+        photo: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 기쁜 소식, 깊은 배려. 찢어진 잎 사이로 아래 잎에 햇빛을 나눠주는 다정한 친구',
+        feelings: '시원하게 뻗은 잎을 보면 마음에 넓은 여유와 이국적인 활력이 솟아납니다.'
+      },
+      {
+        id: 'plant_2',
+        species: '골든 스킨답서스',
+        nickname: '초록이',
+        adoptDate: '2026-10-01',
+        waterCycle: 5,
+        lastWatered: '2026-10-22',
+        location: '거실 테이블',
+        tempRange: '16~25°C (추위에 약함)',
+        sunLight: '반음지 (형광등 불빛만으로도 쑥쑥)',
+        windReq: '적당한 실내 환기면 충분',
+        indoorOnly: '실내에서만 키워도 무방함 (초보 불패 1순위)',
+        photo: 'https://images.unsplash.com/photo-1596724803693-e08713d2f2d9?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 다시 찾은 행복. 악조건 속에서도 놀라운 생명력으로 덩굴을 뻗는 희망의 상징',
+        feelings: '반짝이는 하트 잎을 보며 지친 하루 끝에 묵묵한 위로를 받습니다.'
+      },
+      {
+        id: 'plant_3',
+        species: '스투키',
+        nickname: '키키',
+        adoptDate: '2026-08-20',
+        waterCycle: 25,
+        lastWatered: '2026-10-05',
+        location: '침실 협탁',
+        tempRange: '15~30°C (생명력 최강)',
+        sunLight: '양지·반음지 모두 가능 (직사광선도 거뜬)',
+        windReq: '가끔 환기해주면 흙이 잘 말라요',
+        indoorOnly: '실내 전용 가능 (물만 아끼면 절대 안 죽어요)',
+        photo: 'https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 관용, 불굴. 밤에 음이온과 산소를 내뿜어 편안한 잠자리를 지켜줍니다.',
+        feelings: '물주기를 깜빡 잊어도 꿋꿋하게 자리를 지켜주는 든든한 보디가드 같습니다.'
+      }
+    ];
+
+    const DEFAULT_DIARY = [
+      {
+        id: 'd1',
+        plantId: 'plant_1',
+        date: '2026-10-20',
+        stamp: '새 잎 돋음🌱',
+        memo: '돌돌 말려있던 새 잎이 드디어 하트 모양으로 활짝 펴졌어요! 감동입니다.',
+        photo: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=600&q=80'
+      },
+      {
+        id: 'd2',
+        plantId: 'plant_2',
+        date: '2026-10-15',
+        stamp: '분갈이 완료🪴',
+        memo: '예쁜 토분으로 첫 분갈이를 마쳤어요. 흙 냄새가 정말 향긋해요.',
+        photo: 'https://images.unsplash.com/photo-1596724803693-e08713d2f2d9?auto=format&fit=crop&w=600&q=80'
+      }
+    ];
+
+    const RECOMMEND_PLANTS = [
+      {
+        id: 'rec_1',
+        category: 'beginner',
+        name: '테이블야자',
+        tag: '초보 불패 · 공기정화',
+        water: '겉흙 마르면 4~6일 1회',
+        sun: '반음지 (직사광선 피하기)',
+        temp: '18~24°C',
+        photo: 'https://images.unsplash.com/photo-1512428813834-c702c7702b78?auto=format&fit=crop&w=600&q=80',
+        desc: '책상 위에 작은 야자수 숲을 들여놓은 듯 시원한 분위기. NASA 선정 공기정화식물로 포름알데히드 제거 능력이 탁월합니다.',
+        meaning: '꽃말: 마음의 평화. 깃털처럼 가벼운 잎이 살랑거릴 때마다 복잡한 생각이 맑아집니다.'
+      },
+      {
+        id: 'rec_2',
+        category: 'season',
+        name: '아비스 고사리 (아스플레니움)',
+        tag: '가을·겨울 추천 · 연둣빛 싱그러움',
+        water: '겉흙 촉촉 유지 3~5일 1회',
+        sun: '반음지/실내조명',
+        temp: '17~25°C',
+        photo: 'https://images.unsplash.com/photo-1597055181300-e3633a917c9c?auto=format&fit=crop&w=600&q=80',
+        desc: '물결치는 연둣빛 잎이 둥지처럼 가운데에서 솟아나는 매력적인 고사리. 건조한 실내에서 천연 가습기 역할을 톡톡히 해줍니다.',
+        meaning: '꽃말: 신비로움, 매혹. 잎 안쪽에서 피어나는 어린 새순을 보며 살아있는 생명력을 느낍니다.'
+      },
+      {
+        id: 'rec_3',
+        category: 'pairing',
+        name: '필로덴드론 버킨 (무늬버킨)',
+        tag: '몬스테라와 찰떡 페어링',
+        water: '속흙 마르면 7~10일 1회',
+        sun: '은은한 간접광',
+        temp: '18~26°C',
+        photo: 'https://images.unsplash.com/photo-1620127682252-87f5492d3f78?auto=format&fit=crop&w=600&q=80',
+        desc: '초록 잎 위에 하얀 붓으로 섬세하게 선을 그어놓은 듯한 고급스러운 잎무늬. 몬스테라 옆에 함께 두면 근사한 실내 정원이 완성됩니다.',
+        meaning: '꽃말: 수호, 변함없는 우정. 자랄수록 무늬가 또렷해져 키우는 보람이 큽니다.'
+      },
+      {
+        id: 'rec_4',
+        category: 'unique',
+        name: '칼라데아 오르비폴리아',
+        tag: '색다른 수박무늬 · 밤에 기도하는 식물',
+        water: '겉흙 마르면 4~5일 1회',
+        sun: '부드러운 그늘/반음지',
+        temp: '18~25°C',
+        photo: 'https://images.unsplash.com/photo-1598880940371-c756e015fea1?auto=format&fit=crop&w=600&q=80',
+        desc: '수박을 닮은 부채꼴의 커다란 은빛 줄무늬 잎. 밤이 되면 잎을 모아 기도하듯 위로 세우는 신비로운 수면 운동을 합니다.',
+        meaning: '꽃말: 당신과 함께라면 마음이 편안해요. 살아 숨쉬며 움직이는 반려식물의 매력.'
+      }
+    ];
+
+    const HISTORY_ARTICLES = [
+      {
+        id: 'art_1',
+        title: '세계 최초의 거품 경제: 17세기 네덜란드 튤립 파동 🌷',
+        category: '식물 역사',
+        date: '역사 오디세이',
+        summary: '화려한 줄무늬 튤립 한 알의 가격이 대저택 한 채 값과 맞먹었던 시절의 흥미진진한 이야기.',
+        content: `1630년대 네덜란드에서는 바이러스로 인해 독특하고 화려한 불꽃 무늬가 생긴 '셈페르 아우구스투스' 튤립 구근의 가치가 천문학적으로 치솟았습니다. 구근 하나가 숙련 노동자의 수십 년 치 연봉에 팔리기도 했죠. 식물에 대한 인간의 열망과 희소성이 만들어낸 세계 최초의 경제 투기 사건이었습니다.`
+      },
+      {
+        id: 'art_2',
+        title: '몬스테라는 왜 잎에 구멍이 숭숭 뚫려 있을까요? 🌿',
+        category: '진화의 비밀',
+        date: '생물학 토막상식',
+        summary: '거센 열대 우림의 폭우를 견디고, 아래에 있는 어린 잎을 위해 햇빛을 양보하는 몬스테라의 배려심.',
+        content: `몬스테라의 구멍 난 잎은 정글에서 살아남기 위한 놀라운 지혜입니다. 폭우나 거센 바람이 불 때 잎이 찢어지지 않고 통과하도록 바람길을 내어주며, 울창한 상층부에서 햇빛을 독점하지 않고 구멍 사이로 아래쪽에 자라는 어린 잎들에게 햇빛을 비춰주기 위해 구멍을 뚫었습니다.`
+      },
+      {
+        id: 'art_3',
+        title: 'NASA가 우주정거장에서 밝혀낸 "공기정화 식물 TOP 10" 🚀',
+        category: '가드닝 뉴스',
+        date: '과학 & 트렌드',
+        summary: '밀폐된 우주선 안의 유해물질을 정화하기 위해 시작된 NASA의 청정 식물 연구 결과.',
+        content: `1989년 NASA의 연구팀은 밀폐된 우주선 내 공기를 정화하기 위해 실내 식물 연구를 진행했습니다. 연구 결과 식물은 잎의 기공을 통해 벤젠, 포름알데히드 등의 독소를 흡수하여 뿌리 미생물의 먹이로 분해한다는 사실이 밝혀졌습니다. 스킨답서스와 산세베리아는 실내 공기질 개선에 최우수 식물로 입증되었습니다.`
+      },
+      {
+        id: 'art_4',
+        title: '19세기 영국의 기이한 열풍 "프테리도마니아(양치식물 광풍)" 🪴',
+        category: '식물 문화사',
+        date: '역사 오디세이',
+        summary: '영국 귀족들이 숲속 고사리를 찾아 산과 들을 헤매고 온실에 모시던 흥미로운 수집 열풍.',
+        content: `1850년대 영국의 빅토리아 여왕 시대에는 남녀노소를 불문하고 야생 고사리를 채집해 수집첩에 붙이고 온실을 꾸미는 '프테리도마니아'가 대유행했습니다. 꽃이 피지 않고 포자로 번식하는 고사리의 원초적이고 신비로운 형태는 당시 산업혁명으로 지친 도시민들에게 숲속 태초의 순수함을 선물해주었습니다.`
+      }
+    ];
+
+    const CLINIC_DATA = {
+      yellow_leaves: {
+        title: '🍂 잎이 노랗게 변하고 힘이 없어요',
+        cause: '가장 흔한 원인은 **과습(물 너무 자주 줌)** 또는 **자연스러운 하엽(노화)**입니다.',
+        check: '1. 화분 흙이 축축한데도 물을 또 주셨나요?\n2. 노랗게 변한 잎이 가장 아래쪽 오래된 잎인가요?',
+        cure: '• 과습일 때: 물주기를 즉시 멈추고 겉흙과 속흙이 바싹 마를 때까지 통풍이 잘되는 그늘에 두세요.\n• 자연 하엽일 때: 아래쪽 잎 1~2개만 노랗다면 자연스러운 노화이므로 가위로 줄기 밑동을 잘라주면 새 잎에 영양이 집중됩니다.'
+      },
+      drooping: {
+        title: '🥀 줄기가 힘없이 축 처져요',
+        cause: '흙이 바싹 마른 **극심한 갈증**이거나, 날씨가 너무 추워 생긴 **냉해**입니다.',
+        check: '손가락으로 흙을 찔렀을 때 먼지처럼 푸석한가요? 아니면 베란다 기온이 10°C 이하로 떨어졌나요?',
+        cure: '• 흙이 말랐을 때: 대야에 물을 받아 화분을 30분간 담가두는 **저면관수**를 해보세요. 2시간 뒤 잎이 마법처럼 빳빳하게 일어납니다!\n• 냉해일 때: 즉시 따뜻한 실내(거실)로 옮기고 미지근한 물을 주세요.'
+      },
+      burnt_tips: {
+        title: '🔥 잎 끝이 바삭하게 타들어가요',
+        cause: '**강한 직사광선 화상**이거나 실내가 너무 건조한 **공중습도 부족**입니다.',
+        check: '창문을 거치지 않은 뜨거운 햇빛에 화분을 두셨나요? 혹은 에어컨/히터 바람 바로 앞인가요?',
+        cure: '• 화상일 때: 햇빛이 커튼을 거쳐 들어오는 부드러운 반양지 위치로 옮겨주세요.\n• 건조할 때: 분무기로 잎 주변에 하루 1~2회 미세한 물안개를 뿌려주세요.'
+      },
+      mold: {
+        title: '🍄 흙 표면에 하얀 곰팡이가 피었어요',
+        cause: '실내 공기가 통하지 않는 **통풍 부족**과 젖은 흙이 만났을 때 생깁니다.',
+        check: '창문을 닫아둔 채로 며칠 동안 흙이 젖어있었나요?',
+        cure: '• 당황하지 마시고 숟가락으로 곰팡이가 핀 흙 표면을 1~2cm 걷어내 버려주세요.\n• 창문을 열어 하루 2시간 이상 바람을 통하게 하거나 써큘레이터로 공기를 순환시켜 주세요.'
+      }
+    };
+
+    let plants = [];
+    let careLogs = {};
+    let growthDiary = [];
+    let currentTab = 'home';
+    let currentScenario = 'spring_mild';
+
+    function initApp() {
+      const savedPlants = localStorage.getItem(STORAGE_KEY_PLANTS);
+      if (savedPlants) {
+        try { plants = JSON.parse(savedPlants); } catch(e) { plants = DEFAULT_PLANTS; }
+      } else {
+        plants = [...DEFAULT_PLANTS];
+        savePlants();
+      }
+
+      const savedLogs = localStorage.getItem(STORAGE_KEY_LOGS);
+      if (savedLogs) {
+        try { careLogs = JSON.parse(savedLogs); } catch(e) { careLogs = {}; }
+      }
+
+      const savedDiary = localStorage.getItem(STORAGE_KEY_DIARY);
+      if (savedDiary) {
+        try { growthDiary = JSON.parse(savedDiary); } catch(e) { growthDiary = DEFAULT_DIARY; }
+      } else {
+        growthDiary = [...DEFAULT_DIARY];
+        saveDiary();
+      }
+
+      const today = getTodayStr();
+      document.getElementById('todayDateStr').innerText = formatDateKorean(today);
+      document.getElementById('plantAdoptDate').value = today;
+      document.getElementById('diaryDate').value = today;
+
+      updateWeatherDisplay();
+      renderHomeCareList();
+      renderWaterSchedule();
+      renderGarden();
+      renderGlobalTimeline();
+      renderRecommendations('all');
+      renderHistoryArticles();
+      updateMoodBubble();
+    }
+
+    function savePlants() { localStorage.setItem(STORAGE_KEY_PLANTS, JSON.stringify(plants)); }
+    function saveLogs() { localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(careLogs)); }
+    function saveDiary() { localStorage.setItem(STORAGE_KEY_DIARY, JSON.stringify(growthDiary)); }
+
+    function getTodayStr() {
+      const d = new Date();
+      return d.toISOString().split('T')[0];
+    }
+
+    function formatDateKorean(dateStr) {
+      const parts = dateStr.split('-');
+      const d = new Date(parts[0], parts[1]-1, parts[2]);
+      const days = ['일', '월', '화', '수', '목', '금', '토'];
+      return `${parts[0]}.${parts[1]}.${parts[2]} (${days[d.getDay()]})`;
+    }
+
+    function switchTab(tabId) {
+      currentTab = tabId;
+      ['home', 'garden', 'recommend', 'magazine'].forEach(id => {
+        const el = document.getElementById(`tab-${id}`);
+        const btn = document.getElementById(`tabBtn-${id}`);
+        if (id === tabId) {
+          el.classList.remove('hidden');
+          btn.classList.add('bg-white', 'cartoon-border-sm', 'text-green-900', 'shadow-cartoon-sm');
+          btn.classList.remove('text-gray-700');
+        } else {
+          el.classList.add('hidden');
+          btn.classList.remove('bg-white', 'cartoon-border-sm', 'text-green-900', 'shadow-cartoon-sm');
+          btn.classList.add('text-gray-700');
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function scrollToWeather() {
+      switchTab('home');
+      document.getElementById('weatherSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    const WEATHER_SCENARIOS = {
+      spring_mild: {
+        temp: 22, humidity: 50, wind: 1.8, sun: '부드러운 햇살', icon: '☀️', light: 'green',
+        lightText: '외출 추천 (초록불)', badge: '쾌적 최고', boxBg: 'bg-green-100 border-green-800', lightBg: 'bg-green-400',
+        desc: '기온 22°C 포근한 날씨! 오전~낮 시간에 베란다 일광욕을 2~3시간 시켜주면 식물 면역력이 쑥쑥 자라납니다.'
+      },
+      summer_hot: {
+        temp: 32, humidity: 65, wind: 0.8, sun: '타는 직사광선', icon: '🥵', light: 'red',
+        lightText: '베란다 피신 (빨강불)', badge: '잎 화상 주의', boxBg: 'bg-rose-100 border-rose-800', lightBg: 'bg-rose-500',
+        desc: '기온 32°C 폭염! 베란다 창가의 뜨거운 직사광선은 잎을 태울 수 있으니 시원한 거실 안쪽 반양지로 들여놓으세요.'
+      },
+      rainy: {
+        temp: 18, humidity: 88, wind: 3.2, sun: '흐리고 비', icon: '🌧️', light: 'yellow',
+        lightText: '비 맞음 주의 (노랑불)', badge: '과습 주의보', boxBg: 'bg-yellow-100 border-yellow-800', lightBg: 'bg-yellow-400',
+        desc: '습도가 88%로 높습니다! 비를 맞히면 과습 위험이 있으니 물주기를 하루이틀 미루고 실내 환기를 시켜주세요.'
+      },
+      winter_cold: {
+        temp: 6, humidity: 35, wind: 4.5, sun: '쌀쌀한 햇빛', icon: '🥶', light: 'red',
+        lightText: '외출 금지 (빨강불)', badge: '냉해 위험 (10°C 미만)', boxBg: 'bg-blue-100 border-blue-800', lightBg: 'bg-blue-400',
+        desc: '기온 6°C! 열대 식물은 10°C 이하 바람에 냉해를 입습니다. 절대 베란다에 두지 마시고 따뜻한 실내에 두세요.'
+      },
+      windy: {
+        temp: 19, humidity: 45, wind: 6.8, sun: '강풍 주의', icon: '💨', light: 'yellow',
+        lightText: '화분 주의 (노랑불)', badge: '강풍 주의', boxBg: 'bg-amber-100 border-amber-800', lightBg: 'bg-amber-400',
+        desc: '기온 19°C지만 바람이 셉니다! 작은 화분이 떨어지거나 잎이 꺾이지 않게 바닥 쪽 안전한 곳에 놓아주세요.'
+      }
+    };
+
+    function changeWeatherScenario(scenarioKey) {
+      currentScenario = scenarioKey;
+      updateWeatherDisplay();
+      updateMoodBubble();
+    }
+
+    function updateWeatherDisplay() {
+      const data = WEATHER_SCENARIOS[currentScenario];
+      document.getElementById('quickWeatherIcon').innerText = data.icon;
+      document.getElementById('quickWeatherText').innerText = `${data.temp}°C · ${data.light === 'green' ? '베란다 좋음' : (data.light === 'yellow' ? '주의' : '실내 피신')}`;
+
+      const alertBox = document.getElementById('balconyAlertBox');
+      alertBox.className = `p-4 rounded-2xl cartoon-border transition-all flex flex-row items-center gap-3.5 mb-4 ${data.boxBg}`;
+      
+      const lightIcon = document.getElementById('balconyLightIcon');
+      lightIcon.className = `w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-2xl sm:text-3xl cartoon-border-sm shadow-cartoon-sm flex-shrink-0 animate-pulse ${data.lightBg}`;
+      lightIcon.innerText = data.light === 'green' ? '🟢' : (data.light === 'yellow' ? '🟡' : '🔴');
+
+      document.getElementById('balconyLightStatus').innerText = data.lightText;
+      document.getElementById('balconyLightBadge').innerText = data.badge;
+      document.getElementById('balconyLightDesc').innerText = data.desc;
+
+      document.getElementById('statTemp').innerText = `${data.temp}°C`;
+      document.getElementById('statHumidity').innerText = `${data.humidity}%`;
+      document.getElementById('statWind').innerText = `${data.wind} m/s`;
+      document.getElementById('statSun').innerText = data.sun;
+    }
+
+    function updateMoodBubble() {
+      const data = WEATHER_SCENARIOS[currentScenario];
+      const bubble = document.getElementById('plantMoodBubble');
+      if (data.light === 'green') {
+        bubble.innerText = `"주인님! 오늘 햇살과 바람이 정말 환상적이에요! 베란다에 잠깐 나가서 일광욕하고 싶어요~ ☀️"`;
+      } else if (data.light === 'red') {
+        bubble.innerText = `"으아~ 바깥 날씨가 너무 춥거나 뜨거워요! 베란다 창가 대신 포근한 거실에 쏙 안겨있을래요 🥺"`;
+      } else {
+        bubble.innerText = `"습하거나 바람이 강해서 조심해야 하는 날이에요. 흙 마름을 꼼꼼히 살펴봐 주세요! 🌱"`;
+      }
+
+      document.getElementById('homePlantCount').innerText = `${plants.length}개`;
+      const needWaterCount = plants.filter(p => calcDaysUntilWater(p) <= 0).length;
+      document.getElementById('homeWaterNeededCount').innerText = `${needWaterCount}개`;
+    }
+
+    function getTodayLog(plantId) {
+      const today = getTodayStr();
+      if (!careLogs[today]) careLogs[today] = {};
+      if (!careLogs[today][plantId]) {
+        careLogs[today][plantId] = { water: false, balcony: false, wind: false, spray: false, memo: '' };
+      }
+      return careLogs[today][plantId];
+    }
+
+    function toggleCareAction(plantId, actionType) {
+      const log = getTodayLog(plantId);
+      log[actionType] = !log[actionType];
+
+      if (actionType === 'water' && log.water) {
+        const plant = plants.find(p => p.id === plantId);
+        if (plant) {
+          plant.lastWatered = getTodayStr();
+          savePlants();
+        }
+      }
+
+      saveLogs();
+      renderHomeCareList();
+      renderWaterSchedule();
+      renderGarden();
+      updateMoodBubble();
+    }
+
+    function updateCareMemo(plantId, text) {
+      const log = getTodayLog(plantId);
+      log.memo = text;
+      saveLogs();
+    }
+
+    function renderHomeCareList() {
+      const container = document.getElementById('todayCareList');
+      if (plants.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 bg-white rounded-2xl cartoon-border-sm">
+            <span class="text-3xl block mb-1">🪴</span>
+            <p class="font-cartoon text-lg text-gray-700">등록된 반려식물이 아직 없어요!</p>
+            <p class="text-xs text-gray-500 mt-1">상단의 [+ 식물 등록] 버튼을 눌러 첫 초록이를 맞이해보세요.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      plants.forEach(p => {
+        const log = getTodayLog(p.id);
+        const daysLeft = calcDaysUntilWater(p);
+        let waterBadge = '';
+        if (daysLeft <= 0) {
+          waterBadge = `<span class="bg-rose-500 text-white font-bold text-[11px] px-2 py-0.5 rounded-full animate-bounce flex-shrink-0">물주기 D-Day! 🚿</span>`;
+        } else {
+          waterBadge = `<span class="bg-blue-100 text-blue-900 font-bold text-[11px] px-2 py-0.5 rounded-full flex-shrink-0">물주기 D-${daysLeft}</span>`;
+        }
+
+        html += `
+          <div class="cartoon-border-sm bg-white rounded-2xl p-3 sm:p-4">
+            <div class="flex items-center justify-between gap-2 border-b border-gray-100 pb-2 mb-2.5">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <img src="${p.photo || 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=200'}" class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover cartoon-border-sm flex-shrink-0" alt="${p.nickname}">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5 truncate">
+                    <h3 class="text-base sm:text-lg font-cartoon text-green-950 truncate">${p.nickname}</h3>
+                    <span class="text-[11px] text-gray-400 truncate">(${p.species})</span>
+                  </div>
+                  <p class="text-[11px] text-gray-500 font-medium truncate">${p.location}</p>
+                </div>
+              </div>
+              ${waterBadge}
+            </div>
+
+            <!-- 원터치 체크 버튼 모음 (모바일 2열 그리드) -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              <button onclick="toggleCareAction('${p.id}', 'water')" class="py-2 px-2 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm transition flex items-center justify-center gap-1 ${log.water ? 'bg-blue-500 text-white shadow-cartoon-sm' : 'bg-gray-50 text-gray-700 hover:bg-blue-50'}">
+                <span>🚿</span>
+                <span>${log.water ? '물 완료!' : '물 줬어요'}</span>
+              </button>
+
+              <button onclick="toggleCareAction('${p.id}', 'balcony')" class="py-2 px-2 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm transition flex items-center justify-center gap-1 ${log.balcony ? 'bg-amber-400 text-green-950 shadow-cartoon-sm' : 'bg-gray-50 text-gray-700 hover:bg-amber-50'}">
+                <span>☀️</span>
+                <span>${log.balcony ? '베란다 완료' : '베란다 둠'}</span>
+              </button>
+
+              <button onclick="toggleCareAction('${p.id}', 'wind')" class="py-2 px-2 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm transition flex items-center justify-center gap-1 ${log.wind ? 'bg-emerald-500 text-white shadow-cartoon-sm' : 'bg-gray-50 text-gray-700 hover:bg-emerald-50'}">
+                <span>🍃</span>
+                <span>${log.wind ? '통풍 완료' : '바람 쐬어줌'}</span>
+              </button>
+
+              <button onclick="toggleCareAction('${p.id}', 'spray')" class="py-2 px-2 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm transition flex items-center justify-center gap-1 ${log.spray ? 'bg-sky-400 text-white shadow-cartoon-sm' : 'bg-gray-50 text-gray-700 hover:bg-sky-50'}">
+                <span>💦</span>
+                <span>${log.spray ? '분무 완료' : '잎 닦기/분무'}</span>
+              </button>
+            </div>
+
+            <div class="mt-2.5 pt-2 border-t border-gray-100 flex items-center gap-1.5">
+              <span class="text-[11px] font-bold text-gray-500 flex-shrink-0">📝 메모:</span>
+              <input type="text" value="${log.memo || ''}" onchange="updateCareMemo('${p.id}', this.value)" placeholder="예: 새 잎이 더 빳빳해졌다!" class="flex-grow text-xs bg-gray-50 cartoon-border-sm rounded-lg px-2 py-1 focus:bg-white focus:outline-none">
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function calcDaysUntilWater(plant) {
+      if (!plant.lastWatered) return 0;
+      const last = new Date(plant.lastWatered);
+      const next = new Date(last);
+      next.setDate(last.getDate() + parseInt(plant.waterCycle));
+      
+      const today = new Date(getTodayStr());
+      const diffTime = next - today;
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    function renderWaterSchedule() {
+      const container = document.getElementById('waterScheduleGrid');
+      if (plants.length === 0) {
+        container.innerHTML = `<p class="text-xs text-gray-500 col-span-full text-center py-3">등록된 식물이 없습니다.</p>`;
+        return;
+      }
+
+      let html = '';
+      plants.forEach(p => {
+        const daysLeft = calcDaysUntilWater(p);
+        let statusBadge = '';
+        let cardBg = 'bg-white';
+        let tipText = '';
+
+        if (daysLeft <= 0) {
+          statusBadge = `<span class="bg-rose-500 text-white font-bold text-[10px] px-2 py-0.5 rounded-full">🚿 D-Day</span>`;
+          cardBg = 'bg-rose-50/70';
+          tipText = '손가락으로 겉흙을 2cm 깊이로 만져보고 말랐다면 흠뻑 주세요!';
+        } else if (daysLeft <= 2) {
+          statusBadge = `<span class="bg-yellow-400 text-yellow-950 font-bold text-[10px] px-2 py-0.5 rounded-full">⏳ D-${daysLeft}</span>`;
+          cardBg = 'bg-yellow-50/50';
+          tipText = '흙이 서서히 말라가고 있어요. 내일쯤 흙 상태를 점검하세요.';
+        } else {
+          statusBadge = `<span class="bg-green-100 text-green-900 font-bold text-[10px] px-2 py-0.5 rounded-full">💧 D-${daysLeft}</span>`;
+          tipText = '아직 흙 속에 수분이 넉넉해요. 과습을 조심하세요!';
+        }
+
+        html += `
+          <div class="cartoon-border-sm rounded-xl p-3 ${cardBg} flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="font-cartoon text-base text-green-900 truncate">${p.nickname}</span>
+                ${statusBadge}
+              </div>
+              <p class="text-[11px] text-gray-500 mb-1.5">주기: <b>${p.waterCycle}일</b> (최근 준 날: ${p.lastWatered || '없음'})</p>
+              <p class="text-xs text-gray-700 bg-white p-2 rounded-lg cartoon-border-sm leading-relaxed">${tipText}</p>
+            </div>
+            <button onclick="quickWaterPlant('${p.id}')" class="mt-2.5 w-full py-1.5 cartoon-btn bg-blue-500 text-white rounded-lg font-cartoon text-xs flex items-center justify-center gap-1">
+              <span>🚿</span> 오늘 물주기 완료
+            </button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function quickWaterPlant(plantId) {
+      toggleCareAction(plantId, 'water');
+      alert('🚿 물주기 완료! 다음 물주는 날이 자동으로 갱신되었습니다.');
+    }
+
+    function renderGarden() {
+      document.getElementById('gardenPlantTotal').innerText = plants.length;
+      const grid = document.getElementById('gardenPlantGrid');
+      
+      if (plants.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-12 bg-white rounded-2xl cartoon-border p-4">
+            <span class="text-5xl block mb-2">🪴</span>
+            <p class="font-cartoon text-xl text-gray-700">우리 집 정원이 비어있어요!</p>
+            <p class="text-xs text-gray-500 mt-1 mb-4">첫 반려식물을 등록하고 맞춤 케어를 시작해 보세요.</p>
+            <button onclick="openAddPlantModal()" class="cartoon-btn bg-plant-primary text-white font-cartoon text-base px-5 py-2.5 rounded-xl">
+              🌱 새 식물 입양하기
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      plants.forEach(p => {
+        const daysTogether = calcDaysTogether(p.adoptDate);
+        const daysLeft = calcDaysUntilWater(p);
+
+        html += `
+          <div class="cartoon-card overflow-hidden flex flex-col justify-between">
+            <div class="relative h-40 sm:h-44 bg-gray-100 overflow-hidden cursor-pointer" onclick="openDetailModal('${p.id}')">
+              <img src="${p.photo || 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=500'}" alt="${p.nickname}" class="w-full h-full object-cover">
+              <span class="absolute top-2.5 left-2.5 bg-white/95 cartoon-border-sm px-2.5 py-0.5 rounded-full font-cartoon text-[11px] text-green-950">
+                함께한 지 ${daysTogether}일째 🌱
+              </span>
+              <span class="absolute top-2.5 right-2.5 bg-plant-butter cartoon-border-sm px-2 py-0.5 rounded-full font-bold text-[10px] text-gray-900 truncate max-w-[120px]">
+                ${p.location}
+              </span>
+            </div>
+
+            <div class="p-4 flex-grow">
+              <div class="flex items-center justify-between gap-1 mb-1.5">
+                <div class="min-w-0">
+                  <h3 class="text-xl font-cartoon text-green-950 truncate cursor-pointer hover:underline" onclick="openDetailModal('${p.id}')">${p.nickname}</h3>
+                  <p class="text-[11px] text-gray-400 truncate">${p.species}</p>
+                </div>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full cartoon-border-sm flex-shrink-0 ${daysLeft <= 0 ? 'bg-rose-400 text-white' : 'bg-blue-100 text-blue-900'}">
+                  ${daysLeft <= 0 ? '물주기 오늘!' : `물 D-${daysLeft}`}
+                </span>
+              </div>
+
+              <!-- 4종 환경 레시피 요약 뱃지 -->
+              <div class="grid grid-cols-2 gap-1.5 my-2.5 text-[11px]">
+                <div class="bg-plant-light p-1.5 rounded-lg cartoon-border-sm">
+                  <span class="font-bold text-green-900 block">🌡️ 적정온도</span>
+                  <span class="text-gray-700 truncate block">${p.tempRange}</span>
+                </div>
+                <div class="bg-yellow-50 p-1.5 rounded-lg cartoon-border-sm">
+                  <span class="font-bold text-amber-900 block">☀️ 햇빛채광</span>
+                  <span class="text-gray-700 truncate block">${p.sunLight}</span>
+                </div>
+                <div class="bg-emerald-50 p-1.5 rounded-lg cartoon-border-sm">
+                  <span class="font-bold text-emerald-900 block">🍃 통풍환기</span>
+                  <span class="text-gray-700 truncate block">${p.windReq}</span>
+                </div>
+                <div class="bg-sky-50 p-1.5 rounded-lg cartoon-border-sm">
+                  <span class="font-bold text-sky-900 block">🏠 실내적응</span>
+                  <span class="text-gray-700 truncate block">${p.indoorOnly}</span>
+                </div>
+              </div>
+
+              <p class="text-xs text-gray-600 italic bg-gray-50 p-2 rounded-lg border border-dashed border-gray-200 line-clamp-2">
+                "${p.meaning || '소중한 우리 집 반려식물'}"
+              </p>
+            </div>
+
+            <div class="px-4 pb-4 pt-0 flex gap-2">
+              <button onclick="openDetailModal('${p.id}')" class="flex-1 py-1.5 cartoon-btn bg-plant-accent/40 font-cartoon text-xs sm:text-sm text-green-950 rounded-lg">
+                📖 상세 & 일지
+              </button>
+              <button onclick="deletePlant('${p.id}')" class="py-1.5 px-2.5 cartoon-border-sm rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-bold" title="삭제">
+                🗑️
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      grid.innerHTML = html;
+    }
+
+    function calcDaysTogether(adoptDate) {
+      if (!adoptDate) return 1;
+      const start = new Date(adoptDate);
+      const today = new Date(getTodayStr());
+      const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+      return diff >= 0 ? diff + 1 : 1;
+    }
+
+    function deletePlant(plantId) {
+      const plant = plants.find(p => p.id === plantId);
+      if (!plant) return;
+      if (confirm(`반려식물 '${plant.nickname}'(${plant.species})와 작별하시겠습니까?\n등록된 일지와 정보가 함께 삭제됩니다.`)) {
+        plants = plants.filter(p => p.id !== plantId);
+        growthDiary = growthDiary.filter(d => d.plantId !== plantId);
+        savePlants();
+        saveDiary();
+        renderGarden();
+        renderHomeCareList();
+        renderWaterSchedule();
+        renderGlobalTimeline();
+        updateMoodBubble();
+      }
+    }
+
+    function openDetailModal(plantId) {
+      const plant = plants.find(p => p.id === plantId);
+      if (!plant) return;
+
+      const plantDiaries = growthDiary.filter(d => d.plantId === plantId);
+      const daysTogether = calcDaysTogether(plant.adoptDate);
+
+      let diariesHtml = '';
+      if (plantDiaries.length === 0) {
+        diariesHtml = `<p class="text-xs text-gray-500 py-3 text-center">아직 등록된 성장 사진이 없어요.</p>`;
+      } else {
+        diariesHtml = `<div class="grid grid-cols-2 sm:grid-cols-3 gap-2">`;
+        plantDiaries.forEach(d => {
+          diariesHtml += `
+            <div class="cartoon-border-sm rounded-lg overflow-hidden bg-white p-1.5 text-center">
+              <img src="${d.photo}" class="w-full h-20 object-cover rounded-md mb-1" alt="기록">
+              <span class="inline-block bg-plant-butter text-[10px] font-bold px-1.5 py-0.2 rounded-full mb-0.5">${d.stamp || '기록'}</span>
+              <p class="text-[10px] font-bold text-gray-800">${d.date}</p>
+              <p class="text-[10px] text-gray-500 line-clamp-1">${d.memo || ''}</p>
+            </div>
+          `;
+        });
+        diariesHtml += `</div>`;
+      }
+
+      document.getElementById('detailContent').innerHTML = `
+        <div class="flex flex-col sm:flex-row gap-3 items-center sm:items-start text-center sm:text-left">
+          <img src="${plant.photo || 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=500'}" class="w-28 h-28 sm:w-36 sm:h-36 object-cover rounded-xl cartoon-border flex-shrink-0" alt="${plant.nickname}">
+          <div class="flex-grow min-w-0">
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
+              <span class="bg-plant-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">함께한 지 ${daysTogether}일</span>
+              <span class="text-[11px] text-gray-500">입양: ${plant.adoptDate}</span>
+            </div>
+            <h2 class="text-2xl font-cartoon text-green-950 mt-0.5">${plant.nickname}</h2>
+            <p class="text-xs text-gray-600 font-medium">${plant.species} · ${plant.location}</p>
+            
+            <div class="mt-2 p-2.5 bg-amber-50 rounded-xl cartoon-border-sm text-left">
+              <p class="text-[11px] font-bold text-amber-900 mb-0.5">🌿 꽃말과 감성 스토리</p>
+              <p class="text-xs text-gray-800 leading-relaxed">${plant.meaning || '소중한 반려식물'}</p>
+              <p class="text-xs text-gray-600 mt-1">💭 ${plant.feelings || '마음에 쉼을 줍니다.'}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 border-t-2 border-gray-100 pt-3">
+          <h3 class="text-base font-cartoon text-green-900 mb-2 flex items-center gap-1">
+            <span>📋</span> 초보 맞춤 4대 생육 환경 가이드
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="p-2.5 bg-rose-50 rounded-xl cartoon-border-sm">
+              <span class="font-bold text-rose-900 block mb-0.5">🌡️ 적정 온도 & 피해야 할 온도</span>
+              <p class="text-gray-800 leading-relaxed">${plant.tempRange}</p>
+              <p class="text-[10px] text-gray-500 mt-0.5">💡 에어컨/히터 바람 바로 앞은 피해주세요!</p>
+            </div>
+
+            <div class="p-2.5 bg-yellow-50 rounded-xl cartoon-border-sm">
+              <span class="font-bold text-amber-900 block mb-0.5">☀️ 직사광선 vs 간접광 (채광)</span>
+              <p class="text-gray-800 leading-relaxed">${plant.sunLight}</p>
+              <p class="text-[10px] text-gray-500 mt-0.5">💡 레이스 커튼을 거친 햇빛이 가장 부드럽습니다.</p>
+            </div>
+
+            <div class="p-2.5 bg-emerald-50 rounded-xl cartoon-border-sm">
+              <span class="font-bold text-emerald-900 block mb-0.5">🍃 바람을 매일 통하게 해야 하나요?</span>
+              <p class="text-gray-800 leading-relaxed">${plant.windReq}</p>
+              <p class="text-[10px] text-gray-500 mt-0.5">💡 하루 1~2시간 환기는 과습과 해충 예방의 보약!</p>
+            </div>
+
+            <div class="p-2.5 bg-sky-50 rounded-xl cartoon-border-sm">
+              <span class="font-bold text-sky-900 block mb-0.5">🏠 실내에서만 있어도 되나요?</span>
+              <p class="text-gray-800 leading-relaxed">${plant.indoorOnly}</p>
+              <p class="text-[10px] text-gray-500 mt-0.5">💡 날씨가 좋은 날엔 가끔 베란다 산책을 권장해요.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 border-t-2 border-gray-100 pt-3">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-base font-cartoon text-green-900 flex items-center gap-1">
+              <span>📸</span> ${plant.nickname}의 성장 앨범
+            </h3>
+            <button onclick="openAddDiaryModal('${plant.id}')" class="cartoon-btn bg-plant-accent/50 text-green-950 font-cartoon text-xs px-2.5 py-1 rounded-lg">
+              📷 사진 추가
+            </button>
+          </div>
+          ${diariesHtml}
+        </div>
+      `;
+
+      document.getElementById('detailModal').classList.remove('hidden');
+    }
+
+    const PLANT_TEMPLATES = {
+      monstera: {
+        species: '몬스테라 델리시오사',
+        waterCycle: 7,
+        location: '거실 창가 (부드러운 햇살)',
+        tempRange: '18~27°C (10°C 이하 냉해 주의)',
+        sunLight: '반양지 (커튼을 거친 부드러운 햇빛)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '주 1~2회 베란다 바람 권장',
+        photo: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 기쁜 소식, 깊은 배려. 찢어진 잎 사이로 아래 잎에 햇빛을 나눠주는 다정한 친구',
+        feelings: '시원스런 잎이 일상에 여유와 싱그러운 에너지를 불어넣어 줍니다.'
+      },
+      scindapsus: {
+        species: '스킨답서스',
+        waterCycle: 6,
+        location: '거실 테이블/선반',
+        tempRange: '16~25°C (추위에 약함)',
+        sunLight: '반음지 (실내 형광등으로도 충분)',
+        windReq: '적당한 실내 공기 순환이면 충분',
+        indoorOnly: '실내에서만 키워도 무방함',
+        photo: 'https://images.unsplash.com/photo-1596724803693-e08713d2f2d9?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 다시 찾은 행복. 악조건에서도 줄기를 뻗는 강한 생명력',
+        feelings: '초보자도 절대 실패하지 않는 자신감을 선물해 줍니다.'
+      },
+      stuckyi: {
+        species: '스투키',
+        waterCycle: 30,
+        location: '침실 협탁',
+        tempRange: '15~30°C (생명력 최강)',
+        sunLight: '양지 (직사광선도 거뜬)',
+        windReq: '적당한 실내 공기 순환이면 충분',
+        indoorOnly: '실내에서만 키워도 무방함',
+        photo: 'https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 관용. 밤에 신선한 산소를 선물하는 든든한 파수꾼',
+        feelings: '물주기를 조금 잊어도 묵묵히 곁을 지켜주는 듬직함을 느낍니다.'
+      },
+      tablepalm: {
+        species: '테이블야자',
+        waterCycle: 5,
+        location: '서재 책상 위',
+        tempRange: '18~24°C',
+        sunLight: '반음지 (실내 형광등으로도 충분)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '실내에서만 키워도 무방함',
+        photo: 'https://images.unsplash.com/photo-1512428813834-c702c7702b78?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 마음의 평화. 작은 야자수 숲 같은 휴식감',
+        feelings: '살랑거리는 잎을 바라보며 복잡했던 머릿속이 맑아집니다.'
+      },
+      sansevieria: {
+        species: '산세베리아',
+        waterCycle: 20,
+        location: '거실 코너',
+        tempRange: '15~28°C',
+        sunLight: '반양지 (커튼 햇빛 권장)',
+        windReq: '적당한 실내 공기 순환이면 충분',
+        indoorOnly: '실내에서만 키워도 무방함',
+        photo: 'https://images.unsplash.com/photo-1593482892290-f54927ae1eb6?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 불멸, 영원. 음이온 방출 1위 공기정화 식물',
+        feelings: '공간을 정화해주고 늘 단단하고 곧은 힘을 전해줍니다.'
+      },
+      rubber: {
+        species: '인도고무나무',
+        waterCycle: 8,
+        location: '거실 창가',
+        tempRange: '18~28°C',
+        sunLight: '반양지 (커튼 햇빛 권장)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '주 1~2회 베란다 바람 권장',
+        photo: 'https://images.unsplash.com/photo-1598880940371-c756e015fea1?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 영원한 행복. 도톰하고 둥근 잎이 매력적인 나무',
+        feelings: '나무 한 그루가 거실에 든든한 안정감을 만들어줍니다.'
+      }
+    };
+
+    function applyPlantTemplate(key) {
+      if (!key || !PLANT_TEMPLATES[key]) return;
+      const t = PLANT_TEMPLATES[key];
+      document.getElementById('plantSpecies').value = t.species;
+      document.getElementById('plantNickname').value = t.species.split(' ')[0] + '이';
+      document.getElementById('plantWaterCycle').value = t.waterCycle;
+      document.getElementById('plantLocation').value = t.location;
+      document.getElementById('plantTempRange').value = t.tempRange;
+      document.getElementById('plantSunLight').value = t.sunLight;
+      document.getElementById('plantWindReq').value = t.windReq;
+      document.getElementById('plantIndoorOnly').value = t.indoorOnly;
+      document.getElementById('plantPhotoData').value = t.photo;
+      document.getElementById('photoPreviewImg').src = t.photo;
+      document.getElementById('photoPreviewContainer').classList.remove('hidden');
+    }
+
+    function openAddPlantModal() {
+      document.getElementById('plantForm').reset();
+      document.getElementById('editPlantId').value = '';
+      document.getElementById('plantAdoptDate').value = getTodayStr();
+      document.getElementById('photoPreviewContainer').classList.add('hidden');
+      document.getElementById('plantModalTitle').innerHTML = `<span>🌱</span> 새 반려식물 입양 등록`;
+      document.getElementById('plantModal').classList.remove('hidden');
+    }
+
+    function previewPlantPhoto(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('plantPhotoData').value = e.target.result;
+          document.getElementById('photoPreviewImg').src = e.target.result;
+          document.getElementById('photoPreviewContainer').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function handlePlantSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('editPlantId').value || 'plant_' + Date.now();
+      const templateKey = document.getElementById('plantTemplateSelect').value;
+      const template = PLANT_TEMPLATES[templateKey] || {};
+
+      const newPlant = {
+        id: id,
+        species: document.getElementById('plantSpecies').value,
+        nickname: document.getElementById('plantNickname').value,
+        adoptDate: document.getElementById('plantAdoptDate').value,
+        waterCycle: parseInt(document.getElementById('plantWaterCycle').value) || 7,
+        lastWatered: getTodayStr(),
+        location: document.getElementById('plantLocation').value,
+        tempRange: document.getElementById('plantTempRange').value,
+        sunLight: document.getElementById('plantSunLight').value,
+        windReq: document.getElementById('plantWindReq').value,
+        indoorOnly: document.getElementById('plantIndoorOnly').value,
+        photo: document.getElementById('plantPhotoData').value || template.photo || 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=500',
+        meaning: template.meaning || '정성을 쏟을수록 기쁨을 주는 초록 친구',
+        feelings: template.feelings || '함께 호흡하며 마음에 평온한 쉼을 줍니다.'
+      };
+
+      const existingIndex = plants.findIndex(p => p.id === id);
+      if (existingIndex >= 0) {
+        plants[existingIndex] = newPlant;
+      } else {
+        plants.push(newPlant);
+      }
+
+      savePlants();
+      closeModal('plantModal');
+      renderGarden();
+      renderHomeCareList();
+      renderWaterSchedule();
+      updateMoodBubble();
+      alert(`🎉 새로운 반려식물 '${newPlant.nickname}'이(가) 등록되었습니다!`);
+    }
+
+    function openAddDiaryModal(preselectedPlantId = '') {
+      if (plants.length === 0) {
+        alert('먼저 반려식물을 등록해 주세요!');
+        openAddPlantModal();
+        return;
+      }
+
+      const select = document.getElementById('diaryPlantSelect');
+      select.innerHTML = plants.map(p => `<option value="${p.id}" ${p.id === preselectedPlantId ? 'selected' : ''}>${p.nickname} (${p.species})</option>`).join('');
+
+      document.getElementById('diaryForm').reset();
+      document.getElementById('diaryDate').value = getTodayStr();
+      document.getElementById('diaryPhotoData').value = '';
+      document.getElementById('diaryPreviewBox').classList.add('hidden');
+      document.getElementById('diaryModal').classList.remove('hidden');
+    }
+
+    function previewDiaryPhoto(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('diaryPhotoData').value = e.target.result;
+          document.getElementById('diaryPreviewImg').src = e.target.result;
+          document.getElementById('diaryPreviewBox').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function selectStamp(btn, stampText) {
+      document.querySelectorAll('.stamp-btn').forEach(b => b.classList.remove('ring-2', 'ring-green-800'));
+      btn.classList.add('ring-2', 'ring-green-800');
+      document.getElementById('diaryStamp').value = stampText;
+    }
+
+    function handleDiarySubmit(e) {
+      e.preventDefault();
+      const photoData = document.getElementById('diaryPhotoData').value;
+      if (!photoData) {
+        alert('성장 사진을 선택해 주세요!');
+        return;
+      }
+
+      const newDiary = {
+        id: 'diary_' + Date.now(),
+        plantId: document.getElementById('diaryPlantSelect').value,
+        date: document.getElementById('diaryDate').value,
+        stamp: document.getElementById('diaryStamp').value,
+        memo: document.getElementById('diaryMemo').value,
+        photo: photoData
+      };
+
+      growthDiary.unshift(newDiary);
+      saveDiary();
+      closeModal('diaryModal');
+      renderGlobalTimeline();
+      alert('📸 성장 사진 일지가 기록되었습니다!');
+    }
+
+    function renderGlobalTimeline() {
+      const container = document.getElementById('globalPhotoTimeline');
+      if (growthDiary.length === 0) {
+        container.innerHTML = `<p class="col-span-full text-center text-xs text-gray-500 py-4">아직 기록된 사진이 없어요.</p>`;
+        return;
+      }
+
+      let html = '';
+      growthDiary.slice(0, 8).forEach(d => {
+        const plant = plants.find(p => p.id === d.plantId);
+        const plantName = plant ? plant.nickname : '반려식물';
+
+        html += `
+          <div class="cartoon-border-sm rounded-xl overflow-hidden bg-white p-2 shadow-cartoon-sm flex flex-col justify-between">
+            <div>
+              <div class="relative rounded-lg overflow-hidden mb-1.5">
+                <img src="${d.photo}" class="w-full h-24 sm:h-28 object-cover" alt="${plantName}">
+                <span class="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1 py-0.2 rounded">${d.date}</span>
+              </div>
+              <div class="flex items-center justify-between mb-0.5">
+                <span class="font-cartoon text-xs text-green-950 truncate">${plantName}</span>
+                <span class="text-[9px] bg-plant-butter px-1 py-0.2 rounded-full font-bold text-gray-800 truncate">${d.stamp || '기록'}</span>
+              </div>
+              <p class="text-[11px] text-gray-600 line-clamp-1 leading-tight">${d.memo || '무럭무럭 자라는 중'}</p>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function filterRecommend(category) {
+      document.querySelectorAll('.rec-filter').forEach(btn => {
+        btn.classList.remove('bg-plant-primary', 'text-white', 'shadow-cartoon-sm');
+        btn.classList.add('bg-white', 'text-gray-800');
+      });
+      const activeBtn = document.getElementById(`recFilter-${category}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('bg-white', 'text-gray-800');
+        activeBtn.classList.add('bg-plant-primary', 'text-white', 'shadow-cartoon-sm');
+      }
+      renderRecommendations(category);
+    }
+
+    function renderRecommendations(category) {
+      const container = document.getElementById('recommendGrid');
+      const filtered = category === 'all' ? RECOMMEND_PLANTS : RECOMMEND_PLANTS.filter(p => p.category === category);
+
+      let html = '';
+      filtered.forEach(p => {
+        html += `
+          <div class="cartoon-card overflow-hidden flex flex-col justify-between">
+            <div>
+              <div class="relative h-36 sm:h-40 overflow-hidden">
+                <img src="${p.photo}" class="w-full h-full object-cover" alt="${p.name}">
+                <span class="absolute top-2.5 left-2.5 bg-white cartoon-border-sm px-2.5 py-0.5 rounded-full font-cartoon text-[11px] text-green-950">
+                  ${p.tag}
+                </span>
+              </div>
+              <div class="p-3.5 sm:p-4">
+                <h3 class="text-xl font-cartoon text-green-950 mb-1">${p.name}</h3>
+                <p class="text-xs text-gray-700 leading-relaxed mb-3">${p.desc}</p>
+                
+                <div class="grid grid-cols-3 gap-1.5 text-[11px] mb-3">
+                  <div class="bg-blue-50 p-1.5 rounded-lg cartoon-border-sm text-center">
+                    <span class="text-blue-900 font-bold block text-[10px]">💧 물주기</span>
+                    <span class="text-gray-600 text-[10px] truncate block">${p.water}</span>
+                  </div>
+                  <div class="bg-amber-50 p-1.5 rounded-lg cartoon-border-sm text-center">
+                    <span class="text-amber-900 font-bold block text-[10px]">☀️ 햇빛</span>
+                    <span class="text-gray-600 text-[10px] truncate block">${p.sun}</span>
+                  </div>
+                  <div class="bg-rose-50 p-1.5 rounded-lg cartoon-border-sm text-center">
+                    <span class="text-rose-900 font-bold block text-[10px]">🌡️ 온도</span>
+                    <span class="text-gray-600 text-[10px] truncate block">${p.temp}</span>
+                  </div>
+                </div>
+
+                <div class="bg-plant-light/60 p-2.5 rounded-xl cartoon-border-sm">
+                  <p class="text-[11px] font-bold text-green-900 mb-0.5">💖 감성 이야기</p>
+                  <p class="text-xs text-gray-800 leading-relaxed italic">${p.meaning}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3.5 sm:p-4 pt-0">
+              <button onclick="adoptFromRecommend('${p.name}')" class="w-full py-2 cartoon-btn bg-plant-accent/50 text-green-950 rounded-xl font-cartoon text-xs sm:text-sm flex items-center justify-center gap-1.5">
+                <span>🌱</span> 우리 집에 입양하기
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function adoptFromRecommend(plantName) {
+      openAddPlantModal();
+      document.getElementById('plantSpecies').value = plantName;
+      document.getElementById('plantNickname').value = plantName + '이';
+    }
+
+    function renderHistoryArticles() {
+      const container = document.getElementById('historyArticleGrid');
+      let html = '';
+      HISTORY_ARTICLES.forEach(art => {
+        html += `
+          <div class="cartoon-card p-4 sm:p-5 bg-white flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-1 mb-1.5">
+                <span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full cartoon-border-sm">${art.category}</span>
+                <span class="text-[10px] text-gray-400 font-medium">${art.date}</span>
+              </div>
+              <h3 class="text-base sm:text-lg font-cartoon text-green-950 mb-1.5 leading-snug">${art.title}</h3>
+              <p class="text-xs font-bold text-gray-700 mb-2 bg-gray-50 p-2 rounded-lg cartoon-border-sm leading-relaxed">${art.summary}</p>
+              <p class="text-xs text-gray-600 leading-relaxed">${art.content}</p>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function showClinicModal(problemKey) {
+      const item = CLINIC_DATA[problemKey];
+      if (!item) return;
+
+      document.getElementById('clinicModalContent').innerHTML = `
+        <div class="text-center mb-3">
+          <span class="text-4xl block mb-1">🩺</span>
+          <h3 class="text-lg sm:text-xl font-cartoon text-rose-900 pr-6">${item.title}</h3>
+        </div>
+
+        <div class="space-y-3 text-xs sm:text-sm text-gray-800">
+          <div class="bg-rose-50 p-3 rounded-xl cartoon-border-sm">
+            <span class="font-bold text-rose-950 block mb-0.5">🔍 주 원인 진단:</span>
+            <p class="leading-relaxed">${item.cause}</p>
+          </div>
+
+          <div class="bg-amber-50 p-3 rounded-xl cartoon-border-sm">
+            <span class="font-bold text-amber-950 block mb-0.5">📋 스스로 체크해보기:</span>
+            <p class="leading-relaxed whitespace-pre-line text-xs">${item.check}</p>
+          </div>
+
+          <div class="bg-green-50 p-3 rounded-xl cartoon-border-sm">
+            <span class="font-bold text-green-950 block mb-0.5">💊 닥터의 긴급 처방전:</span>
+            <p class="leading-relaxed whitespace-pre-line font-medium text-xs sm:text-sm">${item.cure}</p>
+          </div>
+        </div>
+
+        <button onclick="closeModal('clinicModal')" class="mt-4 w-full py-2 cartoon-btn bg-plant-primary text-white rounded-xl font-cartoon text-sm">
+          처방전 확인 완료! 🌿
+        </button>
+      `;
+
+      document.getElementById('clinicModal').classList.remove('hidden');
+    }
+
+    const MBTI_QUESTIONS = [
+      {
+        q: "1. 평소 당신의 생활 패턴은 어떤가요?",
+        a1: "집에 있는 시간이 길고 매일 잎을 관찰하고 싶어요! 🏡",
+        a2: "바쁜 편이라 가끔 물주는 걸 잊을 수도 있어요 🏃"
+      },
+      {
+        q: "2. 우리 집 채광(햇빛) 환경은 어떤가요?",
+        a1: "베란다나 창문으로 햇빛이 잘 들어요 ☀️",
+        a2: "햇빛이 적고 실내 조명이 주를 이뤄요 💡"
+      },
+      {
+        q: "3. 식물에게서 가장 얻고 싶은 가치는?",
+        a1: "새 잎이 쑥쑥 자라나는 눈부신 성장감! 🌱",
+        a2: "신경 덜 써도 늘 묵묵하게 자리를 지키는 안정감 🪴"
+      }
+    ];
+    let mbtiScore = 0;
+    let mbtiStep = 0;
+
+    function openMbtiModal() {
+      mbtiScore = 0;
+      mbtiStep = 0;
+      renderMbtiStep();
+      document.getElementById('mbtiModal').classList.remove('hidden');
+    }
+
+    function renderMbtiStep() {
+      const area = document.getElementById('mbtiQuestionArea');
+      if (mbtiStep >= MBTI_QUESTIONS.length) {
+        let resultPlant = '';
+        let resultDesc = '';
+        if (mbtiScore >= 2) {
+          resultPlant = '몬스테라 델리시오사 🌿';
+          resultDesc = '애정과 햇살을 듬뿍 주며 새 잎 돋는 경이로움을 만끽할 준비가 된 당신에게 최고의 식물!';
+        } else if (mbtiScore === 1) {
+          resultPlant = '골든 스킨답서스 🍃';
+          resultDesc = '실내 조명 아래서도 쑥쑥 자라며 행복을 선물하는 스킨답서스가 부담 없는 파트너!';
+        } else {
+          resultPlant = '스투키 & 산세베리아 🪴';
+          resultDesc = '물주기를 잊어도 끄떡없고 밤마다 맑은 산소를 뿜어주는 든든한 보디가드!';
+        }
+
+        area.innerHTML = `
+          <div class="text-center py-3 bg-plant-light rounded-xl cartoon-border-sm">
+            <span class="text-4xl block mb-1">🎉</span>
+            <span class="text-[11px] font-bold text-green-800">당신에게 추천하는 첫 반려식물은?</span>
+            <h4 class="text-xl font-cartoon text-green-950 mt-0.5 mb-1">${resultPlant}</h4>
+            <p class="text-xs text-gray-700 leading-relaxed px-3">${resultDesc}</p>
+          </div>
+          <button onclick="adoptFromRecommend('${resultPlant.split(' ')[0]}'); closeModal('mbtiModal');" class="w-full py-2.5 cartoon-btn bg-plant-primary text-white rounded-xl font-cartoon text-sm">
+            이 식물 입양하러 가기 🌱
+          </button>
+        `;
+        return;
+      }
+
+      const q = MBTI_QUESTIONS[mbtiStep];
+      area.innerHTML = `
+        <div class="p-2.5 bg-gray-50 rounded-xl cartoon-border-sm mb-2">
+          <h4 class="font-cartoon text-base text-green-950">${q.q}</h4>
+        </div>
+        <div class="space-y-1.5">
+          <button onclick="answerMbti(1)" class="w-full p-2.5 text-left cartoon-border-sm rounded-xl font-medium text-xs text-gray-800 hover:bg-green-100 transition">
+            ${q.a1}
+          </button>
+          <button onclick="answerMbti(0)" class="w-full p-2.5 text-left cartoon-border-sm rounded-xl font-medium text-xs text-gray-800 hover:bg-amber-100 transition">
+            ${q.a2}
+          </button>
+        </div>
+        <p class="text-[11px] text-gray-400 text-center mt-1.5">${mbtiStep + 1} / ${MBTI_QUESTIONS.length}</p>
+      `;
+    }
+
+    function answerMbti(score) {
+      mbtiScore += score;
+      mbtiStep++;
+      renderMbtiStep();
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    window.onclick = function(event) {
+      ['plantModal', 'detailModal', 'diaryModal', 'clinicModal', 'mbtiModal'].forEach(id => {
+        const modal = document.getElementById(id);
+        if (event.target === modal) {
+          modal.classList.add('hidden');
+        }
+      });
+    };
+
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
