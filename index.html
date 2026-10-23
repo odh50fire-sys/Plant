@@ -946,9 +946,12 @@
       '스투키': {
         name: '스투키',
         waterCycle: 30,
+        balconyCycle: 7,
+        windCycle: 5,
+        sprayCycle: 14,
         tempRange: '15~30°C (생명력 최강)',
         sunLight: '양지 (직사광선도 거뜬)',
-        windReq: '적당한 실내 공기 순환이면 충분',
+        windReq: '적당한 실내 공기 순환이면 충분 (5~7일 주기)',
         indoorOnly: '실내에서만 키워도 무방함',
         photo: 'https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=600&q=80',
         meaning: '꽃말: 관용. 밤에 신선한 산소를 선물하는 든든한 파수꾼',
@@ -957,6 +960,9 @@
       '테이블야자': {
         name: '테이블야자',
         waterCycle: 5,
+        balconyCycle: 3,
+        windCycle: 1,
+        sprayCycle: 2,
         tempRange: '18~24°C',
         sunLight: '반음지 (실내 형광등으로도 충분)',
         windReq: '매일 1~2시간 이상 환기 필수',
@@ -968,9 +974,12 @@
       '산세베리아': {
         name: '산세베리아',
         waterCycle: 20,
+        balconyCycle: 7,
+        windCycle: 5,
+        sprayCycle: 14,
         tempRange: '15~28°C',
         sunLight: '반양지 (커튼 햇빛 권장)',
-        windReq: '적당한 실내 공기 순환이면 충분',
+        windReq: '적당한 실내 공기 순환이면 충분 (5~7일 주기)',
         indoorOnly: '실내에서만 키워도 무방함',
         photo: 'https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=600&q=80',
         meaning: '꽃말: 불멸, 영원. 음이온 방출 1위 공기정화 식물',
@@ -1145,10 +1154,16 @@
         adoptDate: '2026-08-20',
         waterCycle: 25,
         lastWatered: '2026-10-05',
+        balconyCycle: 7,
+        lastBalcony: '2026-10-20',
+        windCycle: 5,
+        lastWind: '2026-10-23',
+        sprayCycle: 14,
+        lastSpray: '2026-10-15',
         location: '침실 협탁',
         tempRange: '15~30°C (생명력 최강)',
         sunLight: '양지·반음지 모두 가능 (직사광선도 거뜬)',
-        windReq: '가끔 환기해주면 흙이 잘 말라요',
+        windReq: '가끔 환기해주면 흙이 잘 말라요 (5~7일 주기)',
         indoorOnly: '실내 전용 가능 (물만 아끼면 절대 안 죽어요)',
         photo: 'https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=600&q=80',
         meaning: '꽃말: 관용, 불굴. 밤에 음이온과 산소를 내뿜어 편안한 잠자리를 지켜줍니다.',
@@ -1523,7 +1538,26 @@
 
     function getCareConfig(plant, actionType) {
       const cfg = CARE_ACTIONS_CONFIG[actionType] || CARE_ACTIONS_CONFIG.water;
-      const cycle = parseInt(plant[cfg.cycleKey]) || cfg.defaultCycle;
+
+      // 스투키, 산세베리아, 선인장, 다육식물 등 건조지대 다육 식물인지 판별
+      const sp = ((plant.species || '') + ' ' + (plant.nickname || '')).toLowerCase();
+      const isSucculent = sp.includes('스투키') || sp.includes('산세베리아') || sp.includes('다육') || sp.includes('선인장') || sp.includes('하월시아') || (parseInt(plant.waterCycle) >= 15);
+
+      let defaultCycle = cfg.defaultCycle;
+      if (isSucculent) {
+        if (actionType === 'wind') defaultCycle = 5;      // 스투키는 매일 환기할 필요 없이 5~7일(주 1회)이면 충분!
+        if (actionType === 'balcony') defaultCycle = 7;   // 은은한 일광욕 7일 주기
+        if (actionType === 'spray') defaultCycle = 14;    // 잎 분무 자주 하면 썩을 수 있어 먼지 털기 수준 14일 주기
+      }
+
+      let cycle = parseInt(plant[cfg.cycleKey]);
+      // 만약 스투키/다육식물인데 windCycle이 1일(매일)로 설정되어 있다면 자동으로 5일로 보정
+      if (isSucculent && actionType === 'wind' && (!cycle || cycle === 1)) {
+        cycle = 5;
+      } else if (!cycle) {
+        cycle = defaultCycle;
+      }
+
       const lastDate = plant[cfg.lastDateKey] || plant.lastWatered || plant.adoptDate || getTodayStr();
       return { ...cfg, cycle, lastDate };
     }
@@ -3051,7 +3085,7 @@
 
         if (nextAnyCare) {
           const nextAnyStr = `${nextAnyCare.cfg.emoji} [${nextAnyCare.plant.nickname}] ${nextAnyCare.cfg.name} (D-${nextAnyCare.days})`;
-          const nextWaterStr = nextWaterCare ? `🚿 [${nextWaterCare.plant.nickname}] 물주기 (D-${nextWaterCare.days}, ${nextWaterCare.dateStr})` : '';
+          const nextWaterStr = nextWaterCare ? `🚿 [${nextWaterCare.plant.nickname}] 물주기: ${nextWaterCare.dateStr} (D-${nextWaterCare.days})` : '모든 식물 수분 넉넉함';
 
           container.innerHTML = `
             <div class="cartoon-card p-3.5 sm:p-4 bg-gradient-to-r from-emerald-50 via-teal-50 to-blue-50 border-emerald-800 shadow-cartoon animate-in fade-in zoom-in duration-150">
@@ -3063,15 +3097,15 @@
                   <div class="min-w-0">
                     <div class="flex items-center gap-1.5 mb-0.5">
                       <span class="bg-emerald-600 text-white font-bold text-[10px] sm:text-xs px-2 py-0.5 rounded-full cartoon-border-sm">
-                        ${anyCareDoneToday ? '오늘 초록 케어 완료!' : '초록이들 케어 안심 상태'}
+                        ${anyCareDoneToday ? '오늘 초록 활동 완료!' : '초록이들 케어 안심 상태'}
                       </span>
-                      <span class="text-xs text-emerald-900 font-bold">가장 빠른 다음 케어: D-${nextAnyCare.days}</span>
+                      <span class="text-xs text-emerald-900 font-bold">다음 케어: D-${nextAnyCare.days}</span>
                     </div>
                     <h3 class="font-cartoon text-base sm:text-lg text-emerald-950 truncate leading-snug">
                       다음 차례는 <span class="text-emerald-800 font-bold underline decoration-wavy">${nextAnyStr}</span> (${nextAnyCare.days === 1 ? '내일' : `${nextAnyCare.days}일 뒤`})
                     </h3>
-                    <p class="text-xs text-gray-600 font-medium truncate">
-                      ${nextWaterStr ? `다음 물주기 예정: <b>${nextWaterStr}</b>` : '모든 식물이 넉넉한 수분과 바람을 누리고 있습니다.'}
+                    <p class="text-xs text-gray-700 font-medium truncate mt-0.5">
+                      🗓️ <b>다음 물주기 일정:</b> <span class="text-blue-900 font-bold">${nextWaterStr}</span>
                     </p>
                   </div>
                 </div>
