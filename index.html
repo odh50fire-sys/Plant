@@ -200,14 +200,14 @@
         </div>
       </div>
 
-      <!-- 날씨 연동 & 베란다 외출 신호등 카드 -->
+      <!-- 날씨 연동 & 햇빛채광 신호등 카드 -->
       <section id="weatherSection" class="cartoon-card p-4 sm:p-5 bg-white">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b-2 border-gray-100 pb-3 mb-4">
           <div>
             <h2 class="text-lg sm:text-xl font-cartoon text-green-900 flex items-center gap-1.5">
-              <span>🌤️</span> 오늘 날씨 & 베란다 외출 신호등
+              <span>🌤️</span> 오늘 날씨 & 햇빛채광 신호등
             </h2>
-            <p class="text-xs text-gray-500 font-medium">날씨에 따라 베란다에 내놓아도 될지 알려드려요!</p>
+            <p class="text-xs text-gray-500 font-medium">날씨에 따라 창가 채광이나 일광욕을 시켜도 될지 알려드려요!</p>
           </div>
           <div class="flex items-center gap-1.5 w-full sm:w-auto">
             <span class="text-xs font-bold text-gray-500 flex-shrink-0">날씨모드:</span>
@@ -561,10 +561,10 @@
               </div>
             </div>
 
-            <!-- 베란다 외출 -->
+            <!-- 햇빛채광 -->
             <div class="bg-white p-2 rounded-xl cartoon-border-sm">
               <span class="font-bold text-amber-900 block mb-1 flex items-center gap-1">
-                <span>☀️</span> 베란다 외출
+                <span>☀️</span> 햇빛채광
               </span>
               <div class="space-y-1">
                 <div>
@@ -572,7 +572,7 @@
                   <input type="number" id="plantBalconyCycle" required min="1" max="90" value="3" class="w-full cartoon-border-sm rounded-lg p-1 text-xs font-bold text-amber-900">
                 </div>
                 <div>
-                  <span class="text-[10px] text-gray-500 block">마지막 외출 날짜 *</span>
+                  <span class="text-[10px] text-gray-500 block">마지막 채광 날짜 *</span>
                   <input type="date" id="plantLastBalcony" required class="w-full cartoon-border-sm rounded-lg p-1 text-[11px] font-bold bg-amber-50/50">
                 </div>
               </div>
@@ -1494,14 +1494,14 @@
       },
       balcony: {
         key: 'balcony',
-        name: '베란다 외출',
+        name: '햇빛채광',
         emoji: '☀️',
         cycleKey: 'balconyCycle',
         lastDateKey: 'lastBalcony',
         defaultCycle: 3,
-        labelDone: '외출 완료!',
-        labelDDay: '외출 D-Day! ☀️',
-        labelPrefix: '외출',
+        labelDone: '채광 완료!',
+        labelDDay: '햇빛 D-Day! ☀️',
+        labelPrefix: '햇빛채광',
         activeClass: 'bg-amber-400 text-green-950 shadow-cartoon-sm',
         dDayClass: 'bg-amber-100 text-amber-950 border-2 border-amber-500 font-extrabold animate-pulse hover:bg-amber-200',
         idleClass: 'bg-gray-50 text-gray-700 hover:bg-amber-50'
@@ -1764,7 +1764,7 @@
               <p class="text-xs text-gray-700 bg-white p-2 rounded-lg cartoon-border-sm leading-relaxed">${tipText}</p>
               
               <div class="mt-2 pt-1.5 border-t border-gray-200/60 grid grid-cols-3 gap-1 text-[10px] text-center font-bold">
-                <span class="bg-amber-50 text-amber-900 rounded p-0.5 cartoon-border-sm">☀️ 외출 D-${calcDaysUntilCare(p, 'balcony')}</span>
+                <span class="bg-amber-50 text-amber-900 rounded p-0.5 cartoon-border-sm">☀️ 채광 D-${calcDaysUntilCare(p, 'balcony')}</span>
                 <span class="bg-emerald-50 text-emerald-900 rounded p-0.5 cartoon-border-sm">🍃 환기 D-${calcDaysUntilCare(p, 'wind')}</span>
                 <span class="bg-sky-50 text-sky-900 rounded p-0.5 cartoon-border-sm">💦 잎닦기 D-${calcDaysUntilCare(p, 'spray')}</span>
               </div>
@@ -1944,7 +1944,7 @@
               </div>
 
               <div class="bg-amber-50 p-1.5 rounded-xl cartoon-border-sm">
-                <span class="font-bold text-amber-900 block">☀️ 베란다</span>
+                <span class="font-bold text-amber-900 block">☀️ 햇빛채광</span>
                 <span class="text-gray-700 block text-[10px]">${plant.balconyCycle || 3}일 주기</span>
                 <span class="text-[10px] font-bold block mt-0.5 ${calcDaysUntilCare(plant, 'balcony') <= 0 ? 'text-amber-800 animate-pulse' : 'text-amber-900'}">
                   ${calcDaysUntilCare(plant, 'balcony') <= 0 ? '오늘 D-Day!' : `D-${calcDaysUntilCare(plant, 'balcony')}`}
@@ -3013,7 +3013,7 @@
         const items = [
           { key: 'water', label: '물주기', emoji: '🚿', bg: 'bg-blue-50/90', border: 'border-blue-200', text: 'text-blue-900', badge: 'bg-blue-600 text-white' },
           { key: 'wind', label: '통풍 / 환기', emoji: '🍃', bg: 'bg-emerald-50/90', border: 'border-emerald-200', text: 'text-emerald-950', badge: 'bg-emerald-600 text-white' },
-          { key: 'balcony', label: '베란다 외출', emoji: '☀️', bg: 'bg-amber-50/90', border: 'border-amber-200', text: 'text-amber-950', badge: 'bg-amber-500 text-white' },
+          { key: 'balcony', label: '햇빛채광', emoji: '☀️', bg: 'bg-amber-50/90', border: 'border-amber-200', text: 'text-amber-950', badge: 'bg-amber-500 text-white' },
           { key: 'spray', label: '잎 닦기 / 분무', emoji: '💦', bg: 'bg-sky-50/90', border: 'border-sky-200', text: 'text-sky-950', badge: 'bg-sky-600 text-white' }
         ];
 
@@ -3071,7 +3071,7 @@
         const namesText = needWaterPlants.map(p => `<strong>[${p.nickname}]</strong>`).join(', ');
         
         const subTasksArr = [];
-        if (dueBalconyTasks.length > 0) subTasksArr.push(`☀️ 외출 ${dueBalconyTasks.length}개`);
+        if (dueBalconyTasks.length > 0) subTasksArr.push(`☀️ 채광 ${dueBalconyTasks.length}개`);
         if (dueWindTasks.length > 0) subTasksArr.push(`🍃 통풍 ${dueWindTasks.length}개`);
         if (dueSprayTasks.length > 0) subTasksArr.push(`💦 잎닦기 ${dueSprayTasks.length}개`);
         const subTasksText = subTasksArr.length > 0 ? ` · 함께 할 케어: ${subTasksArr.join(' / ')}` : '';
@@ -3108,7 +3108,7 @@
       } else if (totalDueTasks > 0) {
         // [케이스 2]: 물주기는 완료/미도래이나, 베란다/통풍/잎닦기 D-Day가 있는 경우
         const dueDescArr = [];
-        if (dueBalconyTasks.length > 0) dueDescArr.push(`☀️ 베란다 외출 [${dueBalconyTasks.map(p=>p.nickname).join(',')}]`);
+        if (dueBalconyTasks.length > 0) dueDescArr.push(`☀️ 햇빛채광 [${dueBalconyTasks.map(p=>p.nickname).join(',')}]`);
         if (dueWindTasks.length > 0) dueDescArr.push(`🍃 통풍 [${dueWindTasks.map(p=>p.nickname).join(',')}]`);
         if (dueSprayTasks.length > 0) dueDescArr.push(`💦 잎 닦기 [${dueSprayTasks.map(p=>p.nickname).join(',')}]`);
 
