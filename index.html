@@ -577,7 +577,7 @@
             취소
           </button>
           <button type="submit" class="flex-1 py-2.5 cartoon-btn bg-plant-primary text-white rounded-xl font-cartoon text-base">
-            저장 완료 🌱
+            <span id="plantSubmitBtnText">저장 완료 🌱</span>
           </button>
         </div>
       </form>
@@ -1382,7 +1382,12 @@
                     <h3 class="text-base sm:text-lg font-cartoon text-green-950 truncate">${p.nickname}</h3>
                     <span class="text-[11px] text-gray-400 truncate">(${p.species})</span>
                   </div>
-                  <p class="text-[11px] text-gray-500 font-medium truncate">${p.location}</p>
+                  <div class="flex items-center gap-2">
+                    <p class="text-[11px] text-gray-500 font-medium truncate">${p.location}</p>
+                    <button onclick="openEditPlantModal('${p.id}')" class="text-[10px] text-amber-800 hover:text-amber-950 font-bold bg-amber-100 hover:bg-amber-200 px-1.5 py-0.2 rounded cartoon-border-sm flex items-center gap-0.5">
+                      <span>✏️</span>수정
+                    </button>
+                  </div>
                 </div>
               </div>
               ${waterBadge}
@@ -1552,11 +1557,14 @@
               </p>
             </div>
 
-            <div class="px-4 pb-4 pt-0 flex gap-2">
+            <div class="px-4 pb-4 pt-0 flex gap-1.5 sm:gap-2">
               <button onclick="openDetailModal('${p.id}')" class="flex-1 py-1.5 cartoon-btn bg-plant-accent/40 font-cartoon text-xs sm:text-sm text-green-950 rounded-lg">
                 📖 상세 & 일지
               </button>
-              <button onclick="deletePlant('${p.id}')" class="py-1.5 px-2.5 cartoon-border-sm rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-bold" title="삭제">
+              <button onclick="openEditPlantModal('${p.id}')" class="py-1.5 px-2.5 sm:px-3 cartoon-btn bg-amber-300 hover:bg-amber-400 text-amber-950 font-cartoon text-xs rounded-lg flex items-center gap-1" title="등록 정보 수정">
+                <span>✏️</span> 수정
+              </button>
+              <button onclick="deletePlant('${p.id}')" class="py-1.5 px-2 sm:px-2.5 cartoon-border-sm rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-bold" title="삭제">
                 🗑️
               </button>
             </div>
@@ -1621,6 +1629,9 @@
             <div class="flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
               <span class="bg-plant-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">함께한 지 ${daysTogether}일</span>
               <span class="text-[11px] text-gray-500">입양: ${plant.adoptDate}</span>
+              <button onclick="closeModal('detailModal'); openEditPlantModal('${plant.id}');" class="cartoon-btn bg-amber-300 hover:bg-amber-400 text-amber-950 font-cartoon text-xs px-2.5 py-0.5 rounded-lg flex items-center gap-1 shadow-cartoon-sm ml-auto">
+                <span>✏️</span> 등록정보 수정
+              </button>
             </div>
             <h2 class="text-2xl font-cartoon text-green-950 mt-0.5">${plant.nickname}</h2>
             <p class="text-xs text-gray-600 font-medium">${plant.species} · ${plant.location}</p>
@@ -1684,9 +1695,44 @@
       document.getElementById('plantForm').reset();
       document.getElementById('editPlantId').value = '';
       document.getElementById('plantAdoptDate').value = getTodayStr();
+      document.getElementById('plantPhotoData').value = '';
       document.getElementById('photoPreviewContainer').classList.add('hidden');
       document.getElementById('lookupFeedback').classList.add('hidden');
       document.getElementById('plantModalTitle').innerHTML = `<span>🌱</span> 새 반려식물 입양 등록`;
+      const submitText = document.getElementById('plantSubmitBtnText');
+      if (submitText) submitText.innerText = '저장 완료 🌱';
+      document.getElementById('plantModal').classList.remove('hidden');
+    }
+
+    function openEditPlantModal(plantId) {
+      const plant = plants.find(p => p.id === plantId);
+      if (!plant) return;
+
+      document.getElementById('plantForm').reset();
+      document.getElementById('editPlantId').value = plant.id;
+      document.getElementById('plantSpecies').value = plant.species || '';
+      document.getElementById('plantNickname').value = plant.nickname || '';
+      document.getElementById('plantWaterCycle').value = plant.waterCycle || 7;
+      document.getElementById('plantAdoptDate').value = plant.adoptDate || getTodayStr();
+      document.getElementById('plantLocation').value = plant.location || '거실 창가 (부드러운 햇살)';
+      document.getElementById('plantTempRange').value = plant.tempRange || '';
+      document.getElementById('plantSunLight').value = plant.sunLight || '반양지 (커튼 햇빛 권장)';
+      document.getElementById('plantWindReq').value = plant.windReq || '매일 1~2시간 환기 필수';
+      document.getElementById('plantIndoorOnly').value = plant.indoorOnly || '실내 전용 가능 (튼튼함)';
+
+      const photoData = plant.photo || '';
+      document.getElementById('plantPhotoData').value = photoData;
+      if (photoData) {
+        document.getElementById('photoPreviewImg').src = photoData;
+        document.getElementById('photoPreviewContainer').classList.remove('hidden');
+      } else {
+        document.getElementById('photoPreviewContainer').classList.add('hidden');
+      }
+
+      document.getElementById('lookupFeedback').classList.add('hidden');
+      document.getElementById('plantModalTitle').innerHTML = `<span>✏️</span> '${plant.nickname}' 등록 정보 수정`;
+      const submitText = document.getElementById('plantSubmitBtnText');
+      if (submitText) submitText.innerText = '수정 완료 ✏️';
       document.getElementById('plantModal').classList.remove('hidden');
     }
 
@@ -1706,10 +1752,12 @@
     function handlePlantSubmit(e) {
       e.preventDefault();
       const id = document.getElementById('editPlantId').value || 'plant_' + Date.now();
+      const isEdit = !!document.getElementById('editPlantId').value;
+      const existingPlant = plants.find(p => p.id === id);
       const speciesName = document.getElementById('plantSpecies').value.trim();
 
-      let meaning = '정성을 쏟을수록 맑은 공기와 기쁨을 주는 소중한 초록 친구';
-      let feelings = '함께 호흡하며 마음에 평온한 쉼을 줍니다.';
+      let meaning = existingPlant ? existingPlant.meaning : '정성을 쏟을수록 맑은 공기와 기쁨을 주는 소중한 초록 친구';
+      let feelings = existingPlant ? existingPlant.feelings : '함께 호흡하며 마음에 평온한 쉼을 줍니다.';
       for (let k in PLANT_ENCYCLOPEDIA) {
         if (speciesName.includes(k) || k.includes(speciesName)) {
           meaning = PLANT_ENCYCLOPEDIA[k].meaning;
@@ -1724,13 +1772,13 @@
         nickname: document.getElementById('plantNickname').value,
         adoptDate: document.getElementById('plantAdoptDate').value,
         waterCycle: parseInt(document.getElementById('plantWaterCycle').value) || 7,
-        lastWatered: getTodayStr(),
+        lastWatered: existingPlant ? existingPlant.lastWatered : getTodayStr(),
         location: document.getElementById('plantLocation').value,
         tempRange: document.getElementById('plantTempRange').value,
         sunLight: document.getElementById('plantSunLight').value,
         windReq: document.getElementById('plantWindReq').value,
         indoorOnly: document.getElementById('plantIndoorOnly').value,
-        photo: document.getElementById('plantPhotoData').value || FALLBACK_PLANT_IMG,
+        photo: document.getElementById('plantPhotoData').value || (existingPlant ? existingPlant.photo : FALLBACK_PLANT_IMG),
         meaning: meaning,
         feelings: feelings
       };
@@ -1748,7 +1796,7 @@
       renderHomeCareList();
       renderWaterSchedule();
       updateMoodBubble();
-      alert(`🎉 새로운 반려식물 '${newPlant.nickname}'이(가) 등록되었습니다!`);
+      alert(isEdit ? `✏️ '${newPlant.nickname}'의 등록 정보가 성공적으로 수정되었습니다!` : `🎉 새로운 반려식물 '${newPlant.nickname}'이(가) 등록되었습니다!`);
     }
 
     function openAddDiaryModal(preselectedPlantId = '') {
