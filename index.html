@@ -469,6 +469,15 @@
           <p class="text-gray-500">PC와 모바일 양쪽에서 물주기/등록 시 0.5초 만에 상호 자동 반영됩니다.</p>
         </div>
 
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button onclick="forcePullFromCloud()" class="py-2.5 px-2 cartoon-btn bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-cartoon text-xs flex items-center justify-center gap-1 shadow-sm">
+            <span>📥</span> 클라우드 즉시 가져오기
+          </button>
+          <button onclick="forcePushToCloud()" class="py-2.5 px-2 cartoon-btn bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-cartoon text-xs flex items-center justify-center gap-1 shadow-sm">
+            <span>📤</span> 내 식물 클라우드 올리기
+          </button>
+        </div>
+
         <button onclick="closeModal('syncModal')" class="w-full py-2.5 cartoon-btn bg-plant-primary text-white rounded-xl font-cartoon text-base">
           확인 완료 🌿
         </button>
@@ -1234,9 +1243,9 @@
         syncUnsubscribe = docRef.onSnapshot(doc => {
           if (doc.exists) {
             const data = doc.data();
-            if (data && data.updatedAt) {
+            if (data) {
               isRemoteUpdate = true;
-              if (data.plants) plants = data.plants;
+              if (Array.isArray(data.plants)) plants = data.plants;
               if (data.careLogs) careLogs = data.careLogs;
               if (data.growthDiary) growthDiary = data.growthDiary;
               saveLocal();
@@ -1272,6 +1281,53 @@
       }, { merge: true }).catch(err => {
         console.error("Cloud Upload Error:", err);
       });
+    }
+
+    function forcePullFromCloud() {
+      if (!db || !gardenSyncCode) {
+        alert('Firebase 데이터베이스에 연결되지 않았습니다. 잠시 후 다시 시도해 주세요.');
+        return;
+      }
+      const docRef = db.collection('planty_gardens').doc(gardenSyncCode);
+      docRef.get().then(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          if (data && Array.isArray(data.plants)) {
+            isRemoteUpdate = true;
+            plants = data.plants;
+            if (data.careLogs) careLogs = data.careLogs;
+            if (data.growthDiary) growthDiary = data.growthDiary;
+            saveLocal();
+
+            renderHomeCareList();
+            renderWaterSchedule();
+            renderGarden();
+            renderGlobalTimeline();
+            updateMoodBubble();
+            setTimeout(() => { isRemoteUpdate = false; }, 300);
+            alert(`📥 클라우드에서 ${plants.length}개의 식물 데이터를 즉시 불러왔습니다!`);
+            closeModal('syncModal');
+          } else {
+            alert('클라우드에 저장된 식물이 아직 없습니다.');
+          }
+        } else {
+          alert(`클라우드에 [${gardenSyncCode}] 데이터가 없습니다.`);
+        }
+      }).catch(err => {
+        alert(`불러오기 오류: ${err.message}`);
+      });
+    }
+
+    function forcePushToCloud() {
+      if (!db || !gardenSyncCode) {
+        alert('Firebase 데이터베이스에 연결되지 않았습니다.');
+        return;
+      }
+      if (confirm(`현재 화면에 있는 ${plants.length}개의 식물을 클라우드로 업로드하시겠습니까?`)) {
+        uploadToCloud();
+        alert('📤 클라우드로 식물 데이터를 성공적으로 올렸습니다!');
+        closeModal('syncModal');
+      }
     }
 
     function applyCustomSyncCode() {
