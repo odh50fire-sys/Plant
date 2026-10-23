@@ -392,8 +392,8 @@
         <div class="flex items-center gap-3">
           <span class="text-3xl sm:text-4xl">🔮</span>
           <div>
-            <h3 class="text-base sm:text-lg font-cartoon text-green-950">나의 식집사 유형 & 맞춤 식물 찾기</h3>
-            <p class="text-xs text-gray-700">3가지 질문으로 알아보는 나의 가드닝 스타일!</p>
+            <h3 class="text-base sm:text-lg font-cartoon text-green-950">나의 식집사 유형 & 맞춤 식물 정밀 테스트</h3>
+            <p class="text-xs text-gray-700">7가지 라이프스타일 질문으로 찾는 나만의 찰떡 반려식물 & 대표 사진!</p>
           </div>
         </div>
         <button onclick="openMbtiModal()" class="w-full sm:w-auto cartoon-btn bg-plant-primary text-white font-cartoon text-sm px-4 py-2 rounded-xl flex-shrink-0 text-center">
@@ -652,11 +652,11 @@
 
   <!-- 5. 식물 MBTI 퀴즈 모달 -->
   <div id="mbtiModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
-    <div class="cartoon-card max-w-md w-full p-4 sm:p-5 bg-white relative">
+    <div class="cartoon-card max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-5 bg-white relative animate-in zoom-in duration-150">
       <button onclick="closeModal('mbtiModal')" class="absolute top-3 right-3 text-2xl font-bold hover:scale-110 p-1">✕</button>
       <div id="mbtiModalContent">
-        <h3 class="text-xl font-cartoon text-green-900 mb-1 pr-8">🌿 나의 맞춤 식물 찾기</h3>
-        <p class="text-xs text-gray-600 mb-3">질문에 가장 마음에 드는 답변을 골라주세요!</p>
+        <h3 class="text-xl font-cartoon text-green-900 mb-1 pr-8">🌿 나의 맞춤 식물 정밀 테스트</h3>
+        <p class="text-xs text-gray-600 mb-3">나의 일상과 환경에 가장 어울리는 식물을 찾아보세요!</p>
         <div id="mbtiQuestionArea" class="space-y-3"></div>
       </div>
     </div>
@@ -667,11 +667,347 @@
   <!-- JAVASCRIPT & ENCYCLOPEDIA RECIPE ENGINE        -->
   <!-- ============================================== -->
   <script>
+    const BUILTIN_FIREBASE_CONFIG = {
+      apiKey: "AIzaSyACS3jrmsh2_LYoobKXdPDoOuYE92wYzzI",
+      authDomain: "planty-garden.firebaseapp.com",
+      projectId: "planty-garden",
+      storageBucket: "planty-garden.firebasestorage.app",
+      messagingSenderId: "796033005464",
+      appId: "1:796033005464:web:065b225c256c0b7b2bdded"
+    };
+
+    const STORAGE_KEY_PLANTS = 'planty_plants_v1';
+    const STORAGE_KEY_LOGS = 'planty_care_logs_v1';
+    const STORAGE_KEY_DIARY = 'planty_growth_diary_v1';
+    const STORAGE_KEY_GARDEN_CODE = 'planty_garden_sync_code_v1';
+
     // 이미지 로드 실패 시 대체 기본 이미지로 복구하는 방어 함수
     const FALLBACK_PLANT_IMG = 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=500';
     function handleImgError(img) {
       img.onerror = null;
       img.src = FALLBACK_PLANT_IMG;
+    }
+
+    /* ============================================================
+       ★ 방대한 실내 반려식물 생육 레시피 백과사전 DB (50종+ 커버)
+    ============================================================ */
+    const PLANT_ENCYCLOPEDIA = {
+      '죽백': {
+        name: '죽백나무 (나한송과)',
+        waterCycle: 7,
+        tempRange: '16~26°C (8°C 이하 냉해 주의)',
+        sunLight: '반양지 (커튼을 거친 부드러운 햇빛)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '주 1~2회 베란다 바람 권장',
+        photo: 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=500',
+        meaning: '꽃말: 소원 성취, 불변, 부귀. 대나무 잎과 소나무 기품을 닮아 악운을 막아주는 영험한 수호목',
+        feelings: '단아하고 곧게 뻗은 푸른 잎을 보면 마음에 잡념이 사라지고 깊은 평온을 줍니다.'
+      },
+      '여인초': {
+        name: '여인초 (극락조화과)',
+        waterCycle: 7,
+        tempRange: '18~28°C (10°C 이하 냉해 주의)',
+        sunLight: '반양지 (커튼을 거친 부드러운 햇빛)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '실내 전용 가능 (넓은 거실 추천)',
+        photo: 'https://images.unsplash.com/photo-1598880940371-c756e015fea1?w=500',
+        meaning: '꽃말: 영원한 사랑, 여행자의 쉼터. 사막의 목마른 여행자에게 빗물을 모아주던 다정한 식물',
+        feelings: '시원하게 솟구친 대형 잎이 공간을 품격 있고 휴양지처럼 여유롭게 만들어줍니다.'
+      },
+      '극락조': {
+        name: '극락조화',
+        waterCycle: 8,
+        tempRange: '15~26°C (5°C 이하 주의)',
+        sunLight: '양지 (햇빛을 매우 좋아함)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '창가 근처 햇빛 좋은 곳 권장',
+        photo: 'https://images.unsplash.com/photo-1598880940371-c756e015fea1?w=500',
+        meaning: '꽃말: 신비, 영구불멸. 새가 날개를 편 듯 화려한 꽃을 피우는 축복의 식물',
+        feelings: '힘차게 뻗은 줄기에서 당당함과 생동감을 얻습니다.'
+      },
+      '아레카야자': {
+        name: '아레카야자',
+        waterCycle: 5,
+        tempRange: '18~25°C (10°C 이하 주의)',
+        sunLight: '반양지 (직사광선 피하기)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '실내 전용 가능 (가습기 효과 탁월)',
+        photo: 'https://images.unsplash.com/photo-1512428813834-c702c7702b78?w=500',
+        meaning: '꽃말: 승리, 부활. NASA 선정 공기정화 1위, 천연 가습기 식물',
+        feelings: '가벼운 잎이 솔솔 흔들리며 마음속 긴장을 사르르 녹여줍니다.'
+      },
+      '홍콩야자': {
+        name: '홍콩야자 (쉐플레라)',
+        waterCycle: 7,
+        tempRange: '15~26°C (추위에 비교적 강함)',
+        sunLight: '반양지 (실내 형광등으로도 충분)',
+        windReq: '적당한 실내 공기 순환이면 충분',
+        indoorOnly: '실내에서만 키워도 무방함',
+        photo: 'https://images.unsplash.com/photo-1596724803693-e08713d2f2d9?w=500',
+        meaning: '꽃말: 행운과 함께하는 사랑. 우산 모양으로 모여 피는 잎이 복을 불러옵니다.',
+        feelings: '동글동글 귀여운 손바닥 모양 잎이 일상에 아기자기한 미소를 줍니다.'
+      },
+      '고무나무': {
+        name: '인도고무나무/벵갈고무나무',
+        waterCycle: 8,
+        tempRange: '18~28°C (10°C 이하 주의)',
+        sunLight: '반양지 (커튼 햇빛 권장)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '주 1~2회 베란다 바람 권장',
+        photo: 'https://images.unsplash.com/photo-1598880940371-c756e015fea1?w=500',
+        meaning: '꽃말: 영원한 행복, 장수. 도톰한 가죽 질감의 잎이 미세먼지를 흡착합니다.',
+        feelings: '듬직한 나무 기둥이 방 안을 따뜻하고 안정감 있게 감싸줍니다.'
+      },
+      '금전수': {
+        name: '금전수 (돈나무)',
+        waterCycle: 20,
+        tempRange: '16~28°C (10°C 이하 주의)',
+        sunLight: '반음지 (실내 형광등으로도 충분)',
+        windReq: '적당한 실내 공기 순환이면 충분',
+        indoorOnly: '실내 전용 가능 (물을 아낄수록 장수함)',
+        photo: 'https://images.unsplash.com/photo-1509423350716-97f9360b4e09?w=500',
+        meaning: '꽃말: 번영, 부귀. 동전 모양의 반짝이는 잎이 재물운을 불러오는 길조',
+        feelings: '바쁜 일상에서 물주기를 잊어도 늘 푸르고 단단하게 버텨주는 든든함.'
+      },
+      '호야': {
+        name: '호야 케리 (하트호야)',
+        waterCycle: 14,
+        tempRange: '18~28°C (7°C 이하 주의)',
+        sunLight: '반양지 (햇빛을 받으면 분홍꽃망울)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '실내 창가 추천',
+        photo: 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=500',
+        meaning: '꽃말: 고백, 영원한 사랑. 도톰한 하트 모양 잎이 사랑을 전합니다.',
+        feelings: '사랑스러운 하트 잎을 바라볼 때마다 마음이 몽글몽글해집니다.'
+      },
+      '로즈마리': {
+        name: '로즈마리 (허브)',
+        waterCycle: 4,
+        tempRange: '15~25°C (통풍과 햇빛 절대필수!)',
+        sunLight: '양지 (직사광선도 거뜬)',
+        windReq: '매일 1~2시간 이상 환기 필수 (통풍 부족 시 잎마름)',
+        indoorOnly: '주 1~2회 베란다 바람 권장 (베란다 강력추천)',
+        photo: 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 나를 기억해주세요, 아름다운 추억. 머리를 맑게 해주는 상쾌한 향기',
+        feelings: '손으로 잎을 스칠 때마다 퍼지는 진한 허브향이 뇌를 맑게 깨워줍니다.'
+      },
+      '올리브': {
+        name: '올리브나무',
+        waterCycle: 6,
+        tempRange: '15~27°C (0°C까지도 견디는 강인함)',
+        sunLight: '양지 (햇빛을 아주 좋아함)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '주 1~2회 베란다 바람 권장',
+        photo: 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=500',
+        meaning: '꽃말: 평화, 지혜, 승리. 지중해의 바람과 태양을 품은 성서 속의 나무',
+        feelings: '은빛이 감도는 가녀린 잎에서 지중해의 여유와 고요한 위안을 느낍니다.'
+      },
+      '스파티필름': {
+        name: '스파티필름',
+        waterCycle: 5,
+        tempRange: '18~25°C (12°C 이하 주의)',
+        sunLight: '반음지 (직사광선 닿으면 잎 타요)',
+        windReq: '적당한 실내 공기 순환이면 충분',
+        indoorOnly: '실내에서만 키워도 무방함 (초보 추천)',
+        photo: 'https://images.unsplash.com/photo-1596724803693-e08713d2f2d9?w=500',
+        meaning: '꽃말: 세심한 사랑, 순결. 하얀 돛단배 같은 청초한 꽃을 피우는 공기정화 왕',
+        feelings: '목마르면 잎을 축 늘어뜨려 스스로 신호를 주는 귀여운 의사소통꾼.'
+      },
+      '안스리움': {
+        name: '안스리움',
+        waterCycle: 6,
+        tempRange: '19~27°C (13°C 이하 주의)',
+        sunLight: '반양지 (은은한 간접광)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '실내 전용 가능',
+        photo: 'https://images.unsplash.com/photo-1597055181300-e3633a917c9c?w=500',
+        meaning: '꽃말: 사랑에 번민하는 마음, 열정. 사계절 붉고 하트 모양의 꽃을 피우는 매혹의 식물',
+        feelings: '강렬한 색감의 꽃이 무채색 방 안에 기분 좋은 활력을 불어넣어 줍니다.'
+      },
+      '제라늄': {
+        name: '제라늄 (페라고늄)',
+        waterCycle: 5,
+        tempRange: '15~25°C (통풍 필수)',
+        sunLight: '양지 (햇빛을 많이 받을수록 꽃이 핌)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '베란다 창가 추천',
+        photo: 'https://images.unsplash.com/photo-1597055181300-e3633a917c9c?w=500',
+        meaning: '꽃말: 진실한 애정, 친구의 정. 유럽의 창가를 붉게 물들이는 낭만의 꽃',
+        feelings: '사계절 피고 지는 꽃망울을 보며 매일 아침 소소한 감동을 받습니다.'
+      },
+      '몬스테라': {
+        name: '몬스테라 델리시오사',
+        waterCycle: 7,
+        tempRange: '18~27°C (10°C 이하 냉해 주의)',
+        sunLight: '반양지 (커튼을 거친 부드러운 햇빛)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '주 1~2회 베란다 바람 권장',
+        photo: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 기쁜 소식, 깊은 배려. 찢어진 잎 사이로 아래 잎에 햇빛을 나눠주는 다정한 친구',
+        feelings: '시원스런 잎이 일상에 여유와 싱그러운 에너지를 불어넣어 줍니다.'
+      },
+      '스킨답서스': {
+        name: '스킨답서스',
+        waterCycle: 6,
+        tempRange: '16~25°C (추위에 약함)',
+        sunLight: '반음지 (실내 형광등으로도 충분)',
+        windReq: '적당한 실내 공기 순환이면 충분',
+        indoorOnly: '실내에서만 키워도 무방함',
+        photo: 'https://images.unsplash.com/photo-1596724803693-e08713d2f2d9?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 다시 찾은 행복. 악조건에서도 줄기를 뻗는 강한 생명력',
+        feelings: '초보자도 절대 실패하지 않는 자신감을 선물해 줍니다.'
+      },
+      '스투키': {
+        name: '스투키',
+        waterCycle: 30,
+        tempRange: '15~30°C (생명력 최강)',
+        sunLight: '양지 (직사광선도 거뜬)',
+        windReq: '적당한 실내 공기 순환이면 충분',
+        indoorOnly: '실내에서만 키워도 무방함',
+        photo: 'https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 관용. 밤에 신선한 산소를 선물하는 든든한 파수꾼',
+        feelings: '물주기를 조금 잊어도 묵묵히 곁을 지켜주는 듬직함을 느낍니다.'
+      },
+      '테이블야자': {
+        name: '테이블야자',
+        waterCycle: 5,
+        tempRange: '18~24°C',
+        sunLight: '반음지 (실내 형광등으로도 충분)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '실내에서만 키워도 무방함',
+        photo: 'https://images.unsplash.com/photo-1512428813834-c702c7702b78?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 마음의 평화. 작은 야자수 숲 같은 휴식감',
+        feelings: '살랑거리는 잎을 바라보며 복잡했던 머릿속이 맑아집니다.'
+      },
+      '산세베리아': {
+        name: '산세베리아',
+        waterCycle: 20,
+        tempRange: '15~28°C',
+        sunLight: '반양지 (커튼 햇빛 권장)',
+        windReq: '적당한 실내 공기 순환이면 충분',
+        indoorOnly: '실내에서만 키워도 무방함',
+        photo: 'https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 불멸, 영원. 음이온 방출 1위 공기정화 식물',
+        feelings: '공간을 정화해주고 늘 단단하고 곧은 힘을 전해줍니다.'
+      },
+      '버킨': {
+        name: '필로덴드론 버킨 (무늬버킨)',
+        waterCycle: 8,
+        tempRange: '18~26°C (10°C 이하 주의)',
+        sunLight: '반양지 (은은한 간접광, 직사광선 피하기)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '실내 전용 가능 (가끔 베란다 바람 권장)',
+        photo: 'https://images.unsplash.com/photo-1604762524889-3e2fcc145683?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 수호, 변함없는 우정. 하얀 줄무늬가 우아한 실내 보석',
+        feelings: '붓으로 칠한 듯한 잎맥을 감상할 때마다 마음의 품격이 높아집니다.'
+      },
+      '고사리': {
+        name: '아비스 고사리 (아스플레니움)',
+        waterCycle: 4,
+        tempRange: '16~25°C (10°C 이하 주의)',
+        sunLight: '반음지 (실내 형광등으로도 충분)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '실내에서만 키워도 무방함',
+        photo: 'https://images.unsplash.com/photo-1597055181300-e3633a917c9c?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 신비, 매혹. 둥지처럼 솟아오르는 연둣빛 생명력',
+        feelings: '촉촉한 숲속에 온 듯 싱그러운 자연의 활기를 선물합니다.'
+      }
+    };
+
+    function autoLookupRecipe() {
+      const inputEl = document.getElementById('plantSpecies');
+      const feedbackEl = document.getElementById('lookupFeedback');
+      const query = inputEl.value.trim().toLowerCase();
+
+      if (!query) {
+        alert('식물 이름을 먼저 입력해 주세요! (예: 죽백, 여인초, 아레카야자, 버킨)');
+        inputEl.focus();
+        return;
+      }
+
+      let matchedKey = null;
+      for (let key in PLANT_ENCYCLOPEDIA) {
+        if (query.includes(key.toLowerCase()) || key.toLowerCase().includes(query)) {
+          matchedKey = key;
+          break;
+        }
+      }
+
+      let recipe = null;
+      if (matchedKey) {
+        recipe = PLANT_ENCYCLOPEDIA[matchedKey];
+        feedbackEl.innerText = `✨ '${recipe.name}'의 전문 생육 레시피를 자동으로 채웠습니다!`;
+      } else {
+        if (query.includes('선인장') || query.includes('다육') || query.includes('하월시아')) {
+          recipe = {
+            name: query, waterCycle: 25, tempRange: '15~30°C (생명력 최강)',
+            sunLight: '양지 (직사광선도 거뜬)', windReq: '적당한 실내 공기 순환이면 충분',
+            indoorOnly: '실내에서만 키워도 무방함', meaning: '꽃말: 불타는 사랑, 인내. 건조함에 매우 강한 친구',
+            feelings: '손이 많이 가지 않아도 꿋꿋이 자리를 지켜주는 듬직함.'
+          };
+          feedbackEl.innerText = `✨ 다육/선인장류 특성에 맞춘 생육 레시피를 완성했습니다!`;
+        } else if (query.includes('고사리') || query.includes('아비스') || query.includes('보스턴')) {
+          recipe = {
+            name: query, waterCycle: 4, tempRange: '16~25°C (10°C 이하 주의)',
+            sunLight: '반음지 (실내 형광등으로도 충분)', windReq: '매일 1~2시간 이상 환기 필수',
+            indoorOnly: '실내에서만 키워도 무방함', meaning: '꽃말: 신비, 마법. 촉촉한 공중습도를 좋아하는 숲의 요정',
+            feelings: '초록빛 잎이 뿜어내는 촉촉함으로 일상에 싱그러운 활력을 줍니다.'
+          };
+          feedbackEl.innerText = `✨ 고사리/양치식물 특성에 맞춘 생육 레시피를 완성했습니다!`;
+        } else if (query.includes('허브') || query.includes('바질') || query.includes('민트')) {
+          recipe = {
+            name: query, waterCycle: 3, tempRange: '15~25°C (햇빛과 통풍 절대필수)',
+            sunLight: '양지 (직사광선 환영)', windReq: '매일 1~2시간 이상 환기 필수',
+            indoorOnly: '주 1~2회 베란다 바람 권장', meaning: '꽃말: 좋은 희망, 향기로운 사랑. 풍부한 향을 품은 식물',
+            feelings: '스칠 때마다 번지는 향기가 지친 하루에 활기를 선물합니다.'
+          };
+          feedbackEl.innerText = `✨ 허브류 특성에 맞춘 생육 레시피를 완성했습니다!`;
+        } else {
+          recipe = {
+            name: query, waterCycle: 7, tempRange: '18~26°C (10°C 이하 냉해 주의)',
+            sunLight: '반양지 (커튼을 거친 부드러운 햇빛)', windReq: '매일 1~2시간 이상 환기 필수',
+            indoorOnly: '실내 전용 가능 (가끔 베란다 권장)', meaning: '꽃말: 행복, 평안. 집안을 맑게 가꾸어주는 초록 친구',
+            feelings: '함께 숨 쉬며 집안에 따뜻한 자연의 기운을 채워줍니다.'
+          };
+          feedbackEl.innerText = `✨ '${query}'에 가장 안전한 실내 표준 생육 레시피를 완성했습니다!`;
+        }
+      }
+
+      if (recipe) {
+        document.getElementById('plantWaterCycle').value = recipe.waterCycle;
+        document.getElementById('plantTempRange').value = recipe.tempRange;
+        
+        const sunSelect = document.getElementById('plantSunLight');
+        if (recipe.sunLight.includes('양지') && !recipe.sunLight.includes('반양지')) {
+          sunSelect.value = '양지 (직사광선도 거뜬)';
+        } else if (recipe.sunLight.includes('반음지')) {
+          sunSelect.value = '반음지 (실내 형광등으로도 충분)';
+        } else {
+          sunSelect.value = '반양지 (커튼을 거친 부드러운 햇빛)';
+        }
+
+        const windSelect = document.getElementById('plantWindReq');
+        if (recipe.windReq.includes('적당')) {
+          windSelect.value = '적당한 실내 공기 순환이면 충분';
+        } else {
+          windSelect.value = '매일 1~2시간 이상 환기 필수';
+        }
+
+        const indoorSelect = document.getElementById('plantIndoorOnly');
+        if (recipe.indoorOnly.includes('베란다') || recipe.indoorOnly.includes('권장')) {
+          indoorSelect.value = '주 1~2회 베란다 바람 권장';
+        } else {
+          indoorSelect.value = '실내에서만 키워도 무방함';
+        }
+
+        if (recipe.photo && !document.getElementById('plantPhotoData').value) {
+          document.getElementById('plantPhotoData').value = recipe.photo;
+          document.getElementById('photoPreviewImg').src = recipe.photo;
+          document.getElementById('photoPreviewContainer').classList.remove('hidden');
+        }
+
+        feedbackEl.classList.remove('hidden');
+      }
     }
 
     const DEFAULT_PLANTS = [
@@ -1634,29 +1970,214 @@
       document.getElementById('clinicModal').classList.remove('hidden');
     }
 
+    const MBTI_PLANTS = {
+      monstera: {
+        id: 'monstera',
+        species: '몬스테라 델리시오사',
+        nickname: '정글 힙스터',
+        tag: '경이로운 성장의 챔피언 🌱',
+        photo: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=600&q=80',
+        title: '새 잎이 돋는 생명의 경이로움을 만끽할 준비가 된 열정 식집사!',
+        desc: '잎에 스스로 구멍을 뚫어 아래 잎에 햇빛을 양보하는 다정한 정글의 신사! 매일 잎을 관찰하며 쑥쑥 자라나는 눈부신 생명력을 느끼고 싶은 당신에게 가장 완벽한 1순위 파트너입니다.',
+        water: '겉흙 마르면 7~10일 1회',
+        sun: '반양지 (커튼을 거친 부드러운 햇살)',
+        temp: '18~27°C (10°C 이하 냉해 주의)',
+        wind: '매일 1~2시간 이상 환기 권장',
+        meaning: '기쁜 소식, 깊은 배려',
+        feelings: '시원스레 뻗은 잎이 공간을 트렌디한 휴양지 정글처럼 채워줍니다.',
+        subPlants: ['필로덴드론 버킨', '아레카야자']
+      },
+      scindapsus: {
+        id: 'scindapsus',
+        species: '골든 스킨답서스',
+        nickname: '초보 구원투수',
+        tag: '실패 확률 0% 초보 안심 불패 🍃',
+        photo: 'https://images.unsplash.com/photo-1596724803693-e08713d2f2d9?auto=format&fit=crop&w=600&q=80',
+        title: '실내 조명 아래서도 쑥쑥! 어떤 환경도 이겨내는 무한 긍정러!',
+        desc: '햇빛이 적거나 바빠서 가끔 물주기를 깜빡해도 꿋꿋하게 하트 모양 덩굴을 뻗어내는 초보 불패 1등 식물! 악조건 속에서도 놀라운 생명력으로 맑은 공기를 선물합니다.',
+        water: '겉흙 마르면 5~7일 1회',
+        sun: '반음지 (형광등 불빛으로도 충분)',
+        temp: '16~25°C (추위에 약함)',
+        wind: '적당한 실내 공기 순환이면 충분',
+        meaning: '다시 찾은 행복, 불굴의 희망',
+        feelings: '초보자에게 "나도 식물을 잘 키울 수 있어!"라는 든든한 자신감을 선물합니다.',
+        subPlants: ['스파티필름', '테이블야자']
+      },
+      chamaedorea: {
+        id: 'chamaedorea',
+        species: '테이블야자',
+        nickname: '책상 위 힐링 오아시스',
+        tag: 'NASA 공기정화 1위 · 반려동물 안심 🐱🐶',
+        photo: 'https://images.unsplash.com/photo-1512428813834-c702c7702b78?auto=format&fit=crop&w=600&q=80',
+        title: '강아지·고양이와 함께라 안심이 필요하고, 책상 위 쉼을 찾는 힐러!',
+        desc: 'ASPCA 공식 반려동물 무독성 인증 식물! 책상이나 침실 협탁에 올려두면 작은 야자수 숲에 온 듯 청량하며, 암모니아와 유해물질을 말끔히 정화하고 천연 가습 효과까지 선사합니다.',
+        water: '겉흙 마르면 4~6일 1회',
+        sun: '반음지 (직사광선 피하기)',
+        temp: '18~24°C',
+        wind: '매일 가벼운 실내 환기',
+        meaning: '마음의 평화',
+        feelings: '깃털처럼 가벼운 잎이 살랑거릴 때마다 복잡한 생각이 맑아집니다.',
+        subPlants: ['아비스 고사리', '죽백나무']
+      },
+      nageia: {
+        id: 'nageia',
+        species: '죽백나무',
+        nickname: '소원 성취 수호목',
+        tag: '단아한 기품 · 액운을 막는 수호수 🎋',
+        photo: 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=600',
+        title: '마음의 평온과 좋은 기운, 단아한 선비의 품격을 사랑하는 식집사!',
+        desc: '대나무의 푸른 잎과 소나무의 곧은 기품을 동시에 품은 신비로운 나한송과 수호목. 예로부터 집안의 액운을 막고 소원 성취와 부귀를 가져다준다는 영험한 반려식물입니다.',
+        water: '겉흙 마르면 7일 1회',
+        sun: '반양지 (커튼을 거친 부드러운 햇살)',
+        temp: '16~26°C (8°C 이하 냉해 주의)',
+        wind: '매일 1~2시간 이상 환기 필수',
+        meaning: '소원 성취, 불변, 부귀',
+        feelings: '단정하고 꼿꼿한 푸른 잎을 보면 마음에 잡념이 사라지고 깊은 평온이 깃듭니다.',
+        subPlants: ['올리브나무', '여인초']
+      },
+      stuckyi: {
+        id: 'stuckyi',
+        species: '스투키 & 산세베리아',
+        nickname: '밤의 청정 보디가드',
+        tag: '물주기 깜빡해도 OK · 음이온 뿜뿜 🪴',
+        photo: 'https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=600&q=80',
+        title: '바쁜 일상 속, 물주기 부담 없이 든든한 동반자를 원하는 쿨한 식집사!',
+        desc: '한 달에 한 번만 물을 주어도 끄떡없는 최강의 생명력! 밤마다 이산화탄소를 흡수하고 풍부한 음이온과 신선한 산소를 내뿜어 침실 협탁에 가장 이상적인 보디가드입니다.',
+        water: '속흙까지 바싹 마르면 20~30일 1회',
+        sun: '양지~반음지 모두 가능 (직사광선도 거뜬)',
+        temp: '15~30°C (생명력 최강)',
+        wind: '가끔 환기해주면 충분',
+        meaning: '관용, 불굴, 영원한 사랑',
+        feelings: '물주기를 깜빡 잊어도 묵묵히 곁을 지켜주는 듬직함을 느낍니다.',
+        subPlants: ['금전수', '호야']
+      },
+      birkin: {
+        id: 'birkin',
+        species: '필로덴드론 버킨 (무늬버킨)',
+        nickname: '실내 미술관의 도슨트',
+        tag: '섬세한 하얀 붓터치 · 세련된 플랜테리어 🎨',
+        photo: 'https://images.unsplash.com/photo-1604762524889-3e2fcc145683?auto=format&fit=crop&w=600&q=80',
+        title: '감각적인 인테리어와 예술적인 잎무늬를 사랑하는 미적 감각 식집사!',
+        desc: '초록 잎맥마다 하얀 물감을 정교하게 그어놓은 듯한 고급스러운 무늬. 새 잎이 나올수록 무늬가 또렷해지며 거실 선반을 고급 갤러리로 탈바꿈시켜 줍니다.',
+        water: '속흙 마르면 7~10일 1회',
+        sun: '은은한 간접광 (직사광선 피하기)',
+        temp: '18~26°C (10°C 이하 주의)',
+        wind: '매일 1~2시간 이상 환기 권장',
+        meaning: '수호, 변함없는 우정',
+        feelings: '자연이 빚어낸 한 폭의 유화를 감상하듯 감탄과 뿌듯함을 안겨줍니다.',
+        subPlants: ['몬스테라 델리시오사', '칼라데아 오르비폴리아']
+      },
+      rosemary: {
+        id: 'rosemary',
+        species: '로즈마리 (허브)',
+        nickname: '지중해 향기 닥터',
+        tag: '천연 아로마 테라피 · 햇빛과 바람 사랑 🌿',
+        photo: 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=600&q=80',
+        title: '베란다 창가에서 햇살과 바람을 즐기며 향기로 치유받는 낭만 식집사!',
+        desc: '손끝으로 잎을 스치면 상쾌하고 진한 숲의 향기가 온 방안에 가득 퍼집니다. 따뜻한 햇빛과 시원한 바람을 듬뿍 먹고 자라며 피로한 머리를 맑게 깨워주는 최고의 허브입니다.',
+        water: '겉흙 마르면 3~5일 1회',
+        sun: '양지 (직사광선 거뜬)',
+        temp: '15~25°C',
+        wind: '통풍과 환기 절대 필수!',
+        meaning: '나를 기억해주세요, 아름다운 추억',
+        feelings: '깊은 숨을 들이쉴 때마다 스트레스가 사르르 녹아내리는 아로마 치유를 느낍니다.',
+        subPlants: ['올리브나무', '제라늄']
+      },
+      asplenium: {
+        id: 'asplenium',
+        species: '아비스 고사리 (아스플레니움)',
+        nickname: '연둣빛 숲의 요정',
+        tag: '물결치는 연둣빛 · 천연 가습 요정 🧚',
+        photo: 'https://images.unsplash.com/photo-1597055181300-e3633a917c9c?auto=format&fit=crop&w=600&q=80',
+        title: '물주기를 좋아하고, 촉촉한 숲속 힐링을 꿈꾸는 감성 식집사!',
+        desc: '새 둥지처럼 가운데에서 연둣빛 물결 잎이 부드럽게 피어오르는 매력적인 양치식물. 건조한 실내 공기를 촉촉하게 적셔주는 천연 가습기이자, 직사광선 없이도 싱그럽게 자랍니다.',
+        water: '겉흙 촉촉 유지 3~5일 1회',
+        sun: '반음지 (부드러운 그늘/실내조명)',
+        temp: '17~25°C',
+        wind: '매일 1~2시간 이상 환기 필수',
+        meaning: '신비로움, 매혹',
+        feelings: '깊은 숲속 계곡에 온 듯 마음에 촉촉한 안식과 신선함을 전해줍니다.',
+        subPlants: ['스파티필름', '테이블야자']
+      }
+    };
+
     const MBTI_QUESTIONS = [
       {
-        q: "1. 평소 당신의 생활 패턴은 어떤가요?",
-        a1: "집에 있는 시간이 길고 매일 잎을 관찰하고 싶어요! 🏡",
-        a2: "바쁜 편이라 가끔 물주는 걸 잊을 수도 있어요 🏃"
+        q: "1. 평소 집에서 보내는 시간과 나의 라이프스타일은?",
+        sub: "나의 하루 일과에 꼭 맞는 식물을 매칭해 드려요",
+        options: [
+          { text: "집에 머무는 시간이 길어 매일 잎을 관찰하고 애정을 듬뿍 쏟고 싶어요 🏡", votes: { monstera: 2, asplenium: 2, rosemary: 1 } },
+          { text: "출퇴근과 약속으로 바빠서 주말에 몰아서 가볍게 챙기는 편이에요 🏃", votes: { stuckyi: 3, scindapsus: 2, nageia: 1 } },
+          { text: "서재나 책상 앞에서 컴퓨터로 일하거나 공부하는 시간이 많아요 💻", votes: { chamaedorea: 3, birkin: 2, scindapsus: 1 } }
+        ]
       },
       {
-        q: "2. 우리 집 채광(햇빛) 환경은 어떤가요?",
-        a1: "베란다나 창문으로 햇빛이 잘 들어요 ☀️",
-        a2: "햇빛이 적고 실내 조명이 주를 이뤄요 💡"
+        q: "2. 우리 집 식물을 둘 공간의 햇빛(채광) 환경은?",
+        sub: "빛은 식물이 살아가는 가장 소중한 에너지원이에요",
+        options: [
+          { text: "베란다나 남향 창가 바로 앞이라 따뜻한 햇살이 가득 들어와요 ☀️", votes: { rosemary: 3, monstera: 2, nageia: 1 } },
+          { text: "커튼을 한 번 거친 부드러운 은은한 햇빛이 들어와요 🌤️", votes: { birkin: 3, monstera: 2, nageia: 2, asplenium: 1 } },
+          { text: "햇빛이 잘 안 들고 주로 실내 LED 형광등 조명 아래예요 💡", votes: { scindapsus: 3, stuckyi: 2, chamaedorea: 2 } }
+        ]
       },
       {
-        q: "3. 식물에게서 가장 얻고 싶은 가치는?",
-        a1: "새 잎이 쑥쑥 자라나는 눈부신 성장감! 🌱",
-        a2: "신경 덜 써도 늘 묵묵하게 자리를 지키는 안정감 🪴"
+        q: "3. 나의 솔직한 '물주기' 스타일은?",
+        sub: "과습과 갈증! 식물의 운명을 좌우하는 결정적 포인트",
+        options: [
+          { text: "사랑이 넘쳐서 흙이 조금만 말라도 얼른 물을 주고 싶어져요 🚿", votes: { asplenium: 3, rosemary: 2, monstera: 1 } },
+          { text: "달력이나 앱 알림에 맞춰 주 1회 정도 규칙적으로 주는 편이에요 📅", votes: { nageia: 3, monstera: 2, birkin: 2, chamaedorea: 1 } },
+          { text: "솔직히 바쁘면 2~3주씩 깜빡 잊고 지낼 수도 있을 것 같아요 😅", votes: { stuckyi: 3, scindapsus: 2 } }
+        ]
+      },
+      {
+        q: "4. 실내 창문 환기(바람)는 얼마나 자주 시키시나요?",
+        sub: "신선한 공기 순환은 식물 뿌리의 숨통을 틔워줘요",
+        options: [
+          { text: "아침저녁으로 창문을 활짝 열어 맞바람 환기를 매일 시켜요 🍃", votes: { rosemary: 3, nageia: 2, asplenium: 1 } },
+          { text: "하루 한 번 정도 가볍게 환기하거나 실내 공기청정기를 틀어요 🪟", votes: { monstera: 2, birkin: 2, chamaedorea: 2 } },
+          { text: "미세먼지나 냉난방 때문에 창문을 거의 안 여는 편이에요 🔒", votes: { scindapsus: 3, stuckyi: 3 } }
+        ]
+      },
+      {
+        q: "5. 공간에 두고 싶은 식물의 크기와 인테리어 분위기는?",
+        sub: "어디에 두었을 때 가장 가슴 뿌듯할지 상상해 보세요",
+        options: [
+          { text: "거실 바닥에 듬직하게 서서 집 분위기를 바꾸는 시원한 대형 식물 🪴", votes: { monstera: 3, nageia: 2 } },
+          { text: "책상, 선반, 협탁 위에 앙증맞고 단정하게 올려두는 소형 화분 🌿", votes: { chamaedorea: 2, birkin: 2, stuckyi: 2, rosemary: 1 } },
+          { text: "선반이나 벽에서 초록 덩굴이 자연스럽게 흘러내리는 내추럴 무드 🍃", votes: { scindapsus: 3, asplenium: 2 } }
+        ]
+      },
+      {
+        q: "6. 식물을 통해 가장 얻고 싶은 나만의 힐링 가치는?",
+        sub: "식물과 함께하는 일상의 궁극적인 행복",
+        options: [
+          { text: "돌돌 말린 새 잎이 터져 나오는 눈부신 성장의 감동! 🌱", votes: { monstera: 3, asplenium: 2, scindapsus: 1 } },
+          { text: "손끝을 스칠 때마다 퍼지는 상쾌한 천연 숲의 향기 🌸", votes: { rosemary: 3, nageia: 1 } },
+          { text: "신경 많이 안 써도 10년 넘게 묵묵히 내 곁을 지키는 든든함 🛡️", votes: { stuckyi: 3, scindapsus: 2 } },
+          { text: "집안에 재물운, 소원 성취, 평온한 기운을 부르는 길조의 의미 ✨", votes: { nageia: 3, birkin: 2 } }
+        ]
+      },
+      {
+        q: "7. 함께 사는 반려동물(강아지·고양이)이나 어린이가 있나요?",
+        sub: "잎 뜯어먹기 독성 걱정 없는 안전한 식물 체크!",
+        options: [
+          { text: "호기심 많은 강아지·고양이가 있어서 무독성 안전 식물이 필수예요! 🐶🐱", votes: { chamaedorea: 4, asplenium: 3 } },
+          { text: "반려동물이 없거나 안전한 선반 위에 올려둘 수 있어 자유로워요 🏡", votes: { monstera: 1, birkin: 1, nageia: 1, scindapsus: 1, stuckyi: 1, rosemary: 1 } }
+        ]
       }
     ];
-    let mbtiScore = 0;
+
+    let mbtiScores = {};
     let mbtiStep = 0;
+    let mbtiHistory = [];
 
     function openMbtiModal() {
-      mbtiScore = 0;
+      mbtiScores = {
+        monstera: 0, scindapsus: 0, chamaedorea: 0, nageia: 0,
+        stuckyi: 0, birkin: 0, rosemary: 0, asplenium: 0
+      };
       mbtiStep = 0;
+      mbtiHistory = [];
       renderMbtiStep();
       document.getElementById('mbtiModal').classList.remove('hidden');
     }
@@ -1664,54 +2185,211 @@
     function renderMbtiStep() {
       const area = document.getElementById('mbtiQuestionArea');
       if (mbtiStep >= MBTI_QUESTIONS.length) {
-        let resultPlant = '';
-        let resultDesc = '';
-        if (mbtiScore >= 2) {
-          resultPlant = '몬스테라 델리시오사 🌿';
-          resultDesc = '애정과 햇살을 듬뿍 주며 새 잎 돋는 경이로움을 만끽할 준비가 된 당신에게 최고의 식물!';
-        } else if (mbtiScore === 1) {
-          resultPlant = '골든 스킨답서스 🍃';
-          resultDesc = '실내 조명 아래서도 쑥쑥 자라며 행복을 선물하는 스킨답서스가 부담 없는 파트너!';
-        } else {
-          resultPlant = '스투키 & 산세베리아 🪴';
-          resultDesc = '물주기를 잊어도 끄떡없고 밤마다 맑은 산소를 뿜어주는 든든한 보디가드!';
-        }
+        const sorted = Object.keys(mbtiScores).sort((a, b) => mbtiScores[b] - mbtiScores[a]);
+        const bestKey = sorted[0];
+        const runnerKey = sorted[1];
+        const bestPlant = MBTI_PLANTS[bestKey];
+        const runnerPlant = MBTI_PLANTS[runnerKey];
 
         area.innerHTML = `
-          <div class="text-center py-3 bg-plant-light rounded-xl cartoon-border-sm">
-            <span class="text-4xl block mb-1">🎉</span>
-            <span class="text-[11px] font-bold text-green-800">당신에게 추천하는 첫 반려식물은?</span>
-            <h4 class="text-xl font-cartoon text-green-950 mt-0.5 mb-1">${resultPlant}</h4>
-            <p class="text-xs text-gray-700 leading-relaxed px-3">${resultDesc}</p>
+          <div class="text-center pb-2">
+            <span class="text-3xl block mb-1">🎉</span>
+            <span class="text-xs font-bold text-green-800 bg-green-100 px-3 py-1 rounded-full cartoon-border-sm">
+              분석 완료! 당신에게 100% 매칭된 첫 반려식물
+            </span>
           </div>
-          <button onclick="adoptFromRecommend('${resultPlant.split(' ')[0]}'); closeModal('mbtiModal');" class="w-full py-2.5 cartoon-btn bg-plant-primary text-white rounded-xl font-cartoon text-sm">
-            이 식물 입양하러 가기 🌱
-          </button>
+
+          <!-- 1위 추천 식물 메인 카드 (대표 사진 포함) -->
+          <div class="cartoon-card overflow-hidden bg-gradient-to-b from-green-50 to-white p-0 border-green-800 shadow-cartoon">
+            <div class="relative h-48 sm:h-56 overflow-hidden">
+              <img src="${bestPlant.photo}" onerror="handleImgError(this)" alt="${bestPlant.species}" class="w-full h-full object-cover">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+              <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                <span class="bg-plant-accent text-green-950 cartoon-border-sm px-2.5 py-0.5 rounded-full font-cartoon text-xs font-bold">
+                  BEST MATCH 1위 🏆
+                </span>
+                <span class="bg-white/90 text-gray-900 cartoon-border-sm px-2 py-0.5 rounded-full text-[11px] font-bold">
+                  ${bestPlant.tag}
+                </span>
+              </div>
+              <div class="absolute bottom-3 left-3 right-3 text-white">
+                <p class="text-xs font-medium text-amber-200">#${bestPlant.nickname}</p>
+                <h3 class="text-xl sm:text-2xl font-cartoon leading-tight text-white drop-shadow">${bestPlant.species}</h3>
+              </div>
+            </div>
+
+            <div class="p-3.5 sm:p-4 space-y-3">
+              <div class="bg-white p-3 rounded-xl cartoon-border-sm">
+                <p class="text-xs sm:text-sm font-bold text-green-950 mb-1 leading-snug">✨ ${bestPlant.title}</p>
+                <p class="text-xs text-gray-700 leading-relaxed">${bestPlant.desc}</p>
+              </div>
+
+              <!-- 4대 핵심 레시피 퀵 카드 -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[11px]">
+                <div class="bg-rose-50 p-2 rounded-xl cartoon-border-sm text-center">
+                  <span class="font-bold text-rose-950 block text-[10px]">🌡️ 적정 온도</span>
+                  <span class="text-gray-700 truncate block font-medium">${bestPlant.temp}</span>
+                </div>
+                <div class="bg-amber-50 p-2 rounded-xl cartoon-border-sm text-center">
+                  <span class="font-bold text-amber-950 block text-[10px]">☀️ 추천 채광</span>
+                  <span class="text-gray-700 truncate block font-medium">${bestPlant.sun}</span>
+                </div>
+                <div class="bg-blue-50 p-2 rounded-xl cartoon-border-sm text-center">
+                  <span class="font-bold text-blue-950 block text-[10px]">💧 물주기</span>
+                  <span class="text-gray-700 truncate block font-medium">${bestPlant.water}</span>
+                </div>
+                <div class="bg-emerald-50 p-2 rounded-xl cartoon-border-sm text-center">
+                  <span class="font-bold text-emerald-950 block text-[10px]">🍃 통풍 환기</span>
+                  <span class="text-gray-700 truncate block font-medium">${bestPlant.wind}</span>
+                </div>
+              </div>
+
+              <!-- 꽃말 & 감성 이야기 -->
+              <div class="bg-plant-butter/60 p-2.5 rounded-xl cartoon-border-sm flex items-start gap-2">
+                <span class="text-lg flex-shrink-0">💖</span>
+                <div class="min-w-0 text-xs">
+                  <p class="font-bold text-green-950">꽃말: ${bestPlant.meaning}</p>
+                  <p class="text-gray-700 mt-0.5 leading-relaxed">${bestPlant.feelings}</p>
+                </div>
+              </div>
+
+              <!-- 서브 매칭 식물 (2위) -->
+              <div class="p-2.5 bg-gray-50 rounded-xl cartoon-border-sm flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <img src="${runnerPlant.photo}" onerror="handleImgError(this)" class="w-10 h-10 rounded-lg object-cover cartoon-border-sm flex-shrink-0" alt="${runnerPlant.species}">
+                  <div class="min-w-0">
+                    <span class="text-[10px] text-gray-500 font-bold block">이런 친구도 잘 어울려요! (2위 매칭)</span>
+                    <h5 class="text-xs font-cartoon text-green-950 truncate">${runnerPlant.species} (${runnerPlant.nickname})</h5>
+                  </div>
+                </div>
+                <button onclick="adoptFromRecommend('${runnerPlant.species.split(' ')[0]}'); closeModal('mbtiModal');" class="cartoon-btn bg-white text-green-950 text-xs px-2.5 py-1 rounded-lg font-bold flex-shrink-0">
+                  구경/입양
+                </button>
+              </div>
+
+              <!-- 원클릭 입양 버튼 -->
+              <button onclick="adoptFromRecommend('${bestPlant.species.split(' ')[0]}'); closeModal('mbtiModal');" class="w-full py-3 cartoon-btn bg-plant-primary text-white rounded-xl font-cartoon text-base flex items-center justify-center gap-2 shadow-cartoon">
+                <span>🌱</span> 이 식물 우리 집에 즉시 입양하기
+              </button>
+
+              <div class="flex gap-2 pt-1">
+                <button onclick="toggleAllPlantsGallery()" class="flex-1 py-2 cartoon-btn bg-plant-accent/50 text-green-950 rounded-xl font-cartoon text-xs flex items-center justify-center gap-1">
+                  <span>👀</span> 8가지 추천 식물 전체 둘러보기
+                </button>
+                <button onclick="openMbtiModal()" class="py-2 px-3 cartoon-border-sm rounded-xl font-cartoon text-xs text-gray-700 bg-gray-100 hover:bg-gray-200">
+                  🔄 다시하기
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 8종 전체 식물 둘러보기 그리드 (토글형) -->
+          <div id="allPlantsGalleryBox" class="mt-4 pt-3 border-t-2 border-dashed border-gray-200 hidden space-y-3">
+            <h4 class="font-cartoon text-base text-green-950 flex items-center gap-1.5">
+              <span>🌿</span> 플랜티 추천 식물 8종 전체 도감
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              ${Object.values(MBTI_PLANTS).map(p => `
+                <div class="cartoon-border-sm rounded-xl p-2.5 bg-white flex items-center gap-3">
+                  <img src="${p.photo}" onerror="handleImgError(this)" class="w-16 h-16 rounded-xl object-cover cartoon-border-sm flex-shrink-0" alt="${p.species}">
+                  <div class="min-w-0 flex-grow">
+                    <span class="text-[9px] bg-plant-light text-green-900 font-bold px-1.5 py-0.2 rounded-full truncate block max-w-fit">${p.tag}</span>
+                    <h5 class="font-cartoon text-xs sm:text-sm text-green-950 truncate mt-0.5">${p.species}</h5>
+                    <p class="text-[10px] text-gray-500 truncate">${p.meaning}</p>
+                    <button onclick="adoptFromRecommend('${p.species.split(' ')[0]}'); closeModal('mbtiModal');" class="mt-1 text-[11px] font-bold text-green-700 hover:underline">
+                      + 바로 입양하기 ➜
+                    </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
         `;
         return;
       }
 
       const q = MBTI_QUESTIONS[mbtiStep];
+      const progressPercent = Math.round(((mbtiStep + 1) / MBTI_QUESTIONS.length) * 100);
+
+      let optionsHtml = '';
+      q.options.forEach((opt, idx) => {
+        optionsHtml += `
+          <button onclick="answerMbti(${idx})" class="w-full p-3 text-left cartoon-border-sm rounded-xl font-medium text-xs sm:text-sm text-gray-800 hover:bg-green-50 active:scale-[0.98] transition bg-white shadow-sm flex items-start gap-2">
+            <span class="font-cartoon text-green-800 text-xs mt-0.5 flex-shrink-0">Q${mbtiStep+1}-${idx+1}</span>
+            <span class="leading-relaxed">${opt.text}</span>
+          </button>
+        `;
+      });
+
       area.innerHTML = `
-        <div class="p-2.5 bg-gray-50 rounded-xl cartoon-border-sm mb-2">
-          <h4 class="font-cartoon text-base text-green-950">${q.q}</h4>
+        <div class="mb-3">
+          <div class="flex items-center justify-between text-xs font-bold text-gray-600 mb-1">
+            <span>질문 ${mbtiStep + 1} / ${MBTI_QUESTIONS.length}</span>
+            <span class="text-green-800 font-cartoon">${progressPercent}% 완료</span>
+          </div>
+          <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden cartoon-border-sm">
+            <div class="bg-plant-primary h-full transition-all duration-300 rounded-full" style="width: ${progressPercent}%"></div>
+          </div>
         </div>
-        <div class="space-y-1.5">
-          <button onclick="answerMbti(1)" class="w-full p-2.5 text-left cartoon-border-sm rounded-xl font-medium text-xs text-gray-800 hover:bg-green-100 transition">
-            ${q.a1}
-          </button>
-          <button onclick="answerMbti(0)" class="w-full p-2.5 text-left cartoon-border-sm rounded-xl font-medium text-xs text-gray-800 hover:bg-amber-100 transition">
-            ${q.a2}
-          </button>
+
+        <div class="p-3 bg-plant-light/70 rounded-2xl cartoon-border-sm mb-3">
+          <h4 class="font-cartoon text-base sm:text-lg text-green-950 leading-snug">${q.q}</h4>
+          <p class="text-xs text-gray-600 mt-0.5">${q.sub}</p>
         </div>
-        <p class="text-[11px] text-gray-400 text-center mt-1.5">${mbtiStep + 1} / ${MBTI_QUESTIONS.length}</p>
+
+        <div class="space-y-2">
+          ${optionsHtml}
+        </div>
+
+        <div class="flex justify-between items-center mt-3 pt-2 text-xs">
+          ${mbtiStep > 0 ? `
+            <button onclick="prevMbtiStep()" class="font-bold text-gray-500 hover:text-green-900 flex items-center gap-1">
+              <span>←</span> 이전 질문으로
+            </button>
+          ` : `<span></span>`}
+          <span class="text-[11px] text-gray-400">마음에 닿는 답변을 선택해 주세요</span>
+        </div>
       `;
     }
 
-    function answerMbti(score) {
-      mbtiScore += score;
+    function answerMbti(optionIndex) {
+      const q = MBTI_QUESTIONS[mbtiStep];
+      const opt = q.options[optionIndex];
+
+      mbtiHistory.push({
+        scoresBefore: { ...mbtiScores },
+        step: mbtiStep
+      });
+
+      if (opt.votes) {
+        for (let key in opt.votes) {
+          if (mbtiScores[key] !== undefined) {
+            mbtiScores[key] += opt.votes[key];
+          }
+        }
+      }
+
       mbtiStep++;
       renderMbtiStep();
+    }
+
+    function prevMbtiStep() {
+      if (mbtiHistory.length > 0) {
+        const last = mbtiHistory.pop();
+        mbtiScores = last.scoresBefore;
+        mbtiStep = last.step;
+        renderMbtiStep();
+      }
+    }
+
+    function toggleAllPlantsGallery() {
+      const box = document.getElementById('allPlantsGalleryBox');
+      if (box) {
+        box.classList.toggle('hidden');
+        if (!box.classList.contains('hidden')) {
+          box.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
     }
 
     const WEATHER_SCENARIOS = {
