@@ -349,6 +349,61 @@
     <!-- TAB 3: 추천 식물 & 감성 도감                   -->
     <!-- ============================================== -->
     <div id="tab-recommend" class="space-y-4 sm:space-y-5 hidden">
+      <!-- 실시간 글로벌 온라인 식물 검색 바 -->
+      <section class="cartoon-card p-4 sm:p-5 bg-gradient-to-r from-emerald-50 via-teal-50 to-green-50 border-2 border-emerald-700 shadow-cartoon-sm">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-2xl">🌐</span>
+          <div>
+            <h2 class="text-lg sm:text-xl font-cartoon text-green-950 flex items-center gap-1.5">
+              실시간 온라인 식물 검색 엔진
+            </h2>
+            <p class="text-xs text-gray-600">세상의 모든 식물을 실시간으로 검색하여 사진과 생육 레시피를 가져옵니다!</p>
+          </div>
+        </div>
+
+        <form onsubmit="event.preventDefault(); searchOnlinePlant(document.getElementById('onlinePlantSearchInput').value);" class="flex gap-1.5 mt-3">
+          <div class="relative flex-grow">
+            <input type="text" id="onlinePlantSearchInput" placeholder="식물 이름을 입력하세요 (예: 유칼립투스, 벵갈고무나무, 라벤더, 동백, 아단소니...)" class="w-full cartoon-border-sm rounded-xl py-2 px-3 pl-9 text-xs sm:text-sm font-bold bg-white text-green-950 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400">
+            <span class="absolute left-3 top-2.5 text-gray-400 text-xs">🔍</span>
+          </div>
+          <button type="submit" class="cartoon-btn bg-emerald-600 hover:bg-emerald-700 text-white font-cartoon text-xs sm:text-sm px-4 py-2 rounded-xl flex-shrink-0 flex items-center gap-1 shadow-sm">
+            <span>검색</span>
+          </button>
+        </form>
+
+        <!-- 인기 추천 키워드 태그 칩 -->
+        <div class="flex flex-wrap items-center gap-1.5 mt-2.5 pt-2 border-t border-emerald-100/80 text-[11px]">
+          <span class="text-gray-500 font-bold flex-shrink-0 text-[10px]">인기 검색:</span>
+          <button type="button" onclick="searchOnlinePlant('유칼립투스')" class="bg-white hover:bg-emerald-100 text-emerald-900 font-medium px-2 py-0.5 rounded-full cartoon-border-sm text-[10px]">#유칼립투스</button>
+          <button type="button" onclick="searchOnlinePlant('라벤더')" class="bg-white hover:bg-emerald-100 text-emerald-900 font-medium px-2 py-0.5 rounded-full cartoon-border-sm text-[10px]">#라벤더</button>
+          <button type="button" onclick="searchOnlinePlant('벵갈고무나무')" class="bg-white hover:bg-emerald-100 text-emerald-900 font-medium px-2 py-0.5 rounded-full cartoon-border-sm text-[10px]">#벵갈고무나무</button>
+          <button type="button" onclick="searchOnlinePlant('동백나무')" class="bg-white hover:bg-emerald-100 text-emerald-900 font-medium px-2 py-0.5 rounded-full cartoon-border-sm text-[10px]">#동백나무</button>
+          <button type="button" onclick="searchOnlinePlant('호접란')" class="bg-white hover:bg-emerald-100 text-emerald-900 font-medium px-2 py-0.5 rounded-full cartoon-border-sm text-[10px]">#호접란</button>
+          <button type="button" onclick="searchOnlinePlant('바질')" class="bg-white hover:bg-emerald-100 text-emerald-900 font-medium px-2 py-0.5 rounded-full cartoon-border-sm text-[10px]">#바질</button>
+          <button type="button" onclick="searchOnlinePlant('괴근식물')" class="bg-white hover:bg-emerald-100 text-emerald-900 font-medium px-2 py-0.5 rounded-full cartoon-border-sm text-[10px]">#괴근식물</button>
+        </div>
+      </section>
+
+      <!-- 실시간 온라인 검색 결과 표시 영역 (기본 숨김) -->
+      <section id="onlineSearchResultArea" class="hidden space-y-3 p-4 sm:p-5 rounded-2xl bg-white cartoon-border border-emerald-800 animate-in fade-in">
+        <div class="flex items-center justify-between border-b-2 border-emerald-100 pb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🌐</span>
+            <h3 id="onlineSearchTitle" class="text-base sm:text-lg font-cartoon text-green-950">실시간 온라인 식물 검색 결과</h3>
+          </div>
+          <button type="button" onclick="closeOnlineSearchArea()" class="text-xs text-gray-500 hover:text-gray-800 font-bold bg-gray-100 hover:bg-gray-200 px-2.5 py-1 rounded-lg">
+            ✕ 검색 닫기
+          </button>
+        </div>
+
+        <div id="onlineSearchLoading" class="hidden py-8 text-center text-xs text-emerald-800 font-bold">
+          <div class="inline-block w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mb-2"></div>
+          <p>전 세계 식물 지식베이스에서 실시간 데이터를 탐색 중입니다...</p>
+        </div>
+
+        <div id="onlineSearchGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5"></div>
+      </section>
+
       <div class="cartoon-card p-4 sm:p-5 bg-gradient-to-r from-amber-50 to-orange-50">
         <h2 class="text-xl sm:text-2xl font-cartoon text-amber-950 flex items-center gap-1.5">
           <span>✨</span> 초보자를 위한 감성 식물 큐레이션
@@ -2658,6 +2713,149 @@
         activeBtn.classList.add('bg-plant-primary', 'text-white', 'shadow-cartoon-sm');
       }
       renderRecommendations(category, true);
+    }
+
+    async function searchOnlinePlant(query) {
+      query = (query || '').trim();
+      if (!query) {
+        alert('검색할 식물 이름을 입력해 주세요! (예: 유칼립투스, 벵갈고무나무, 라벤더, 동백, 아스파라거스 등)');
+        return;
+      }
+
+      const inputEl = document.getElementById('onlinePlantSearchInput');
+      if (inputEl) inputEl.value = query;
+
+      const container = document.getElementById('onlineSearchResultArea');
+      const resultGrid = document.getElementById('onlineSearchGrid');
+      const titleEl = document.getElementById('onlineSearchTitle');
+      const loadingEl = document.getElementById('onlineSearchLoading');
+
+      if (!container || !resultGrid) return;
+
+      container.classList.remove('hidden');
+      loadingEl.classList.remove('hidden');
+      resultGrid.innerHTML = '';
+      titleEl.innerText = `🔍 '${query}' 실시간 식물 지식 탐색 중...`;
+      container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      try {
+        const url = `https://ko.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=6&prop=pageimages|extracts&exintro=1&explaintext=1&pithumbsize=600&format=json&origin=*`;
+        const res = await fetch(url);
+        const data = await res.json();
+        loadingEl.classList.add('hidden');
+
+        const pages = (data.query && data.query.pages) ? Object.values(data.query.pages) : [];
+
+        // 유효한 결과 필터링 (명백히 자동차/기계 등이 아닌 것)
+        const validResults = pages.filter(p => {
+          const text = (p.title + ' ' + (p.extract || '')).toLowerCase();
+          return !text.includes('자동차') && !text.includes('스마트폰') && !text.includes('철도역');
+        });
+
+        if (validResults.length === 0) {
+          resultGrid.innerHTML = `
+            <div class="col-span-full cartoon-card p-5 text-center bg-amber-50">
+              <span class="text-3xl block mb-2">🌱</span>
+              <p class="font-cartoon text-base text-green-950">'${query}'에 대한 위키백과 직접 검색 결과가 없습니다.</p>
+              <p class="text-xs text-gray-600 mt-1">하지만 걱정 마세요! [새 반려식물 등록]에서 직접 등록하시면 생육 레시피를 바로 맞춰드려요.</p>
+              <button onclick="adoptOnlinePlant('${query}', '')" class="mt-3 cartoon-btn bg-plant-primary text-white text-xs px-4 py-2 rounded-xl font-cartoon shadow-sm">
+                🌱 '${query}' 바로 등록하러 가기
+              </button>
+            </div>
+          `;
+          titleEl.innerText = `🔍 '${query}' 검색 결과`;
+          return;
+        }
+
+        titleEl.innerText = `🌟 '${query}' 실시간 식물 검색 결과 (${validResults.length}건 발견)`;
+
+        let html = '';
+        validResults.forEach(p => {
+          const cleanTitle = p.title.replace(/\s*\(.*?\)\s*/g, '').trim();
+          const photo = (p.thumbnail && p.thumbnail.source) ? p.thumbnail.source : FALLBACK_PLANT_IMG;
+          const snippet = p.extract ? p.extract.slice(0, 160) + '...' : '자세한 식물 정보가 등록되어 있습니다.';
+
+          // 내장 레시피 매칭으로 물주기/온도 팁 추정
+          let careGuide = { water: '겉흙 마르면 4~6일 1회', sun: '은은한 간접광', temp: '16~25°C' };
+          for (let k in PLANT_ENCYCLOPEDIA) {
+            if (cleanTitle.includes(k) || k.includes(cleanTitle)) {
+              careGuide.water = `${PLANT_ENCYCLOPEDIA[k].waterCycle}일 주기 권장`;
+              careGuide.sun = PLANT_ENCYCLOPEDIA[k].sunLight.split('(')[0].trim();
+              careGuide.temp = PLANT_ENCYCLOPEDIA[k].tempRange.split('(')[0].trim();
+              break;
+            }
+          }
+
+          html += `
+            <div class="cartoon-card overflow-hidden flex flex-col justify-between bg-white border-2 border-emerald-600 shadow-cartoon-sm animate-in fade-in">
+              <div>
+                <div class="relative h-44 overflow-hidden bg-gray-100">
+                  <img src="${photo}" onerror="handleImgError(this)" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105" alt="${p.title}">
+                  <span class="absolute top-2.5 left-2.5 bg-emerald-700 text-white cartoon-border-sm px-2.5 py-0.5 rounded-full font-cartoon text-[11px] shadow-sm">
+                    🌐 실시간 온라인 백과
+                  </span>
+                </div>
+                <div class="p-3.5 sm:p-4">
+                  <h4 class="text-lg font-cartoon text-green-950 mb-1 flex items-center gap-1.5">
+                    <span>🌿</span> ${p.title}
+                  </h4>
+                  <p class="text-xs text-gray-700 leading-relaxed mb-3 bg-gray-50 p-2.5 rounded-xl cartoon-border-sm break-keep">
+                    ${snippet}
+                  </p>
+
+                  <div class="grid grid-cols-3 gap-1.5 text-[11px] mb-2">
+                    <div class="bg-blue-50 p-1.5 rounded-lg cartoon-border-sm text-center">
+                      <span class="text-blue-900 font-bold block text-[10px]">💧 권장 물주기</span>
+                      <span class="text-gray-600 text-[10px] truncate block">${careGuide.water}</span>
+                    </div>
+                    <div class="bg-amber-50 p-1.5 rounded-lg cartoon-border-sm text-center">
+                      <span class="text-amber-900 font-bold block text-[10px]">☀️ 권장 햇빛</span>
+                      <span class="text-gray-600 text-[10px] truncate block">${careGuide.sun}</span>
+                    </div>
+                    <div class="bg-rose-50 p-1.5 rounded-lg cartoon-border-sm text-center">
+                      <span class="text-rose-900 font-bold block text-[10px]">🌡️ 적정 온도</span>
+                      <span class="text-gray-600 text-[10px] truncate block">${careGuide.temp}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-3.5 sm:p-4 pt-0">
+                <button onclick="adoptOnlinePlant('${cleanTitle}', '${photo.replace(/'/g, "\\'")}')" class="w-full py-2.5 cartoon-btn bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-cartoon text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-sm">
+                  <span>🌱</span> 이 식물로 바로 입양 등록하기
+                </button>
+              </div>
+            </div>
+          `;
+        });
+
+        resultGrid.innerHTML = html;
+      } catch (err) {
+        console.error('온라인 식물 검색 실패:', err);
+        loadingEl.classList.add('hidden');
+        resultGrid.innerHTML = `
+          <div class="col-span-full cartoon-card p-4 text-center bg-rose-50 text-rose-800 text-xs">
+            네트워크 연결이 불안정하여 실시간 검색을 완료하지 못했습니다. 잠시 후 다시 시도해 주세요.
+          </div>
+        `;
+      }
+    }
+
+    function adoptOnlinePlant(speciesName, photoUrl) {
+      openAddPlantModal();
+      document.getElementById('plantSpecies').value = speciesName;
+      document.getElementById('plantNickname').value = speciesName + '이';
+      if (photoUrl && photoUrl !== FALLBACK_PLANT_IMG) {
+        document.getElementById('plantPhotoData').value = photoUrl;
+        document.getElementById('photoPreviewImg').src = photoUrl;
+        document.getElementById('photoPreviewContainer').classList.remove('hidden');
+      }
+      autoLookupRecipe();
+    }
+
+    function closeOnlineSearchArea() {
+      const area = document.getElementById('onlineSearchResultArea');
+      if (area) area.classList.add('hidden');
     }
 
     function shuffleAndRenderRecommendations() {
