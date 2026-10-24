@@ -1181,19 +1181,19 @@
         feelings: '단아하고 곧게 뻗은 푸른 잎을 보면 마음에 잡념이 사라지고 깊은 평온을 줍니다.'
       },
       {
-        id: 'plant_3',
+        id: 'plant_1792753922836',
         species: '스투키',
-        nickname: '키키',
-        adoptDate: '2026-08-20',
-        waterCycle: 25,
-        lastWatered: '2026-10-05',
+        nickname: '스투키',
+        adoptDate: '2026-10-23',
+        waterCycle: 30,
+        lastWatered: '2026-10-23',
         balconyCycle: 7,
-        lastBalcony: '2026-10-20',
+        lastBalcony: '2026-10-23',
         windCycle: 5,
         lastWind: '2026-10-23',
         sprayCycle: 14,
-        lastSpray: '2026-10-15',
-        location: '침실 협탁',
+        lastSpray: '2026-10-23',
+        location: '거실 안쪽 (간접광)',
         tempRange: '15~30°C (생명력 최강)',
         sunLight: '양지·반음지 모두 가능 (직사광선도 거뜬)',
         windReq: '가끔 환기해주면 흙이 잘 말라요 (5~7일 주기)',
@@ -1201,6 +1201,28 @@
         photo: 'https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=600&q=80',
         meaning: '꽃말: 관용, 불굴. 밤에 음이온과 산소를 내뿜어 편안한 잠자리를 지켜줍니다.',
         feelings: '물주기를 깜빡 잊어도 꿋꿋하게 자리를 지켜주는 든든한 보디가드 같습니다.'
+      },
+      {
+        id: 'plant_1792753971516',
+        species: '로즈마리 (허브)',
+        nickname: '로즈마리',
+        adoptDate: '2026-10-23',
+        waterCycle: 4,
+        lastWatered: '2026-10-23',
+        balconyCycle: 2,
+        lastBalcony: '2026-10-23',
+        windCycle: 1,
+        lastWind: '2026-10-23',
+        sprayCycle: 3,
+        lastSpray: '2026-10-23',
+        location: '베란다 (시원한 바람과 햇살)',
+        tempRange: '15~25°C (통풍과 햇빛 절대필수!)',
+        sunLight: '양지 (직사광선도 거뜬)',
+        windReq: '매일 1~2시간 이상 환기 필수 (통풍 부족 시 잎마름)',
+        indoorOnly: '주 1~2회 베란다 바람 권장 (베란다 강력추천)',
+        photo: 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=600&q=80',
+        meaning: '꽃말: 나를 기억해주세요, 아름다운 추억. 머리를 맑게 해주는 상쾌한 향기',
+        feelings: '손으로 잎을 스칠 때마다 퍼지는 진한 허브향이 뇌를 맑게 깨워줍니다.'
       }
     ];
 
@@ -1322,6 +1344,12 @@
     function initApp() {
       const savedPlants = localStorage.getItem(STORAGE_KEY_PLANTS);
       plants = savedPlants ? JSON.parse(savedPlants) : [...DEFAULT_PLANTS];
+
+      // 이전 디폴트 데이터(키키, 몬이 등)가 캐시로 남아있을 경우 실제 등록 식물 4종으로 자동 갱신
+      if (plants.some(p => p.nickname === '키키' || p.nickname === '몬이' || p.id === 'plant_3')) {
+        plants = [...DEFAULT_PLANTS];
+        saveLocal();
+      }
 
       const savedLogs = localStorage.getItem(STORAGE_KEY_LOGS);
       careLogs = savedLogs ? JSON.parse(savedLogs) : {};
