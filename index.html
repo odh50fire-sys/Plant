@@ -358,12 +358,17 @@
         </p>
       </div>
 
-      <div class="flex flex-wrap gap-1.5">
-        <button onclick="filterRecommend('all')" id="recFilter-all" class="rec-filter active-filter px-3 py-1.5 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm bg-plant-primary text-white shadow-cartoon-sm">전체 보기</button>
-        <button onclick="filterRecommend('beginner')" id="recFilter-beginner" class="rec-filter px-3 py-1.5 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm bg-white text-gray-800 hover:bg-gray-100">🌿 초보 불패</button>
-        <button onclick="filterRecommend('season')" id="recFilter-season" class="rec-filter px-3 py-1.5 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm bg-white text-gray-800 hover:bg-gray-100">🍁 계절 맞춤</button>
-        <button onclick="filterRecommend('pairing')" id="recFilter-pairing" class="rec-filter px-3 py-1.5 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm bg-white text-gray-800 hover:bg-gray-100">🪴 페어링</button>
-        <button onclick="filterRecommend('unique')" id="recFilter-unique" class="rec-filter px-3 py-1.5 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm bg-white text-gray-800 hover:bg-gray-100">🎨 이색 식물</button>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div class="flex flex-wrap gap-1.5">
+          <button onclick="filterRecommend('all')" id="recFilter-all" class="rec-filter active-filter px-3 py-1.5 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm bg-plant-primary text-white shadow-cartoon-sm">전체 보기</button>
+          <button onclick="filterRecommend('beginner')" id="recFilter-beginner" class="rec-filter px-3 py-1.5 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm bg-white text-gray-800 hover:bg-gray-100">🌿 초보 불패</button>
+          <button onclick="filterRecommend('season')" id="recFilter-season" class="rec-filter px-3 py-1.5 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm bg-white text-gray-800 hover:bg-gray-100">🍁 계절 맞춤</button>
+          <button onclick="filterRecommend('pairing')" id="recFilter-pairing" class="rec-filter px-3 py-1.5 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm bg-white text-gray-800 hover:bg-gray-100">🪴 페어링</button>
+          <button onclick="filterRecommend('unique')" id="recFilter-unique" class="rec-filter px-3 py-1.5 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm bg-white text-gray-800 hover:bg-gray-100">🎨 이색 식물</button>
+        </div>
+        <button onclick="shuffleAndRenderRecommendations()" class="self-end sm:self-auto cartoon-btn bg-amber-300 hover:bg-amber-400 text-amber-950 px-3 py-1.5 rounded-xl font-cartoon text-xs flex items-center gap-1 shadow-sm">
+          <span>🎲</span> 다른 식물 추천보기
+        </button>
       </div>
 
       <div id="recommendGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
@@ -426,9 +431,14 @@
       </section>
 
       <section class="space-y-3">
-        <h2 class="text-lg sm:text-xl font-cartoon text-green-900 flex items-center gap-1.5">
-          <span>📜</span> 식물 오디세이: 역사와 사건 & 뉴스
-        </h2>
+        <div class="flex items-center justify-between gap-2 border-b border-gray-100 pb-2">
+          <h2 class="text-lg sm:text-xl font-cartoon text-green-900 flex items-center gap-1.5">
+            <span>📜</span> 식물 오디세이: 역사와 사건 & 뉴스
+          </h2>
+          <button onclick="shuffleAndRenderHistoryArticles()" class="cartoon-btn bg-emerald-100 hover:bg-emerald-200 text-emerald-950 px-2.5 py-1 rounded-xl font-cartoon text-xs flex items-center gap-1">
+            <span>🎲</span> 이야기 섞어보기
+          </button>
+        </div>
         <div id="historyArticleGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
       </section>
     </div>
@@ -1264,7 +1274,7 @@
       }
     ];
 
-    // 필로덴드론 버킨 사진을 확실히 열리는 검증된 고화질 이미지로 교체!
+    // 풍성한 24종 실내 반려식물 추천 큐레이션 풀
     const RECOMMEND_PLANTS = [
       {
         id: 'rec_1', category: 'beginner', name: '테이블야자', tag: '초보 불패 · 공기정화',
@@ -1283,7 +1293,6 @@
       {
         id: 'rec_3', category: 'pairing', name: '필로덴드론 버킨 (무늬버킨)', tag: '몬스테라와 찰떡 페어링',
         water: '속흙 마르면 7~10일 1회', sun: '은은한 간접광', temp: '18~26°C',
-        // 검증된 선명한 화분 이미지로 교체
         photo: 'https://images.unsplash.com/photo-1604762524889-3e2fcc145683?auto=format&fit=crop&w=600&q=80',
         desc: '초록 잎 위에 하얀 붓으로 섬세하게 선을 그어놓은 듯한 고급스러운 잎무늬. 몬스테라 옆에 함께 두면 근사한 실내 정원이 완성됩니다.',
         meaning: '꽃말: 수호, 변함없는 우정. 자랄수록 무늬가 또렷해져 키우는 보람이 큽니다.'
@@ -1294,29 +1303,210 @@
         photo: 'https://images.unsplash.com/photo-1598880940371-c756e015fea1?auto=format&fit=crop&w=600&q=80',
         desc: '수박을 닮은 부채꼴의 커다란 은빛 줄무늬 잎. 밤이 되면 잎을 모아 기도하듯 위로 세우는 신비로운 수면 운동을 합니다.',
         meaning: '꽃말: 당신과 함께라면 마음이 편안해요. 살아 숨쉬며 움직이는 반려식물의 매력.'
+      },
+      {
+        id: 'rec_5', category: 'beginner', name: '홍콩야자 (쉐플레라)', tag: '초보 불패 · 올망졸망 우산 잎',
+        water: '겉흙 마르면 5~7일 1회', sun: '반양지/반음지', temp: '16~26°C',
+        photo: 'https://images.unsplash.com/photo-1599598425947-5202edd564c5?auto=format&fit=crop&w=600&q=80',
+        desc: '작은 우산을 여러 개 펼친 듯 올망졸망 모여난 잎이 사랑스러운 대표 국민 식물. 새집증후군 유해물질을 싹 잡아줍니다.',
+        meaning: '꽃말: 함께하는 행복. 동글동글 모인 잎처럼 가족의 온기와 화목을 채워줍니다.'
+      },
+      {
+        id: 'rec_6', category: 'beginner', name: '골든 스킨답서스', tag: '생명력 챔피언 · 풍성한 넝쿨',
+        water: '속흙 마르면 6~8일 1회', sun: '반음지/실내조명', temp: '16~28°C',
+        photo: 'https://images.unsplash.com/photo-1596724803693-e08713d2f2d9?auto=format&fit=crop&w=600&q=80',
+        desc: '일산화탄소 제거 능력이 탁월해 주방이나 거실에 두기 최고인 덩굴 식물. 수경재배로 물병에 꽂아만 둬도 무럭무럭 자랍니다.',
+        meaning: '꽃말: 우아한 심성. 물만 주어도 지치지 않고 뻗어나가는 푸른 긍정 에너지.'
+      },
+      {
+        id: 'rec_7', category: 'beginner', name: '금전수 (돈나무)', tag: '물 안 줘도 싱싱 · 번영의 상징',
+        water: '속흙 바짝 마르면 20~30일 1회', sun: '반음지/간접광', temp: '15~28°C',
+        photo: 'https://images.unsplash.com/photo-1632304953702-8646b5a37330?auto=format&fit=crop&w=600&q=80',
+        desc: '동전이 줄줄이 달린 듯 빳빳하고 윤기 나는 잎. 뿌리 알뿌리에 수분을 가득 머금고 있어 한 달 동안 물을 잊어도 끄떡없습니다.',
+        meaning: '꽃말: 번영, 부귀, 대박. 집안에 부와 긍정적인 기운을 가득 불러들이는 선물 1순위 식물.'
+      },
+      {
+        id: 'rec_8', category: 'beginner', name: '스파티필름', tag: '순백의 깃발 꽃 · 공기정화 챔피언',
+        water: '잎이 살짝 처질 때 4~6일 1회', sun: '반음지 (직사광선 피하기)', temp: '18~25°C',
+        photo: 'https://images.unsplash.com/photo-1593691509543-c55fb32e7355?auto=format&fit=crop&w=600&q=80',
+        desc: '목마를 땐 스스로 잎을 살짝 늘어뜨려 "물 주세요"라고 신호를 보내는 기특한 식물. 물을 주면 1시간 만에 싱싱하게 일어납니다.',
+        meaning: '꽃말: 세심한 사랑. 하얀 불염포 꽃을 피워내며 집안 공기를 촉촉하고 맑게 걸러줍니다.'
+      },
+      {
+        id: 'rec_9', category: 'beginner', name: '몬스테라 델리시오사', tag: '정글 감성 · 이국적 찢잎 챔피언',
+        water: '속흙 마르면 7~10일 1회', sun: '반양지 (커튼 햇빛)', temp: '18~27°C',
+        photo: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=600&q=80',
+        desc: '시원하게 갈라진 잎이 거실을 단숨에 트렌디한 카페로 바꿔주는 플랜테리어의 절대 강자. 튼튼하고 성장이 빨라 키우는 재미가 최고입니다.',
+        meaning: '꽃말: 깊은 관계, 헌신. 어린 새 잎이 돌돌 말려 피어날 때마다 경이로운 설렘을 줍니다.'
+      },
+      {
+        id: 'rec_10', category: 'season', name: '보스턴 고사리', tag: '풍성한 초록 분수 · 천연 가습기',
+        water: '겉흙 마르면 3~4일 1회 (분무 환영)', sun: '반음지/창가 부드러운 빛', temp: '16~24°C',
+        photo: 'https://images.unsplash.com/photo-1598880940080-ff9a29891b85?auto=format&fit=crop&w=600&q=80',
+        desc: '화분 밖으로 부드러운 잎이 분수처럼 쏟아져 내리는 낭만적인 고사리. 건조한 계절에 최고의 천연 가습 효과를 발휘합니다.',
+        meaning: '꽃말: 매혹, 진실된 사랑. 고풍스러운 행잉 화분에 걸어두면 감성적인 카페 분위기가 완성됩니다.'
+      },
+      {
+        id: 'rec_11', category: 'season', name: '안스리움', tag: '사계절 피어나는 화사한 하트 꽃',
+        water: '겉흙 마르면 5~7일 1회', sun: '반양지 (꽃 피우려면 햇빛 필요)', temp: '18~26°C',
+        photo: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80',
+        desc: '윤기 흐르는 하트 모양 잎과 선명한 붉은색 불염포가 1년 내내 집안을 환하게 밝혀주는 실내 개화 식물입니다.',
+        meaning: '꽃말: 사랑에 번민하는 마음, 순박함. 거실 창가에 두면 늘 화사한 생기를 더해줍니다.'
+      },
+      {
+        id: 'rec_12', category: 'season', name: '시클라멘', tag: '겨울을 밝히는 우아한 나비꽃',
+        water: '저면관수로 5~7일 1회', sun: '서늘한 반양지', temp: '10~20°C (서늘함 선호)',
+        photo: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=600&q=80',
+        desc: '추운 늦가을부터 겨울까지 꽃봉오리가 나비처럼 위를 향해 솟아나는 겨울철 힐링 식물. 베란다 창가의 서늘한 공기를 좋아합니다.',
+        meaning: '꽃말: 수줍음, 내성적인 사랑. 차가운 공기 속에서도 홀로 피어나는 강인한 아름다움.'
+      },
+      {
+        id: 'rec_13', category: 'pairing', name: '알로카시아 프라이덱', tag: '벨벳 잎 질감 · 선명한 흰 잎맥',
+        water: '속흙 마르면 8~12일 1회 (과습 주의)', sun: '은은한 간접광', temp: '18~26°C',
+        photo: 'https://images.unsplash.com/photo-1616046229478-9901c5536a45?auto=format&fit=crop&w=600&q=80',
+        desc: '만지면 부드러운 벨벳 촉감이 느껴지는 짙은 녹색 잎에 새하얀 잎맥이 형광빛으로 뻗어있는 희귀하고 매혹적인 관엽식물입니다.',
+        meaning: '꽃말: 벅찬 사랑, 수호. 고급스러운 플랜테리어의 포인트 식물로 완벽합니다.'
+      },
+      {
+        id: 'rec_14', category: 'pairing', name: '여인초 (극락조화 류)', tag: '시원한 대형 부채 잎 · 거실의 주인공',
+        water: '겉흙 마르면 6~9일 1회', sun: '양지/반양지 (빛 좋아함)', temp: '16~28°C',
+        photo: 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=600',
+        desc: '시원하게 뻗은 커다란 잎이 거실을 단숨에 고급 호텔 로비처럼 연출해 주는 대형 식물. 이국적인 트로피컬 무드를 선사합니다.',
+        meaning: '꽃말: 영원한 신의, 비상. 햇살을 듬뿍 받아 곧게 뻗은 줄기에서 당당한 기품이 느껴집니다.'
+      },
+      {
+        id: 'rec_15', category: 'pairing', name: '피커스 움베르타', tag: '커다란 하트 잎 · 북유럽 인테리어',
+        water: '겉흙 마르면 5~7일 1회', sun: '부드러운 햇살', temp: '18~26°C',
+        photo: 'https://images.unsplash.com/photo-1517191434949-5e90cd67d2b6?auto=format&fit=crop&w=600&q=80',
+        desc: '손바닥보다 훨씬 큰 연둣빛 하트 잎이 매력적인 고무나무과 식물. 북유럽 감성의 원목 가구와 완벽한 조화를 이룹니다.',
+        meaning: '꽃말: 영원한 행복. 커다란 잎사귀가 집안에 따뜻한 평온과 위안을 선사합니다.'
+      },
+      {
+        id: 'rec_16', category: 'pairing', name: '아레카야자', tag: 'NASA 선정 공기정화 1등 챔피언',
+        water: '겉흙 마르면 5~7일 1회', sun: '반양지 (은은한 채광)', temp: '18~25°C',
+        photo: 'https://images.unsplash.com/photo-1617173944883-6ffbd35d584d?auto=format&fit=crop&w=600&q=80',
+        desc: '하루에 약 1리터의 수분을 뿜어내는 최고의 천연 가습 식물. 부드럽게 휘어지는 야자 잎이 이국적이고 시원한 휴식을 선물합니다.',
+        meaning: '꽃말: 승리, 부활. 거실 소파 옆에 두면 맑은 공기와 푸른 쉼터가 완성됩니다.'
+      },
+      {
+        id: 'rec_17', category: 'unique', name: '박쥐란 (플라티케리움)', tag: '벽에 거는 살아있는 사슴뿔 조각품',
+        water: '수태가 바싹 마르면 물에 푹 담그기 (7~10일)', sun: '통풍 좋은 반양지', temp: '16~26°C',
+        photo: 'https://images.unsplash.com/photo-1545239351-ef35f43d514b?auto=format&fit=crop&w=600&q=80',
+        desc: '흙 없이 나무판에 착생시켜 벽에 거는 신비로운 식물. 웅장한 사슴뿔을 닮은 잎과 바닥을 감싸는 영양엽의 조화가 예술적입니다.',
+        meaning: '꽃말: 호기심, 신비로운 이끌림. 벽면에 걸어두면 어떤 액자보다 멋진 생명 예술품이 됩니다.'
+      },
+      {
+        id: 'rec_18', category: 'unique', name: '마란타 레우코네우라', tag: '붉은 잎맥 예술 · 밤에 기도하는 잎',
+        water: '겉흙 마르면 4~6일 1회', sun: '반음지 (간접광)', temp: '18~25°C',
+        photo: 'https://images.unsplash.com/photo-1598880940371-c756e015fea1?auto=format&fit=crop&w=600&q=80',
+        desc: '에메랄드빛 잎 위에 붉은 생명선이 정교하게 수놓아진 희귀 관엽식물. 해가 지면 두 손을 모으듯 잎을 위로 접어 기도합니다.',
+        meaning: '꽃말: 영원한 사랑, 우정. 매일 아침저녁으로 잎을 폈다 접으며 살아있음을 온몸으로 보여줍니다.'
+      },
+      {
+        id: 'rec_19', category: 'unique', name: '스테파니아 에렉타', tag: '동글동글 감자 괴근 · 신비로운 동양미',
+        water: '흙이 바싹 마르면 15~20일 1회', sun: '부드러운 햇살', temp: '17~28°C',
+        photo: 'https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?auto=format&fit=crop&w=600&q=80',
+        desc: '동그란 감자 같은 괴근에서 얇은 줄기가 뻗어나와 연잎을 닮은 완벽한 원형 잎을 틔워내는 신비롭고 이색적인 식물입니다.',
+        meaning: '꽃말: 굳건한 기다림. 투박한 알뿌리에서 피어나는 가녀린 초록 잎의 대비가 마음을 사로잡습니다.'
+      },
+      {
+        id: 'rec_20', category: 'pairing', name: '죽백나무 (나한송과)', tag: '대나무와 소나무의 기품 · 수호목',
+        water: '겉흙 마르면 5~7일 1회', sun: '반양지 (커튼 햇빛)', temp: '16~26°C',
+        photo: './20261023_초록죽백.jpg',
+        desc: '소나무의 굳건함과 대나무의 청초한 잎을 닮은 귀한 식물. 예로부터 사찰과 집안에서 나쁜 기운을 막아주는 수호목으로 사랑받았습니다.',
+        meaning: '꽃말: 소원 성취, 불변, 부귀. 푸르고 단단한 잎이 마음을 차분하고 맑게 정돈해 줍니다.'
+      },
+      {
+        id: 'rec_21', category: 'beginner', name: '스투키 (산세베리아과)', tag: '밤에 산소 선물 · 최강의 생명력',
+        water: '한 달에 1회 속흙까지 바짝 마르면 흠뻑', sun: '양지/반음지 무관', temp: '15~30°C',
+        photo: 'https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=600&q=80',
+        desc: '오이처럼 둥글고 곧게 뻗은 다육 잎. 밤에 이산화탄소를 흡수하고 풍부한 산소와 음이온을 뿜어내어 침실 파수꾼으로 최고입니다.',
+        meaning: '꽃말: 관용, 불굴. 물주기를 깜빡 잊어도 꿋꿋하게 자리를 지켜주는 듬직한 보디가드.'
+      },
+      {
+        id: 'rec_22', category: 'unique', name: '로즈마리 (지중해 허브)', tag: '손끝을 스치면 퍼지는 뇌 맑음 향기',
+        water: '겉흙 마르면 3~5일 1회 (통풍 필수)', sun: '양지 (햇빛과 바람 필수)', temp: '15~25°C',
+        photo: 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?auto=format&fit=crop&w=600&q=80',
+        desc: '지중해 바닷바람을 머금고 자라는 향기로운 허브. 손끝으로 스칠 때마다 피로한 머리를 맑게 깨워주는 천연 아로마입니다.',
+        meaning: '꽃말: 나를 기억해주세요, 아름다운 추억. 햇살 가득한 창가에서 은은한 숲의 향을 선물합니다.'
+      },
+      {
+        id: 'rec_23', category: 'season', name: '올리브나무', tag: '지중해의 은빛 잎 · 평화의 상징',
+        water: '겉흙 마르면 4~6일 1회', sun: '양지 (햇빛을 듬뿍)', temp: '15~28°C',
+        photo: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=600&q=80',
+        desc: '바람이 불 때마다 은빛 뒷면이 반짝이는 서정적인 나무. 지중해의 따사로운 햇살을 머금어 창가 인테리어의 정석으로 꼽힙니다.',
+        meaning: '꽃말: 평화, 지혜. 오래 두고 키울수록 멋스러운 목질화 줄기로 성장의 기쁨을 줍니다.'
+      },
+      {
+        id: 'rec_24', category: 'beginner', name: '호야 카르노사', tag: '도톰한 잎 · 달콤한 꿀을 머금은 별꽃',
+        water: '속흙 마르면 10~14일 1회', sun: '반양지 (빛을 봐야 꽃 핌)', temp: '18~27°C',
+        photo: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=600&q=80',
+        desc: '도톰하고 빳빳한 다육질 잎 사이로 도자기 인형 같은 정교한 별 모양 꽃을 피워내는 식물. 달콤한 꿀방울을 맺는 것이 신비롭습니다.',
+        meaning: '꽃말: 고독한 사랑, 아름다운 사랑. 척박한 환경에서도 묵묵히 기적 같은 꽃을 피워냅니다.'
       }
     ];
 
+    // 풍성한 12편 식물 오디세이 아티클 풀
     const HISTORY_ARTICLES = [
       {
-        id: 'art_1', title: '세계 최초의 거품 경제: 17세기 네덜란드 튤립 파동 🌷', category: '식물 역사', date: '역사 오디세이',
+        id: 'art_1', title: '세계 최초의 거품 경제: 17세기 네덜란드 튤립 파동 🌷', category: '식물 경제사', date: '역사 오디세이',
         summary: '화려한 줄무늬 튤립 한 알의 가격이 대저택 한 채 값과 맞먹었던 시절의 흥미진진한 이야기.',
         content: `1630년대 네덜란드에서는 바이러스로 인해 독특하고 화려한 불꽃 무늬가 생긴 '셈페르 아우구스투스' 튤립 구근의 가치가 천문학적으로 치솟았습니다. 구근 하나가 숙련 노동자의 수십 년 치 연봉에 팔리기도 했죠. 식물에 대한 인간의 열망과 희소성이 만들어낸 세계 최초의 경제 투기 사건이었습니다.`
       },
       {
-        id: 'art_2', title: '몬스테라는 왜 잎에 구멍이 숭숭 뚫려 있을까요? 🌿', category: '진화의 비밀', date: '생물학 토막상식',
+        id: 'art_2', title: '몬스테라는 왜 잎에 구멍이 숭숭 뚫려 있을까요? 🌿', category: '진화의 지혜', date: '생물학 토막상식',
         summary: '거센 열대 우림의 폭우를 견디고, 아래에 있는 어린 잎을 위해 햇빛을 양보하는 몬스테라의 배려심.',
         content: `몬스테라의 구멍 난 잎은 정글에서 살아남기 위한 놀라운 지혜입니다. 폭우나 거센 바람이 불 때 잎이 찢어지지 않고 통과하도록 바람길을 내어주며, 울창한 상층부에서 햇빛을 독점하지 않고 구멍 사이로 아래쪽에 자라는 어린 잎들에게 햇빛을 비춰주기 위해 구멍을 뚫었습니다.`
       },
       {
-        id: 'art_3', title: 'NASA가 우주정거장에서 밝혀낸 "공기정화 식물 TOP 10" 🚀', category: '가드닝 뉴스', date: '과학 & 트렌드',
+        id: 'art_3', title: 'NASA가 우주정거장에서 밝혀낸 "공기정화 식물 TOP 10" 🚀', category: '가드닝 과학', date: '우주와 식물',
         summary: '밀폐된 우주선 안의 유해물질을 정화하기 위해 시작된 NASA의 청정 식물 연구 결과.',
         content: `1989년 NASA의 연구팀은 밀폐된 우주선 내 공기를 정화하기 위해 실내 식물 연구를 진행했습니다. 연구 결과 식물은 잎의 기공을 통해 벤젠, 포름알데히드 등의 독소를 흡수하여 뿌리 미생물의 먹이로 분해한다는 사실이 밝혀졌습니다. 스킨답서스와 산세베리아는 실내 공기질 개선에 최우수 식물로 입증되었습니다.`
       },
       {
-        id: 'art_4', title: '19세기 영국의 기이한 열풍 "프테리도마니아(양치식물 광풍)" 🪴', category: '식물 문화사', date: '역사 오디세이',
+        id: 'art_4', title: '19세기 영국의 기이한 열풍 "프테리도마니아(양치식물 광풍)" 🪴', category: '식물 문화사', date: '빅토리아 시대',
         summary: '영국 귀족들이 숲속 고사리를 찾아 산과 들을 헤매고 온실에 모시던 흥미로운 수집 열풍.',
         content: `1850년대 영국의 빅토리아 여왕 시대에는 남녀노소를 불문하고 야생 고사리를 채집해 수집첩에 붙이고 온실을 꾸미는 '프테리도마니아'가 대유행했습니다. 꽃이 피지 않고 포자로 번식하는 고사리의 원초적이고 신비로운 형태는 당시 산업혁명으로 지친 도시민들에게 숲속 태초의 순수함을 선물해주었습니다.`
+      },
+      {
+        id: 'art_5', title: '인류 문명을 종이에 담은 고대 이집트 파피루스의 기적 📜', category: '문명과 식물', date: '고대 역사',
+        summary: '나일강 갈대밭의 평범한 식물이 어떻게 인류 역사를 영원히 기록하는 종이가 되었을까요?',
+        content: `고대 이집트인들은 나일강 삼각주에 자라던 파피루스 줄기의 껍질을 벗겨 얇게 썬 뒤, 가로세로로 엮어 무거운 돌로 압착해 최초의 종이를 만들었습니다. 오늘날 영어 'Paper'의 어원이 된 이 식물 덕분에 인류는 수천 년 전의 철학과 의학, 문학을 오늘날까지 읽을 수 있게 되었습니다.`
+      },
+      {
+        id: 'art_6', title: '베토벤의 완벽주의: 매일 커피콩 정확히 60알을 센 음악가 ☕', category: '예술과 식물', date: '위인의 정원',
+        summary: '악성 베토벤이 영감을 얻기 위해 매일 아침 커피나무 열매 60알을 일일이 세어 마신 이유.',
+        content: `루트비히 판 베토벤은 매일 아침 정확히 60알의 원두를 손수 세어 커피를 추출했습니다. 그에게 커피나무 열매는 둔탁해진 영감을 날카롭게 깨워주는 최고의 촉매제였습니다. 바흐 역시 "모닝커피 없이는 활력을 얻을 수 없다"며 '커피 칸타타'를 작곡할 정도로 식물 커피는 위대한 클래식 명곡들의 산파 역할을 했습니다.`
+      },
+      {
+        id: 'art_7', title: '셰익스피어 문학 속의 로즈마리: "나를 기억해주세요" 🌿', category: '문학과 식물', date: '허브 오디세이',
+        summary: '햄릿의 오필리아가 전한 기억의 풀, 고대 그리스부터 이어진 기억력 향상의 상징.',
+        content: `셰익스피어의 비극 <햄릿>에서 오필리아는 "여기 로즈마리가 있어요, 이건 기억을 위한 거예요"라고 노래합니다. 고대 그리스 학자들은 시험을 볼 때 머리에 로즈마리 관을 썼는데, 현대 신경과학 연구에서도 로즈마리의 1,8-시네올 성분이 뇌 속 아세틸콜린 분해를 억제해 기억력 향상에 실질적 도움을 준다는 것이 입증되었습니다.`
+      },
+      {
+        id: 'art_8', title: '클레오파트라의 정원과 장미 & 알로에 고대 뷰티 시크릿 🌹', category: '인물과 식물', date: '고대 미용사',
+        summary: '안토니우스의 마음을 사로잡기 위해 배 바닥에 장미 꽃잎을 무릎 높이로 깔았던 여왕.',
+        content: `이집트의 마지막 여왕 클레오파트라는 배를 타고 로마 장군 안토니우스를 맞이할 때, 갑판 위에 장미 꽃잎을 무릎 높이(약 45cm)로 깔고 장미 향수를 돛에 뿌려 온 바다를 장미 향기로 물들였습니다. 또한 사막의 강렬한 햇빛으로부터 피부를 지키기 위해 매일 알로에 베라 즙을 발라 탄력을 유지했습니다.`
+      },
+      {
+        id: 'art_9', title: '살아있는 화석: 히로시마 원폭에서도 다시 싹을 틔운 은행나무 🌲', category: '생명의 경이', date: '자연의 기적',
+        summary: '공룡 시대 이전부터 2억 7천만 년 동안 변함없이 지구를 지켜온 은행나무의 초인적인 생명력.',
+        content: `은행나무는 백악기 공룡 멸종 속에서도 살아남아 '살아있는 화석'으로 불립니다. 1945년 히로시마 원폭 투하 당시 진앙지에서 불과 1km 떨어진 사찰 경내의 은행나무는 모든 건물이 불탄 자리에서 이듬해 봄 기적처럼 푸른 새순을 틔워냈습니다. 방사능과 해충, 오염물질을 물리치는 징코라이드 성분이 빚어낸 생명의 기적이었습니다.`
+      },
+      {
+        id: 'art_10', title: '사찰을 지키는 푸른 영목: 천년을 푸른 죽백나무 이야기 🎋', category: '동양의 지혜', date: '수호목 오디세이',
+        summary: '대나무의 기개와 소나무의 상록을 함께 품어 사찰과 가옥의 악운을 막았던 영험한 나무.',
+        content: `죽백나무는 잎맥이 나란히 뻗어있는 특유의 질긴 잎 구조 덕분에 손으로 쉽게 찢어지지 않아 '변치 않는 신의'와 '불변의 인연'을 상징합니다. 일본과 중국 남부의 고대 사찰에서는 마당에 죽백나무를 심어 화재와 나쁜 기운을 막았으며, 나그네들은 무사귀환을 기원하며 죽백나무 잎을 품에 품고 여행길에 올랐습니다.`
+      },
+      {
+        id: 'art_11', title: '사막 식물의 기적: 밤에만 숨을 쉬어 수분을 지키는 CAM 광합성 🌵', category: '식물 생리학', date: '생존의 비밀',
+        summary: '낮에는 입을 꾹 닫고 밤에만 산소를 뿜어내는 스투키와 다육식물의 눈부신 지혜.',
+        content: `대부분의 식물은 낮에 기공을 열어 이산화탄소를 흡수하고 수분을 증산합니다. 하지만 뜨거운 사막 출신의 스투키와 산세베리아는 낮에 숨을 쉬면 말라 죽기 때문에 낮에는 기공을 굳게 닫고, 서늘한 밤에만 기공을 열어 이산화탄소를 저장하고 산소를 배출합니다. 이것이 바로 밤의 침실에 스투키를 두어야 하는 과학적 이유입니다.`
+      },
+      {
+        id: 'art_12', title: '수정궁(Crystal Palace) 건축의 모태가 된 거대 수련 잎맥 🏛️', category: '생체모방 기술', date: '건축과 자연',
+        summary: '아기가 올라타도 가라앉지 않는 빅토리아 수련의 잎맥 구조가 현대 건축을 바꾼 이야기.',
+        content: `1851년 런던 만국박람회의 상징인 거대한 유리 온실 '수정궁'을 설계한 조지프 팩스턴은 아마존의 빅토리아 수련 잎 뒷면의 방사형 리브(골조) 구조에서 결정적인 영감을 얻었습니다. 거대한 잎이 물 위에서 수십 킬로그램을 견디는 가볍고 튼튼한 구조를 철골과 유리에 적용하여 세계 최초의 프리패브 현대 건축을 탄생시켰습니다.`
       }
     ];
 
@@ -2445,7 +2635,19 @@
       container.innerHTML = html;
     }
 
+    let currentRecommendCategory = 'all';
+
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
     function filterRecommend(category) {
+      currentRecommendCategory = category;
       document.querySelectorAll('.rec-filter').forEach(btn => {
         btn.classList.remove('bg-plant-primary', 'text-white', 'shadow-cartoon-sm');
         btn.classList.add('bg-white', 'text-gray-800');
@@ -2455,26 +2657,43 @@
         activeBtn.classList.remove('bg-white', 'text-gray-800');
         activeBtn.classList.add('bg-plant-primary', 'text-white', 'shadow-cartoon-sm');
       }
-      renderRecommendations(category);
+      renderRecommendations(category, true);
     }
 
-    function renderRecommendations(category) {
+    function shuffleAndRenderRecommendations() {
+      renderRecommendations(currentRecommendCategory, true);
+    }
+
+    function shuffleAndRenderHistoryArticles() {
+      renderHistoryArticles(true);
+    }
+
+    function renderRecommendations(category = 'all', shouldShuffle = true) {
+      currentRecommendCategory = category;
       const container = document.getElementById('recommendGrid');
-      const filtered = category === 'all' ? RECOMMEND_PLANTS : RECOMMEND_PLANTS.filter(p => p.category === category);
+      if (!container) return;
+
+      let filtered = category === 'all' ? [...RECOMMEND_PLANTS] : RECOMMEND_PLANTS.filter(p => p.category === category);
+      if (shouldShuffle) {
+        filtered = shuffleArray(filtered);
+      }
 
       let html = '';
       filtered.forEach(p => {
         html += `
-          <div class="cartoon-card overflow-hidden flex flex-col justify-between">
+          <div class="cartoon-card overflow-hidden flex flex-col justify-between transform transition hover:-translate-y-1">
             <div>
-              <div class="relative h-36 sm:h-40 overflow-hidden">
-                <img src="${p.photo}" onerror="handleImgError(this)" class="w-full h-full object-cover" alt="${p.name}">
-                <span class="absolute top-2.5 left-2.5 bg-white cartoon-border-sm px-2.5 py-0.5 rounded-full font-cartoon text-[11px] text-green-950">
+              <div class="relative h-36 sm:h-44 overflow-hidden bg-gray-100">
+                <img src="${p.photo}" onerror="handleImgError(this)" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105" alt="${p.name}">
+                <span class="absolute top-2.5 left-2.5 bg-white/95 backdrop-blur-sm cartoon-border-sm px-2.5 py-0.5 rounded-full font-cartoon text-[11px] text-green-950 shadow-sm">
                   ${p.tag}
                 </span>
               </div>
               <div class="p-3.5 sm:p-4">
-                <h3 class="text-xl font-cartoon text-green-950 mb-1">${p.name}</h3>
+                <div class="flex items-center justify-between gap-1 mb-1">
+                  <h3 class="text-lg sm:text-xl font-cartoon text-green-950">${p.name}</h3>
+                  <span class="text-[10px] bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded-full font-bold cartoon-border-sm">추천</span>
+                </div>
                 <p class="text-xs text-gray-700 leading-relaxed mb-3">${p.desc}</p>
                 
                 <div class="grid grid-cols-3 gap-1.5 text-[11px] mb-3">
@@ -2500,7 +2719,7 @@
             </div>
 
             <div class="p-3.5 sm:p-4 pt-0">
-              <button onclick="adoptFromRecommend('${p.name}')" class="w-full py-2 cartoon-btn bg-plant-accent/50 text-green-950 rounded-xl font-cartoon text-xs sm:text-sm flex items-center justify-center gap-1.5">
+              <button onclick="adoptFromRecommend('${p.name}')" class="w-full py-2 cartoon-btn bg-plant-accent/50 hover:bg-plant-accent text-green-950 rounded-xl font-cartoon text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-sm">
                 <span>🌱</span> 우리 집에 입양하기
               </button>
             </div>
@@ -2517,20 +2736,30 @@
       autoLookupRecipe();
     }
 
-    function renderHistoryArticles() {
+    function renderHistoryArticles(shouldShuffle = true) {
       const container = document.getElementById('historyArticleGrid');
+      if (!container) return;
+
+      let articles = [...HISTORY_ARTICLES];
+      if (shouldShuffle) {
+        articles = shuffleArray(articles);
+      }
+
       let html = '';
-      HISTORY_ARTICLES.forEach(art => {
+      articles.forEach((art, idx) => {
+        const isHighlight = idx === 0;
         html += `
-          <div class="cartoon-card p-4 sm:p-5 bg-white flex flex-col justify-between">
+          <div class="cartoon-card p-4 sm:p-5 bg-white flex flex-col justify-between ${isHighlight ? 'border-2 border-emerald-600 shadow-cartoon-sm' : ''}">
             <div>
               <div class="flex items-center justify-between gap-1 mb-1.5">
-                <span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full cartoon-border-sm">${art.category}</span>
+                <span class="bg-amber-100 text-amber-900 text-[10px] font-bold px-2.5 py-0.5 rounded-full cartoon-border-sm flex items-center gap-1">
+                  ${isHighlight ? '🌟 오늘의 픽 · ' : ''}${art.category}
+                </span>
                 <span class="text-[10px] text-gray-400 font-medium">${art.date}</span>
               </div>
               <h3 class="text-base sm:text-lg font-cartoon text-green-950 mb-1.5 leading-snug">${art.title}</h3>
-              <p class="text-xs font-bold text-gray-700 mb-2 bg-gray-50 p-2 rounded-lg cartoon-border-sm leading-relaxed">${art.summary}</p>
-              <p class="text-xs text-gray-600 leading-relaxed">${art.content}</p>
+              <p class="text-xs font-bold text-gray-700 mb-2 bg-emerald-50/50 p-2 rounded-lg cartoon-border-sm leading-relaxed">${art.summary}</p>
+              <p class="text-xs text-gray-600 leading-relaxed break-keep">${art.content}</p>
             </div>
           </div>
         `;
@@ -3577,6 +3806,11 @@
           btn.classList.add('text-gray-700');
         }
       });
+      if (tabId === 'recommend') {
+        renderRecommendations(currentRecommendCategory || 'all', true);
+      } else if (tabId === 'magazine') {
+        renderHistoryArticles(true);
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
