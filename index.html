@@ -1116,36 +1116,48 @@
 
     const DEFAULT_PLANTS = [
       {
-        id: 'plant_1',
-        species: '몬스테라 델리시오사',
-        nickname: '몬이',
-        adoptDate: '2026-09-15',
+        id: 'plant_1792755916127',
+        species: '죽백',
+        nickname: '초록죽백',
+        adoptDate: '2026-10-23',
         waterCycle: 7,
-        lastWatered: '2026-10-18',
-        location: '거실 창가 (부드러운 햇살)',
-        tempRange: '18~27°C (10°C 이하 냉해 주의)',
-        sunLight: '반양지 (커튼 햇빛 권장, 직사광선 주의)',
+        lastWatered: '2026-10-23',
+        balconyCycle: 3,
+        lastBalcony: '2026-10-23',
+        windCycle: 1,
+        lastWind: '2026-10-23',
+        sprayCycle: 2,
+        lastSpray: '2026-10-23',
+        location: '거실 안쪽 (간접광)',
+        tempRange: '16~26°C (8°C 이하 냉해 주의)',
+        sunLight: '반양지 (커튼을 거친 부드러운 햇빛)',
         windReq: '매일 1~2시간 이상 환기 필수',
-        indoorOnly: '실내 가능하나 가끔 베란다 바람 권장',
-        photo: 'https://images.unsplash.com/photo-1614594975525-e45190c55d0b?auto=format&fit=crop&w=600&q=80',
-        meaning: '꽃말: 기쁜 소식, 깊은 배려. 찢어진 잎 사이로 아래 잎에 햇빛을 나눠주는 다정한 친구',
-        feelings: '시원하게 뻗은 잎을 보면 마음에 넓은 여유와 이국적인 활력이 솟아납니다.'
+        indoorOnly: '주 1~2회 베란다 바람 권장',
+        photo: './20261023_초록죽백.jpg',
+        meaning: '꽃말: 소원 성취, 불변, 부귀. 대나무 잎과 소나무 기품을 닮아 악운을 막아주는 영험한 수호목',
+        feelings: '단아하고 곧게 뻗은 푸른 잎을 보면 마음에 잡념이 사라지고 깊은 평온을 줍니다.'
       },
       {
-        id: 'plant_2',
-        species: '골든 스킨답서스',
-        nickname: '초록이',
-        adoptDate: '2026-10-01',
-        waterCycle: 5,
-        lastWatered: '2026-10-22',
-        location: '거실 테이블',
-        tempRange: '16~25°C (추위에 약함)',
-        sunLight: '반음지 (형광등 불빛만으로도 쑥쑥)',
-        windReq: '적당한 실내 환기면 충분',
-        indoorOnly: '실내에서만 키워도 무방함 (초보 불패 1순위)',
-        photo: 'https://images.unsplash.com/photo-1596724803693-e08713d2f2d9?auto=format&fit=crop&w=600&q=80',
-        meaning: '꽃말: 다시 찾은 행복. 악조건 속에서도 놀라운 생명력으로 덩굴을 뻗는 희망의 상징',
-        feelings: '반짝이는 하트 잎을 보며 지친 하루 끝에 묵묵한 위로를 받습니다.'
+        id: 'plant_1792755916128',
+        species: '죽백',
+        nickname: '형광죽백',
+        adoptDate: '2026-10-23',
+        waterCycle: 7,
+        lastWatered: '2026-10-23',
+        balconyCycle: 3,
+        lastBalcony: '2026-10-23',
+        windCycle: 1,
+        lastWind: '2026-10-23',
+        sprayCycle: 2,
+        lastSpray: '2026-10-23',
+        location: '거실 창가 (부드러운 햇살)',
+        tempRange: '16~26°C (8°C 이하 냉해 주의)',
+        sunLight: '반양지 (커튼을 거친 부드러운 햇빛)',
+        windReq: '매일 1~2시간 이상 환기 필수',
+        indoorOnly: '주 1~2회 베란다 바람 권장',
+        photo: 'https://images.unsplash.com/photo-1545241047-6083a3684587?w=500',
+        meaning: '꽃말: 소원 성취, 불변, 부귀. 대나무 잎과 소나무 기품을 닮아 악운을 막아주는 영험한 수호목',
+        feelings: '단아하고 곧게 뻗은 푸른 잎을 보면 마음에 잡념이 사라지고 깊은 평온을 줍니다.'
       },
       {
         id: 'plant_3',
@@ -1283,6 +1295,7 @@
     let syncUnsubscribe = null;
     let gardenSyncCode = '';
     let isRemoteUpdate = false;
+    let hasReceivedCloudData = false;
 
     function initApp() {
       const savedPlants = localStorage.getItem(STORAGE_KEY_PLANTS);
@@ -1324,7 +1337,7 @@
 
     function notifyDataChanged() {
       saveLocal();
-      if (db && gardenSyncCode && !isRemoteUpdate) {
+      if (db && gardenSyncCode && !isRemoteUpdate && hasReceivedCloudData) {
         uploadToCloud();
       }
     }
@@ -1344,6 +1357,7 @@
 
         if (syncUnsubscribe) syncUnsubscribe();
 
+        hasReceivedCloudData = false;
         const docRef = db.collection('planty_gardens').doc(gardenSyncCode);
 
         syncUnsubscribe = docRef.onSnapshot(doc => {
@@ -1351,7 +1365,10 @@
             const data = doc.data();
             if (data) {
               isRemoteUpdate = true;
-              if (Array.isArray(data.plants)) plants = data.plants;
+              hasReceivedCloudData = true;
+              if (Array.isArray(data.plants) && data.plants.length > 0) {
+                plants = data.plants;
+              }
               if (data.careLogs) careLogs = data.careLogs;
               if (data.growthDiary) growthDiary = data.growthDiary;
               saveLocal();
@@ -1364,6 +1381,7 @@
               setTimeout(() => { isRemoteUpdate = false; }, 300);
             }
           } else {
+            hasReceivedCloudData = true;
             uploadToCloud();
           }
         }, err => {
@@ -1378,6 +1396,10 @@
 
     function uploadToCloud() {
       if (!db || !gardenSyncCode) return;
+      if (!hasReceivedCloudData) {
+        console.warn('클라우드 최초 동기화 수신 전 자동 덮어쓰기 차단됨');
+        return;
+      }
       const docRef = db.collection('planty_gardens').doc(gardenSyncCode);
       docRef.set({
         plants: plants,
@@ -1430,6 +1452,7 @@
         return;
       }
       if (confirm(`현재 화면에 있는 ${plants.length}개의 식물을 클라우드로 업로드하시겠습니까?`)) {
+        hasReceivedCloudData = true;
         uploadToCloud();
         alert('📤 클라우드로 식물 데이터를 성공적으로 올렸습니다!');
         closeModal('syncModal');
