@@ -502,6 +502,25 @@
           </button>
         </div>
 
+        <!-- 데이터 파일 백업 & 복원 -->
+        <div class="p-3 bg-amber-50/80 rounded-xl cartoon-border-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-950 flex items-center gap-1">
+              <span>💾</span> 식물 데이터 백업 & 복원
+            </span>
+            <span class="text-[10px] text-amber-800 font-medium">사진 및 설정 영구 보관</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="exportBackupFile()" class="py-2 px-2 cartoon-btn bg-amber-400 hover:bg-amber-500 text-amber-950 rounded-xl font-cartoon text-xs flex items-center justify-center gap-1">
+              <span>💾</span> 파일로 백업 저장
+            </button>
+            <label class="py-2 px-2 cartoon-btn bg-white hover:bg-amber-100 text-amber-950 cartoon-border-sm rounded-xl font-cartoon text-xs flex items-center justify-center gap-1 cursor-pointer">
+              <span>📂</span> 백업 파일 불러오기
+              <input type="file" accept=".json" onchange="importBackupFile(event)" class="hidden">
+            </label>
+          </div>
+        </div>
+
         <button onclick="closeModal('syncModal')" class="w-full py-2.5 cartoon-btn bg-plant-primary text-white rounded-xl font-cartoon text-base">
           확인 완료 🌿
         </button>
@@ -1508,6 +1527,69 @@
       }
     }
 
+    function exportBackupFile() {
+      const backupData = {
+        app: 'Planty',
+        version: '1.2.0',
+        exportedAt: new Date().toISOString(),
+        plants: plants,
+        careLogs: careLogs,
+        growthDiary: growthDiary
+      };
+
+      const jsonStr = JSON.stringify(backupData, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const dateStr = getTodayStr().replace(/-/g, '');
+      a.href = url;
+      a.download = `planty_backup_${dateStr}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      alert('💾 식물 데이터 백업 파일이 다운로드되었습니다!\n스마트폰이나 PC에 보관해 두시면 언제든지 복구할 수 있습니다.');
+    }
+
+    function importBackupFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (!parsed.plants || !Array.isArray(parsed.plants)) {
+            alert('올바른 식물 백업 파일 형식이 아닙니다.');
+            return;
+          }
+
+          if (confirm(`백업 파일에서 ${parsed.plants.length}개의 식물 데이터를 복원하시겠습니까?\n현재 데이터가 백업 내용으로 교체됩니다.`)) {
+            plants = parsed.plants;
+            if (parsed.careLogs) careLogs = parsed.careLogs;
+            if (parsed.growthDiary) growthDiary = parsed.growthDiary;
+
+            hasReceivedCloudData = true;
+            saveLocal();
+            uploadToCloud();
+
+            renderGarden();
+            renderHomeCareList();
+            renderWaterSchedule();
+            renderGlobalTimeline();
+            updateMoodBubble();
+            closeModal('syncModal');
+            alert('🎉 백업 파일로부터 식물 데이터와 사진이 완벽하게 복원되었습니다!');
+          }
+        } catch (err) {
+          console.error('백업 파일 복원 오류:', err);
+          alert('백업 파일을 읽는 중 오류가 발생했습니다.');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
     function applyCustomSyncCode() {
       const newCode = document.getElementById('syncGardenCodeInput').value.trim() || 'planty-family-garden';
       gardenSyncCode = newCode;
@@ -2259,7 +2341,9 @@
         plants.push(newPlant);
       }
 
-      notifyDataChanged();
+      hasReceivedCloudData = true;
+      saveLocal();
+      uploadToCloud();
       closeModal('plantModal');
       renderGarden();
       renderHomeCareList();
