@@ -204,20 +204,41 @@
       <section id="weatherSection" class="cartoon-card p-4 sm:p-5 bg-white">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b-2 border-gray-100 pb-3 mb-4">
           <div>
-            <h2 class="text-lg sm:text-xl font-cartoon text-green-900 flex items-center gap-1.5">
-              <span>🌤️</span> 오늘 날씨 & 햇빛채광 신호등
-            </h2>
-            <p class="text-xs text-gray-500 font-medium">날씨에 따라 창가 채광이나 일광욕을 시켜도 될지 알려드려요!</p>
+            <div class="flex items-center gap-2">
+              <h2 class="text-lg sm:text-xl font-cartoon text-green-900 flex items-center gap-1.5">
+                <span>🌤️</span> 오늘 날씨 & 햇빛채광 신호등
+              </h2>
+              <span id="weatherSourceBadge" class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold cartoon-border-sm flex items-center gap-1">
+                <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span id="weatherSourceName">대구 실시간</span>
+              </span>
+            </div>
+            <p id="weatherSubDesc" class="text-xs text-gray-500 font-medium">대구의 실시간 기상 데이터를 바탕으로 햇빛채광과 물주기 안전 여부를 안내해 드려요!</p>
           </div>
           <div class="flex items-center gap-1.5 w-full sm:w-auto">
-            <span class="text-xs font-bold text-gray-500 flex-shrink-0">날씨모드:</span>
-            <select id="weatherSelect" onchange="changeWeatherScenario(this.value)" class="w-full sm:w-auto cartoon-border-sm bg-plant-light rounded-xl px-2.5 py-1 text-xs font-bold text-green-900 focus:outline-none">
-              <option value="spring_mild">봄/가을 온화함 (22°C 맑음)</option>
-              <option value="summer_hot">한여름 폭염/직사광선 (32°C 강렬)</option>
-              <option value="rainy">비 오는 날 (18°C 습도 88%)</option>
-              <option value="winter_cold">늦가을/겨울 한파 (6°C 쌀쌀)</option>
-              <option value="windy">바람 강한 날 (19°C 강풍)</option>
+            <select id="weatherSelect" onchange="handleWeatherSelectChange(this.value)" class="w-full sm:w-auto cartoon-border-sm bg-plant-light rounded-xl px-2.5 py-1 text-xs font-bold text-green-900 focus:outline-none">
+              <optgroup label="📍 실시간 날씨 (실제 기상)">
+                <option value="live_daegu" selected>📍 대구광역시 (기본)</option>
+                <option value="live_seoul">📍 서울특별시</option>
+                <option value="live_busan">📍 부산광역시</option>
+                <option value="live_incheon">📍 인천광역시</option>
+                <option value="live_daejeon">📍 대전광역시</option>
+                <option value="live_gwangju">📍 광주광역시</option>
+                <option value="live_ulsan">📍 울산광역시</option>
+                <option value="live_jeju">📍 제주특별자치도</option>
+                <option value="live_gps">🎯 내 GPS 위치 찾기</option>
+              </optgroup>
+              <optgroup label="🧪 가상 시뮬레이션">
+                <option value="sim_spring">가상: 봄/가을 온화함 (22°C 맑음)</option>
+                <option value="sim_summer">가상: 한여름 폭염/직사광선 (32°C 강렬)</option>
+                <option value="sim_rain">가상: 비 오는 날 (18°C 습도 88%)</option>
+                <option value="sim_winter">가상: 늦가을/겨울 한파 (6°C 쌀쌀)</option>
+                <option value="sim_wind">가상: 바람 강한 날 (19°C 강풍)</option>
+              </optgroup>
             </select>
+            <button type="button" onclick="refreshCurrentWeather()" title="날씨 새로고침" class="cartoon-border-sm bg-white hover:bg-emerald-50 text-green-800 p-1.5 rounded-xl text-xs font-bold transition-all shadow-sm flex-shrink-0 flex items-center justify-center">
+              🔄
+            </button>
           </div>
         </div>
 
@@ -1289,7 +1310,8 @@
     let careLogs = {};
     let growthDiary = [];
     let currentTab = 'home';
-    let currentScenario = 'spring_mild';
+    let selectedWeatherKey = localStorage.getItem('plant_selected_weather') || 'live_daegu';
+    let activeWeatherData = null;
 
     let db = null;
     let syncUnsubscribe = null;
@@ -1313,14 +1335,13 @@
       document.getElementById('plantLastWatered').value = today;
       document.getElementById('diaryDate').value = today;
 
-      updateWeatherDisplay();
+      handleWeatherSelectChange(selectedWeatherKey);
       renderHomeCareList();
       renderWaterSchedule();
       renderGarden();
       renderGlobalTimeline();
       renderRecommendations('all');
       renderHistoryArticles();
-      updateMoodBubble();
 
       startAutoFirebaseSync();
     }
@@ -2862,68 +2883,289 @@
       }
     }
 
+    // 한국 주요 도시 좌표 (실시간 기상청/Open-Meteo 연동용)
+    const KOREA_CITIES = {
+      live_daegu: { name: '대구', fullName: '대구광역시', lat: 35.8714, lon: 128.6014 },
+      live_seoul: { name: '서울', fullName: '서울특별시', lat: 37.5665, lon: 126.9780 },
+      live_busan: { name: '부산', fullName: '부산광역시', lat: 35.1796, lon: 129.0756 },
+      live_incheon: { name: '인천', fullName: '인천광역시', lat: 37.4563, lon: 126.7052 },
+      live_daejeon: { name: '대전', fullName: '대전광역시', lat: 36.3504, lon: 127.3845 },
+      live_gwangju: { name: '광주', fullName: '광주광역시', lat: 35.1595, lon: 126.8526 },
+      live_ulsan: { name: '울산', fullName: '울산광역시', lat: 35.5384, lon: 129.3114 },
+      live_jeju: { name: '제주', fullName: '제주특별자치도', lat: 33.4996, lon: 126.5312 }
+    };
+
     const WEATHER_SCENARIOS = {
-      spring_mild: {
+      sim_spring: {
         temp: 22, humidity: 50, wind: 1.8, sun: '부드러운 햇살', icon: '☀️', light: 'green',
-        lightText: '외출 추천 (초록불)', badge: '쾌적 최고', boxBg: 'bg-green-100 border-green-800', lightBg: 'bg-green-400',
-        desc: '기온 22°C 포근한 날씨! 오전~낮 시간에 베란다 일광욕을 2~3시간 시켜주면 식물 면역력이 쑥쑥 자라납니다.'
+        lightText: '햇빛채광 추천 (초록불)', badge: '쾌적 최고', boxBg: 'bg-green-100 border-green-800', lightBg: 'bg-green-400',
+        desc: '기온 22°C 포근한 날씨! 오전~낮 시간에 2~3시간 햇빛채광을 시켜주면 식물 면역력이 쑥쑥 자라납니다.',
+        tempGuide: '적정 (18~25°C)', humidityGuide: '상쾌한 환경', windGuide: '산들바람 적기', sunGuide: '간접광 추천',
+        locationName: '가상 시뮬레이션 (온화함)', isRaining: false
       },
-      summer_hot: {
+      sim_summer: {
         temp: 32, humidity: 65, wind: 0.8, sun: '타는 직사광선', icon: '🥵', light: 'red',
-        lightText: '베란다 피신 (빨강불)', badge: '잎 화상 주의', boxBg: 'bg-rose-100 border-rose-800', lightBg: 'bg-rose-500',
-        desc: '기온 32°C 폭염! 베란다 창가의 뜨거운 직사광선은 잎을 태울 수 있으니 시원한 거실 안쪽 반양지로 들여놓으세요.'
+        lightText: '햇빛채광 피신 (빨강불)', badge: '잎 화상 주의', boxBg: 'bg-rose-100 border-rose-800', lightBg: 'bg-rose-500',
+        desc: '기온 32°C 폭염! 창가의 뜨거운 직사광선은 잎을 태울 수 있으니 시원한 거실 안쪽 반양지로 들여놓으세요.',
+        tempGuide: '고온 (30°C 이상)', humidityGuide: '약간 습함', windGuide: '바람 없음', sunGuide: '차광막 필수',
+        locationName: '가상 시뮬레이션 (폭염)', isRaining: false
       },
-      rainy: {
+      sim_rain: {
         temp: 18, humidity: 88, wind: 3.2, sun: '흐리고 비', icon: '🌧️', light: 'yellow',
         lightText: '비 맞음 주의 (노랑불)', badge: '과습 주의보', boxBg: 'bg-yellow-100 border-yellow-800', lightBg: 'bg-yellow-400',
-        desc: '습도가 88%로 높습니다! 비를 맞히면 과습 위험이 있으니 물주기를 하루이틀 미루고 실내 환기를 시켜주세요.'
+        desc: '습도가 88%로 높고 비가 옵니다! 비를 맞히면 과습 위험이 있으니 물주기를 하루이틀 미루고 실내 환기를 시켜주세요.',
+        tempGuide: '선선함', humidityGuide: '과습 주의 (>85%)', windGuide: '습한 바람', sunGuide: '일조량 부족',
+        locationName: '가상 시뮬레이션 (비)', isRaining: true
       },
-      winter_cold: {
+      sim_winter: {
         temp: 6, humidity: 35, wind: 4.5, sun: '쌀쌀한 햇빛', icon: '🥶', light: 'red',
         lightText: '외출 금지 (빨강불)', badge: '냉해 위험 (10°C 미만)', boxBg: 'bg-blue-100 border-blue-800', lightBg: 'bg-blue-400',
-        desc: '기온 6°C! 열대 식물은 10°C 이하 바람에 냉해를 입습니다. 절대 베란다에 두지 마시고 따뜻한 실내에 두세요.'
+        desc: '기온 6°C! 열대 식물은 10°C 이하 바람에 냉해를 입습니다. 절대 창가 외부에 두지 마시고 따뜻한 실내에 두세요.',
+        tempGuide: '저온 (10°C 미만)', humidityGuide: '건조 환경', windGuide: '찬바람 주의', sunGuide: '실내 간접광',
+        locationName: '가상 시뮬레이션 (한파)', isRaining: false
       },
-      windy: {
+      sim_wind: {
         temp: 19, humidity: 45, wind: 6.8, sun: '강풍 주의', icon: '💨', light: 'yellow',
         lightText: '화분 주의 (노랑불)', badge: '강풍 주의', boxBg: 'bg-amber-100 border-amber-800', lightBg: 'bg-amber-400',
-        desc: '기온 19°C지만 바람이 셉니다! 작은 화분이 떨어지거나 잎이 꺾이지 않게 바닥 쪽 안전한 곳에 놓아주세요.'
+        desc: '기온 19°C지만 바람이 셉니다! 작은 화분이 떨어지거나 잎이 꺾이지 않게 안전한 실내 쪽에 놓아주세요.',
+        tempGuide: '적정', humidityGuide: '적정', windGuide: '강풍 위험 (>6m/s)', sunGuide: '안전 장소 배치',
+        locationName: '가상 시뮬레이션 (강풍)', isRaining: false
       }
     };
 
-    function changeWeatherScenario(scenarioKey) {
-      currentScenario = scenarioKey;
-      updateWeatherDisplay();
+    function interpretWmoCode(code) {
+      if (code === 0) return { label: '맑음', icon: '☀️', sunLevel: '쾌청한 햇살', isRain: false };
+      if ([1, 2].includes(code)) return { label: '대체로 맑음/구름조금', icon: '🌤️', sunLevel: '부드러운 햇살', isRain: false };
+      if (code === 3) return { label: '흐림', icon: '☁️', sunLevel: '은은한 간접광', isRain: false };
+      if ([45, 48].includes(code)) return { label: '안개', icon: '🌫️', sunLevel: '흐린 광량', isRain: false };
+      if ([51, 53, 55].includes(code)) return { label: '이슬비 / 가벼운 비', icon: '🌧️', sunLevel: '흐리고 비', isRain: true };
+      if ([61, 63, 65].includes(code)) return { label: '비', icon: '🌧️', sunLevel: '비 내림', isRain: true };
+      if ([66, 67].includes(code)) return { label: '어는 비', icon: '🌨️', sunLevel: '비/진눈깨비', isRain: true };
+      if ([71, 73, 75, 77].includes(code)) return { label: '눈', icon: '❄️', sunLevel: '눈 내림', isRain: true };
+      if ([80, 81, 82].includes(code)) return { label: '소나기', icon: '🌦️', sunLevel: '소나기/흐림', isRain: true };
+      if ([85, 86].includes(code)) return { label: '눈 소나기', icon: '🌨️', sunLevel: '눈/흐림', isRain: true };
+      if ([95, 96, 99].includes(code)) return { label: '천둥번개 동반 비', icon: '⛈️', sunLevel: '비바람/천둥', isRain: true };
+      return { label: '구름 많음', icon: '⛅', sunLevel: '간접광', isRain: false };
+    }
+
+    function evaluateLiveWeather(current, cityName) {
+      const temp = Math.round(current.temperature_2m * 10) / 10;
+      const humidity = Math.round(current.relative_humidity_2m);
+      const wind = Math.round((current.wind_speed_10m || 0) * 10) / 10;
+      const rain = (current.rain || 0) + (current.precipitation || 0);
+      const codeInfo = interpretWmoCode(current.weather_code);
+      const isRaining = codeInfo.isRain || rain > 0;
+
+      let light = 'green';
+      let lightText = '햇빛채광 추천 (초록불)';
+      let badge = '쾌적 최고';
+      let boxBg = 'bg-green-100 border-green-800';
+      let lightBg = 'bg-green-400';
+      let desc = `${cityName} 기온 ${temp}°C, 산들바람으로 온화합니다! 오전~낮 시간에 햇빛채광을 2~3시간 시켜주면 식물이 건강해져요.`;
+
+      // 1. 비 내림 또는 극단적 고습도(>85%)
+      if (isRaining || humidity >= 88) {
+        light = 'yellow';
+        lightText = '비 맞음 주의 (노랑불)';
+        badge = isRaining ? '비 내림 / 과습 주의' : '고습도 과습 주의';
+        boxBg = 'bg-yellow-100 border-yellow-800';
+        lightBg = 'bg-yellow-400';
+        desc = `${cityName}에 ${codeInfo.label}(습도 ${humidity}%)이 감지되었습니다! 화분이 직접 비를 맞으면 과습으로 뿌리가 상할 수 있으니 창가 안쪽으로 들이고 물주기를 하루이틀 미뤄주세요.`;
+      }
+      // 2. 냉해 위험 (10도 미만)
+      else if (temp < 10) {
+        light = 'red';
+        lightText = '외출 금지 (빨강불)';
+        badge = `냉해 위험 (${temp}°C)`;
+        boxBg = 'bg-blue-100 border-blue-800';
+        lightBg = 'bg-blue-400';
+        desc = `현재 기온 ${temp}°C로 쌀쌀합니다. 열대 관엽식물은 10°C 이하 찬바람에 냉해를 입을 수 있으니 창문을 닫고 따뜻한 실내에 두세요.`;
+      }
+      // 3. 폭염/강한 햇빛 (30도 이상)
+      else if (temp >= 30) {
+        light = 'red';
+        lightText = '햇빛채광 피신 (빨강불)';
+        badge = `폭염/화상 주의 (${temp}°C)`;
+        boxBg = 'bg-rose-100 border-rose-800';
+        lightBg = 'bg-rose-500';
+        desc = `기온 ${temp}°C의 무더위입니다! 창가의 뜨거운 직사광선은 식물 잎을 까맣게 태울 수 있으니 서늘한 실내 반양지로 이동시켜 주세요.`;
+      }
+      // 4. 강풍 (6m/s 이상)
+      else if (wind >= 6.0) {
+        light = 'yellow';
+        lightText = '화분 주의 (노랑불)';
+        badge = `강풍 주의 (${wind}m/s)`;
+        boxBg = 'bg-amber-100 border-amber-800';
+        lightBg = 'bg-amber-400';
+        desc = `바람이 ${wind}m/s로 강하게 불고 있습니다! 가벼운 화분이 넘어지거나 잎이 꺾이지 않도록 창문을 적당히 닫아주세요.`;
+      }
+
+      let tempGuide = temp >= 18 && temp <= 25 ? '적정 (18~25°C)' : (temp < 10 ? '냉해 위험 저온' : (temp > 28 ? '고온 주의' : '선선함'));
+      let humidityGuide = humidity >= 40 && humidity <= 70 ? '쾌적 (40~70%)' : (humidity > 70 ? '다습 (과습 주의)' : '건조 (분무 추천)');
+      let windGuide = wind <= 3.5 ? '산들바람 적기' : (wind > 5.5 ? '강풍 (창문 조심)' : '통풍 원활');
+      let sunGuide = codeInfo.sunLevel;
+
+      return {
+        temp, humidity, wind,
+        sun: `${codeInfo.icon} ${codeInfo.label}`,
+        icon: codeInfo.icon,
+        light, lightText, badge, boxBg, lightBg, desc,
+        tempGuide, humidityGuide, windGuide, sunGuide,
+        isRaining,
+        locationName: `${cityName} (실시간)`,
+        updatedAt: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+      };
+    }
+
+    async function fetchLiveWeather(lat, lon, cityName) {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,rain,precipitation&timezone=Asia%2FSeoul`;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Open-Meteo API 응답 오류: ${response.status}`);
+      }
+      const data = await response.json();
+      return evaluateLiveWeather(data.current, cityName);
+    }
+
+    async function handleWeatherSelectChange(selectKey) {
+      selectedWeatherKey = selectKey;
+      try {
+        localStorage.setItem('plant_selected_weather', selectKey);
+      } catch (e) {}
+
+      // UI 드롭다운 값 동기화
+      const selectEl = document.getElementById('weatherSelect');
+      if (selectEl && selectEl.value !== selectKey) {
+        selectEl.value = selectKey;
+      }
+
+      const badgeName = document.getElementById('weatherSourceName');
+      const badgeContainer = document.getElementById('weatherSourceBadge');
+
+      if (selectKey === 'live_gps') {
+        if (!navigator.geolocation) {
+          alert('현재 브라우저에서 위치 정보(GPS)를 지원하지 않아 기본 대구 날씨로 연결합니다.');
+          handleWeatherSelectChange('live_daegu');
+          return;
+        }
+        if (badgeName) badgeName.innerText = 'GPS 위치 확인 중...';
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            try {
+              activeWeatherData = await fetchLiveWeather(pos.coords.latitude, pos.coords.longitude, '내 위치');
+              renderActiveWeather();
+              updateMoodBubble();
+            } catch (err) {
+              console.error('GPS 날씨 가져오기 실패:', err);
+              alert('실시간 날씨를 불러오지 못해 대구 날씨로 전환합니다.');
+              handleWeatherSelectChange('live_daegu');
+            }
+          },
+          (err) => {
+            console.warn('GPS 승인 거부/실패:', err);
+            alert('위치 권한을 사용할 수 없어 대구 실시간 날씨로 연결합니다.');
+            handleWeatherSelectChange('live_daegu');
+          },
+          { timeout: 7000 }
+        );
+        return;
+      }
+
+      if (selectKey.startsWith('live_')) {
+        const cityInfo = KOREA_CITIES[selectKey] || KOREA_CITIES.live_daegu;
+        if (badgeName) badgeName.innerText = `${cityInfo.name} 실시간 연동 중...`;
+        try {
+          activeWeatherData = await fetchLiveWeather(cityInfo.lat, cityInfo.lon, cityInfo.name);
+        } catch (err) {
+          console.error('실시간 날씨 가져오기 실패, 시뮬레이션으로 대체:', err);
+          // 실패 시 비상 fallback
+          activeWeatherData = {
+            ...WEATHER_SCENARIOS.sim_spring,
+            locationName: `${cityInfo.name} (연결 지연 - 기본값)`
+          };
+        }
+      } else {
+        // 시뮬레이션 모드
+        activeWeatherData = WEATHER_SCENARIOS[selectKey] || WEATHER_SCENARIOS.sim_spring;
+      }
+
+      renderActiveWeather();
       updateMoodBubble();
     }
 
-    function updateWeatherDisplay() {
-      const data = WEATHER_SCENARIOS[currentScenario];
+    function refreshCurrentWeather() {
+      handleWeatherSelectChange(selectedWeatherKey || 'live_daegu');
+    }
+
+    function renderActiveWeather() {
+      if (!activeWeatherData) return;
+      const data = activeWeatherData;
+
       const alertBox = document.getElementById('balconyAlertBox');
-      alertBox.className = `p-4 rounded-2xl cartoon-border transition-all flex flex-row items-center gap-3.5 mb-4 ${data.boxBg}`;
+      if (alertBox) {
+        alertBox.className = `p-4 rounded-2xl cartoon-border transition-all flex flex-row items-center gap-3.5 mb-4 ${data.boxBg}`;
+      }
       
       const lightIcon = document.getElementById('balconyLightIcon');
-      lightIcon.className = `w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-2xl sm:text-3xl cartoon-border-sm shadow-cartoon-sm flex-shrink-0 animate-pulse ${data.lightBg}`;
-      lightIcon.innerText = data.light === 'green' ? '🟢' : (data.light === 'yellow' ? '🟡' : '🔴');
+      if (lightIcon) {
+        lightIcon.className = `w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-2xl sm:text-3xl cartoon-border-sm shadow-cartoon-sm flex-shrink-0 animate-pulse ${data.lightBg}`;
+        lightIcon.innerText = data.light === 'green' ? '🟢' : (data.light === 'yellow' ? '🟡' : '🔴');
+      }
 
-      document.getElementById('balconyLightStatus').innerText = data.lightText;
-      document.getElementById('balconyLightBadge').innerText = data.badge;
-      document.getElementById('balconyLightDesc').innerText = data.desc;
+      const statusEl = document.getElementById('balconyLightStatus');
+      if (statusEl) statusEl.innerText = data.lightText;
+
+      const badgeEl = document.getElementById('balconyLightBadge');
+      if (badgeEl) badgeEl.innerText = data.badge;
+
+      const descEl = document.getElementById('balconyLightDesc');
+      if (descEl) descEl.innerText = data.desc;
+
+      const badgeName = document.getElementById('weatherSourceName');
+      if (badgeName) badgeName.innerText = data.locationName || '대구 실시간';
+
+      const subDesc = document.getElementById('weatherSubDesc');
+      if (subDesc) {
+        if (data.updatedAt) {
+          subDesc.innerText = `${data.locationName} (${data.updatedAt} 기준) 기상 데이터를 바탕으로 햇빛채광과 물주기 안전 여부를 안내해 드려요!`;
+        } else {
+          subDesc.innerText = `가상 시뮬레이션 환경에 맞춰 햇빛채광과 물주기 가이드를 안내해 드려요!`;
+        }
+      }
 
       document.getElementById('statTemp').innerText = `${data.temp}°C`;
       document.getElementById('statHumidity').innerText = `${data.humidity}%`;
       document.getElementById('statWind').innerText = `${data.wind} m/s`;
       document.getElementById('statSun').innerText = data.sun;
+
+      if (document.getElementById('statTempGuide') && data.tempGuide) {
+        document.getElementById('statTempGuide').innerText = data.tempGuide;
+      }
+      if (document.getElementById('statHumidityGuide') && data.humidityGuide) {
+        document.getElementById('statHumidityGuide').innerText = data.humidityGuide;
+      }
+      if (document.getElementById('statWindGuide') && data.windGuide) {
+        document.getElementById('statWindGuide').innerText = data.windGuide;
+      }
+      if (document.getElementById('statSunGuide') && data.sunGuide) {
+        document.getElementById('statSunGuide').innerText = data.sunGuide;
+      }
     }
 
     function updateMoodBubble() {
-      const data = WEATHER_SCENARIOS[currentScenario];
+      const data = activeWeatherData || WEATHER_SCENARIOS.sim_spring;
       const bubble = document.getElementById('plantMoodBubble');
-      if (data.light === 'green') {
-        bubble.innerText = `"주인님! 오늘 햇살과 바람이 정말 환상적이에요! 베란다에 잠깐 나가서 일광욕하고 싶어요~ ☀️"`;
-      } else if (data.light === 'red') {
-        bubble.innerText = `"으아~ 바깥 날씨가 너무 춥거나 뜨거워요! 베란다 창가 대신 포근한 거실에 쏙 안겨있을래요 🥺"`;
-      } else {
-        bubble.innerText = `"습하거나 바람이 강해서 조심해야 하는 날이에요. 흙 마름을 꼼꼼히 살펴봐 주세요! 🌱"`;
+      if (bubble) {
+        if (data.isRaining) {
+          const loc = data.locationName ? data.locationName.replace(' (실시간)', '') : '지금';
+          bubble.innerText = `"주인님! ${loc}에 비가 내리고 있어요 🌧️ 비를 맞아 흙이 축축해지지 않게 창가 안쪽으로 들이고, 물주기는 잠시 미뤄주세요! 🌱"`;
+        } else if (data.light === 'green') {
+          bubble.innerText = `"주인님! 오늘 햇살과 바람이 정말 환상적이에요! 창가나 베란다에서 기분 좋은 햇빛채광을 즐기고 싶어요~ ☀️"`;
+        } else if (data.light === 'red') {
+          bubble.innerText = `"으아~ 바깥 날씨가 너무 춥거나 뜨거워요! 베란다 창가 대신 포근한 거실에 쏙 안겨있을래요 🥺"`;
+        } else {
+          bubble.innerText = `"습하거나 바람이 강해서 조심해야 하는 날이에요. 흙 마름을 꼼꼼히 살펴봐 주세요! 🌱"`;
+        }
       }
 
       document.getElementById('homePlantCount').innerText = `${plants.length}개`;
