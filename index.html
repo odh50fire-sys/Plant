@@ -324,29 +324,29 @@
         </div>
       </section>
 
-      <!-- 오늘의 활동 체크보드 -->
+      <!-- 통합 반려식물 케어 플래너 & 오늘 일지 체크보드 (중복 제거 및 UI 일원화) -->
       <section id="todayCareSection" class="cartoon-card p-4 sm:p-5 bg-[#FCFDF9]">
-        <div class="flex flex-col xs:flex-row xs:items-center justify-between gap-1.5 mb-3 border-b-2 border-gray-100 pb-2.5">
+        <div class="flex flex-col xs:flex-row xs:items-center justify-between gap-2 mb-4 border-b-2 border-gray-100 pb-3">
           <div>
-            <h2 class="text-lg sm:text-xl font-cartoon text-green-900 flex items-center gap-1.5">
-              <span>✅</span> 오늘의 초록 활동 일지 체크
-            </h2>
-            <p class="text-xs text-gray-500 font-medium">오늘 해 준 보살핌을 도장 깨듯 톡톡 체크하세요!</p>
+            <div class="flex items-center gap-2">
+              <h2 class="text-lg sm:text-xl font-cartoon text-green-900 flex items-center gap-1.5">
+                <span>📋</span> 초록 케어 플래너 & 오늘 일지 체크
+              </h2>
+              <span class="bg-emerald-100 text-emerald-800 text-[11px] sm:text-xs px-2.5 py-0.5 rounded-full font-bold cartoon-border-sm">
+                4대 케어 통합
+              </span>
+            </div>
+            <p class="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">
+              각 식물별 물주기·햇빛채광·통풍·잎닦기 D-Day를 확인하고 오늘 한 일을 톡톡 체크하세요!
+            </p>
           </div>
-          <span class="text-xs bg-plant-light cartoon-border-sm px-2.5 py-0.5 rounded-full font-bold text-green-800 self-start xs:self-auto" id="todayDateStr">
-            2026. 10. 23 (금)
+          <span class="text-xs sm:text-sm bg-plant-light cartoon-border-sm px-3 py-1 rounded-full font-bold text-green-900 self-start xs:self-auto shadow-sm flex items-center gap-1" id="todayDateStr">
+            📅 오늘
           </span>
         </div>
 
-        <div id="todayCareList" class="space-y-3"></div>
-      </section>
-
-      <!-- 물주기 스케줄 -->
-      <section class="cartoon-card p-4 sm:p-5 bg-white">
-        <h2 class="text-lg sm:text-xl font-cartoon text-green-900 flex items-center gap-1.5 mb-3">
-          <span>🚿</span> 다가오는 물주기 스케줄
-        </h2>
-        <div id="waterScheduleGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+        <!-- 각 식물별 4대 케어 플래너 통합 카드 리스트 -->
+        <div id="todayCareList" class="space-y-4"></div>
       </section>
 
     </div>
@@ -2029,6 +2029,15 @@
       return careLogs[today][plantId];
     }
 
+    function formatShortDate(dateStr) {
+      if (!dateStr) return '-';
+      const parts = dateStr.split('-');
+      if (parts.length >= 3) {
+        return `${parts[1]}.${parts[2]}`;
+      }
+      return dateStr;
+    }
+
     function toggleCareAction(plantId, actionType) {
       const log = getTodayLog(plantId);
       log[actionType] = !log[actionType];
@@ -2037,18 +2046,28 @@
       if (plant) {
         const cfg = CARE_ACTIONS_CONFIG[actionType];
         if (cfg) {
+          const prevKey = '_prev_' + cfg.lastDateKey;
           if (log[actionType]) {
-            // 완료했을 때 마지막 수행 날짜를 오늘로 갱신!
+            // 완료했을 때: 취소 복원을 위해 이전 날짜 백업 후 오늘로 갱신
+            if (!plant[prevKey]) {
+              plant[prevKey] = plant[cfg.lastDateKey] || plant.lastWatered || plant.adoptDate || getTodayStr();
+            }
             plant[cfg.lastDateKey] = getTodayStr();
+          } else {
+            // 체크 해제(취소)했을 때: 이전 날짜로 안전하게 복원
+            if (plant[prevKey]) {
+              plant[cfg.lastDateKey] = plant[prevKey];
+              delete plant[prevKey];
+            }
           }
         }
       }
 
       notifyDataChanged();
       renderHomeCareList();
-      renderWaterSchedule();
       renderGarden();
       updateMoodBubble();
+      if (typeof renderWaterBanner === 'function') renderWaterBanner();
     }
 
     function updateCareMemo(plantId, text) {
@@ -2057,26 +2076,70 @@
       notifyDataChanged();
     }
 
+    /* ============================================================
+       ★ 통합 반려식물 케어 플래너 & 오늘 일지 체크 (단일 일원화 UI)
+       각 식물별 물주기·햇빛채광·통풍·잎닦기 D-Day 및 오늘 완료 체크
+    ============================================================ */
     function renderHomeCareList() {
       const container = document.getElementById('todayCareList');
+      if (!container) return;
+
       if (plants.length === 0) {
         container.innerHTML = `
-          <div class="text-center py-8 bg-white rounded-2xl cartoon-border-sm">
-            <span class="text-3xl block mb-1">🪴</span>
-            <p class="font-cartoon text-lg text-gray-700">등록된 반려식물이 아직 없어요!</p>
-            <p class="text-xs text-gray-500 mt-1">상단의 [+ 식물 등록] 버튼을 눌러 첫 초록이를 맞이해보세요.</p>
+          <div class="text-center py-10 bg-white rounded-2xl cartoon-border-sm p-4">
+            <span class="text-4xl block mb-2">🪴</span>
+            <p class="font-cartoon text-xl text-green-950">등록된 반려식물이 아직 없어요!</p>
+            <p class="text-xs sm:text-sm text-gray-500 mt-1 mb-4">상단의 [+ 식물 등록] 버튼을 눌러 첫 초록이를 맞이해보세요.</p>
+            <button onclick="openAddPlantModal()" class="cartoon-btn bg-plant-primary text-white font-cartoon text-sm px-4 py-2 rounded-xl">
+              🌱 새 식물 등록하러 가기
+            </button>
           </div>
         `;
         return;
       }
 
       const actions = ['water', 'balcony', 'wind', 'spray'];
+      const activityMeta = {
+        water: {
+          label: '물주기',
+          emoji: '🚿',
+          themeBg: 'bg-blue-50/70',
+          borderColor: 'border-blue-200',
+          textColor: 'text-blue-900',
+          accentColor: 'text-blue-700'
+        },
+        balcony: {
+          label: '햇빛채광',
+          emoji: '☀️',
+          themeBg: 'bg-amber-50/70',
+          borderColor: 'border-amber-200',
+          textColor: 'text-amber-950',
+          accentColor: 'text-amber-800'
+        },
+        wind: {
+          label: '통풍환기',
+          emoji: '🍃',
+          themeBg: 'bg-emerald-50/70',
+          borderColor: 'border-emerald-200',
+          textColor: 'text-emerald-950',
+          accentColor: 'text-emerald-800'
+        },
+        spray: {
+          label: '잎닦기',
+          emoji: '💦',
+          themeBg: 'bg-sky-50/70',
+          borderColor: 'border-sky-200',
+          textColor: 'text-sky-950',
+          accentColor: 'text-sky-800'
+        }
+      };
+
       let html = '';
 
       plants.forEach(p => {
         const log = getTodayLog(p.id);
 
-        // 4대 활동의 D-day 및 완료/도래 상태 계산
+        // 4대 활동별 D-Day 및 완료/도래 상태 정밀 계산
         const careStates = {};
         let dueCount = 0;
         let doneCount = 0;
@@ -2091,133 +2154,186 @@
           careStates[act] = { cfg, days, isDone, isDue };
         });
 
-        // 식물 카드 우측 상단 상태 뱃지 생성
+        // 식물 전체 종합 상태 뱃지
         let statusBadge = '';
         if (doneCount === 4) {
-          statusBadge = `<span class="bg-green-600 text-white font-bold text-[11px] px-2.5 py-0.5 rounded-full flex-shrink-0 flex items-center gap-1"><span>✨</span>오늘 올클리어</span>`;
+          statusBadge = `<span class="bg-emerald-600 text-white font-bold text-xs sm:text-sm px-3 py-1 rounded-full cartoon-border-sm flex-shrink-0 flex items-center gap-1 shadow-sm"><span>✨</span>오늘 올클리어</span>`;
         } else if (careStates.water.isDue) {
-          statusBadge = `<span class="bg-rose-500 text-white font-bold text-[11px] px-2 py-0.5 rounded-full animate-bounce flex-shrink-0">물주기 D-Day! 🚿</span>`;
+          statusBadge = `<span class="bg-rose-500 text-white font-bold text-xs sm:text-sm px-3 py-1 rounded-full cartoon-border-sm animate-bounce flex-shrink-0 shadow-sm">🚨 물주기 D-Day!</span>`;
         } else if (dueCount > 0) {
-          statusBadge = `<span class="bg-amber-500 text-white font-bold text-[11px] px-2 py-0.5 rounded-full animate-pulse flex-shrink-0">케어 D-Day (${dueCount}개) ⚡</span>`;
+          statusBadge = `<span class="bg-amber-500 text-white font-bold text-xs sm:text-sm px-3 py-1 rounded-full cartoon-border-sm animate-pulse flex-shrink-0 shadow-sm">⚡ 케어 필요 (${dueCount}개)</span>`;
         } else {
-          statusBadge = `<span class="bg-blue-100 text-blue-900 font-bold text-[11px] px-2 py-0.5 rounded-full flex-shrink-0">물주기 D-${careStates.water.days}</span>`;
+          statusBadge = `<span class="bg-blue-100 text-blue-900 font-bold text-xs sm:text-sm px-3 py-1 rounded-full cartoon-border-sm flex-shrink-0">다음 물: D-${careStates.water.days}</span>`;
         }
 
-        // 4대 활동 버튼 생성 헬퍼
-        const renderCareButton = (act) => {
+        // 4대 활동 개별 통합 카드 생성
+        const renderActionCard = (act) => {
           const { cfg, days, isDone, isDue } = careStates[act];
-          let btnClass = '';
-          let btnLabel = '';
+          const meta = activityMeta[act] || activityMeta.water;
+          const cycle = cfg.cycle;
+
+          let ddayDisplayHtml = '';
+          let actionButtonHtml = '';
 
           if (isDone) {
-            btnClass = cfg.activeClass;
-            btnLabel = `<span>${cfg.emoji}</span> <span>${cfg.labelDone}</span>`;
+            // 오늘 완료된 상태: 완료 뱃지 + 체크 즉시 다음 D-Day 카운트다운 표시!
+            ddayDisplayHtml = `
+              <div class="bg-emerald-100/90 text-emerald-900 border border-emerald-300 rounded-xl py-1.5 px-2 text-center shadow-xs">
+                <div class="text-xs sm:text-sm font-bold flex items-center justify-center gap-1 text-emerald-800">
+                  <span>✅</span> 오늘 완료!
+                </div>
+                <div class="text-[11px] sm:text-xs text-emerald-700 font-extrabold mt-0.5">
+                  다음: <span class="text-emerald-950 underline font-black">D-${cycle}</span> (${cycle}일 뒤)
+                </div>
+              </div>
+            `;
+            actionButtonHtml = `
+              <button onclick="toggleCareAction('${p.id}', '${act}')" 
+                      title="클릭하면 오늘 완료가 취소(체크 해제)됩니다"
+                      class="w-full mt-2 py-1.5 px-1.5 rounded-xl font-cartoon text-xs sm:text-sm bg-emerald-600 hover:bg-emerald-700 text-white cartoon-border-sm transition flex items-center justify-center gap-1 shadow-cartoon-sm">
+                <span>✓</span> 완료됨 <span class="text-[10px] opacity-80">(취소는 클릭)</span>
+              </button>
+            `;
           } else if (isDue) {
-            btnClass = cfg.dDayClass;
-            btnLabel = `<span>${cfg.emoji}</span> <span>${cfg.labelDDay}</span>`;
+            // 오늘 D-Day인 상태: 강렬한 시각적 알림 (펄스 애니메이션 + 붉은색)
+            ddayDisplayHtml = `
+              <div class="bg-rose-100 text-rose-950 border-2 border-rose-500 rounded-xl py-1.5 px-2 text-center shadow-xs animate-pulse">
+                <div class="text-xs sm:text-sm font-black flex items-center justify-center gap-1 text-rose-700">
+                  <span>🚨</span> 오늘 D-Day!
+                </div>
+                <div class="text-[11px] sm:text-xs text-rose-800 font-bold mt-0.5">
+                  지금 보살펴주세요
+                </div>
+              </div>
+            `;
+            actionButtonHtml = `
+              <button onclick="toggleCareAction('${p.id}', '${act}')" 
+                      title="오늘 ${meta.label}을 완료하고 다음 D-Day로 갱신합니다"
+                      class="w-full mt-2 py-1.5 px-1.5 rounded-xl font-cartoon text-xs sm:text-sm bg-rose-500 hover:bg-rose-600 text-white cartoon-border-sm transition flex items-center justify-center gap-1 shadow-cartoon-sm font-bold animate-bounce" style="animation-duration: 2.5s;">
+                <span>⚡</span> 오늘 완료 체크
+              </button>
+            `;
+          } else if (days === 1) {
+            // 내일 D-1인 상태: 주의 환기 (노랑/주황)
+            ddayDisplayHtml = `
+              <div class="bg-amber-100/90 text-amber-950 border border-amber-300 rounded-xl py-1.5 px-2 text-center shadow-xs">
+                <div class="text-xs sm:text-sm font-bold flex items-center justify-center gap-1 text-amber-900">
+                  <span>⏳</span> 내일 D-1
+                </div>
+                <div class="text-[11px] sm:text-xs text-amber-800 font-medium mt-0.5">
+                  내일 순서입니다
+                </div>
+              </div>
+            `;
+            actionButtonHtml = `
+              <button onclick="toggleCareAction('${p.id}', '${act}')" 
+                      title="오늘 미리 수행했다면 클릭하여 완료 처리하세요"
+                      class="w-full mt-2 py-1.5 px-1.5 rounded-xl font-cartoon text-xs sm:text-sm bg-white hover:bg-amber-50 text-gray-800 cartoon-border-sm transition flex items-center justify-center gap-1 shadow-sm">
+                <span>○</span> 오늘 완료 체크
+              </button>
+            `;
           } else {
-            btnClass = cfg.idleClass;
-            btnLabel = `<span>${cfg.emoji}</span> <span>${cfg.labelPrefix} (D-${days})</span>`;
+            // 여유 있는 상태 (D-2 이상)
+            ddayDisplayHtml = `
+              <div class="bg-white/90 text-gray-800 border border-gray-200 rounded-xl py-1.5 px-2 text-center shadow-xs">
+                <div class="text-xs sm:text-sm font-bold flex items-center justify-center gap-1 text-gray-700">
+                  <span>🌱</span> D-${days}
+                </div>
+                <div class="text-[11px] sm:text-xs text-gray-500 font-medium mt-0.5">
+                  ${days}일 뒤 예정
+                </div>
+              </div>
+            `;
+            actionButtonHtml = `
+              <button onclick="toggleCareAction('${p.id}', '${act}')" 
+                      title="오늘 수행했다면 클릭하여 완료 처리하세요"
+                      class="w-full mt-2 py-1.5 px-1.5 rounded-xl font-cartoon text-xs sm:text-sm bg-white hover:bg-gray-50 text-gray-700 cartoon-border-sm transition flex items-center justify-center gap-1 shadow-sm">
+                <span>○</span> 오늘 완료 체크
+              </button>
+            `;
           }
 
           return `
-            <button onclick="toggleCareAction('${p.id}', '${act}')" 
-                    title="${cfg.name} (주기: ${cfg.cycle}일 / 최근: ${cfg.lastDate})" 
-                    class="py-2 px-1.5 sm:px-2 rounded-xl font-cartoon text-xs sm:text-sm cartoon-border-sm transition-all flex items-center justify-center gap-1 truncate ${btnClass}">
-              ${btnLabel}
-            </button>
+            <div class="cartoon-border-sm rounded-2xl p-2.5 sm:p-3 flex flex-col justify-between ${meta.themeBg} ${meta.borderColor} transition-all">
+              <div>
+                <div class="flex items-center justify-between gap-1 mb-2">
+                  <span class="font-cartoon text-xs sm:text-sm font-bold ${meta.textColor} flex items-center gap-1 truncate">
+                    <span>${meta.emoji}</span> ${meta.label}
+                  </span>
+                  <span class="text-[10px] sm:text-xs font-bold text-gray-500 bg-white/90 px-1.5 py-0.2 rounded cartoon-border-sm flex-shrink-0">
+                    ${cycle}일 주기
+                  </span>
+                </div>
+                ${ddayDisplayHtml}
+              </div>
+              ${actionButtonHtml}
+            </div>
           `;
         };
 
         html += `
-          <div class="cartoon-border-sm bg-white rounded-2xl p-3 sm:p-4">
-            <div class="flex items-center justify-between gap-2 border-b border-gray-100 pb-2 mb-2.5">
-              <div class="flex items-center gap-2.5 min-w-0">
-                <img src="${p.photo || FALLBACK_PLANT_IMG}" onerror="handleImgError(this)" class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover cartoon-border-sm flex-shrink-0" alt="${p.nickname}">
+          <div class="cartoon-card p-4 sm:p-5 bg-white border-2 border-[#2E382E] shadow-cartoon transition-all">
+            <!-- 식물 상단 프로필 영역 -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-gray-100 pb-3 mb-3.5">
+              <div class="flex items-center gap-3 min-w-0">
+                <img src="${p.photo || FALLBACK_PLANT_IMG}" onerror="handleImgError(this)" class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover cartoon-border-sm flex-shrink-0 shadow-sm" alt="${p.nickname}">
                 <div class="min-w-0">
-                  <div class="flex items-center gap-1.5 truncate">
-                    <h3 class="text-base sm:text-lg font-cartoon text-green-950 truncate">${p.nickname}</h3>
-                    <span class="text-[11px] text-gray-400 truncate">(${p.species})</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <p class="text-[11px] text-gray-500 font-medium truncate">${p.location}</p>
-                    <button onclick="openEditPlantModal('${p.id}')" class="text-[10px] text-amber-800 hover:text-amber-950 font-bold bg-amber-100 hover:bg-amber-200 px-1.5 py-0.2 rounded cartoon-border-sm flex items-center gap-0.5">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="text-lg sm:text-xl font-cartoon text-green-950 truncate">${p.nickname}</h3>
+                    <span class="text-xs sm:text-sm text-gray-500 font-medium truncate">(${p.species})</span>
+                    <button onclick="openEditPlantModal('${p.id}')" class="text-xs text-amber-900 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded-lg cartoon-border-sm font-bold transition flex items-center gap-1 shadow-sm">
                       <span>✏️</span>수정
                     </button>
                   </div>
+                  <p class="text-xs sm:text-sm text-gray-600 font-medium mt-1 flex flex-wrap items-center gap-2">
+                    <span class="truncate">📍 ${p.location || '실내 거실'}</span>
+                    <span>·</span>
+                    <span>입양: ${p.adoptDate || '2026-10-23'}</span>
+                  </p>
                 </div>
               </div>
-              ${statusBadge}
+
+              <!-- 종합 케어 상태 뱃지 -->
+              <div class="flex-shrink-0 self-start sm:self-auto">
+                ${statusBadge}
+              </div>
             </div>
 
-            <!-- 4대 초록 활동 체크 버튼 그리드 (D-Day 자동 알림 & 남은 일수 표시) -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-              ${renderCareButton('water')}
-              ${renderCareButton('balcony')}
-              ${renderCareButton('wind')}
-              ${renderCareButton('spray')}
+            <!-- 4대 초록 활동 통합 D-Day & 체크 그리드 (한눈에 파악) -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 mb-3.5">
+              ${renderActionCard('water')}
+              ${renderActionCard('balcony')}
+              ${renderActionCard('wind')}
+              ${renderActionCard('spray')}
             </div>
 
-            <div class="mt-2.5 pt-2 border-t border-gray-100 flex items-center gap-1.5">
-              <span class="text-[11px] font-bold text-gray-500 flex-shrink-0">📝 메모:</span>
-              <input type="text" value="${log.memo || ''}" onchange="updateCareMemo('${p.id}', this.value)" placeholder="예: 새 잎이 더 빳빳해졌다!" class="flex-grow text-xs bg-gray-50 cartoon-border-sm rounded-lg px-2 py-1 focus:bg-white focus:outline-none">
+            <!-- 하단 한 줄 메모 & 최근 관리일 요약 바 -->
+            <div class="pt-2.5 border-t border-gray-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 text-xs">
+              <div class="flex items-center gap-2 flex-grow min-w-0">
+                <span class="font-bold text-gray-600 flex-shrink-0">📝 메모:</span>
+                <input type="text" value="${log.memo || ''}" onchange="updateCareMemo('${p.id}', this.value)" placeholder="오늘의 상태나 물준 느낌을 기록해보세요 (예: 새 잎이 더 빳빳해짐!)" class="flex-grow bg-gray-50 cartoon-border-sm rounded-xl px-2.5 py-1.5 text-xs sm:text-sm focus:bg-white focus:outline-none transition">
+              </div>
+              <div class="text-[11px] sm:text-xs text-gray-600 flex-shrink-0 font-medium bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-200/60 flex flex-wrap items-center gap-1.5">
+                <span class="font-bold text-gray-500">최근:</span>
+                <span class="text-blue-900 font-bold">🚿 물 ${formatShortDate(p.lastWatered)}</span>
+                <span class="text-gray-300">|</span>
+                <span class="text-amber-900 font-bold">☀️ 채광 ${formatShortDate(p.lastBalcony)}</span>
+                <span class="text-gray-300">|</span>
+                <span class="text-emerald-900 font-bold">🍃 환기 ${formatShortDate(p.lastWind)}</span>
+                <span class="text-gray-300">|</span>
+                <span class="text-sky-900 font-bold">💦 잎 ${formatShortDate(p.lastSpray)}</span>
+              </div>
             </div>
           </div>
         `;
       });
+
       container.innerHTML = html;
     }
 
     function renderWaterSchedule() {
-      const container = document.getElementById('waterScheduleGrid');
-      if (plants.length === 0) {
-        container.innerHTML = `<p class="text-xs text-gray-500 col-span-full text-center py-3">등록된 식물이 없습니다.</p>`;
-        return;
-      }
-
-      let html = '';
-      plants.forEach(p => {
-        const daysLeft = calcDaysUntilWater(p);
-        let statusBadge = '';
-        let cardBg = 'bg-white';
-        let tipText = '';
-
-        if (daysLeft <= 0) {
-          statusBadge = `<span class="bg-rose-500 text-white font-bold text-[10px] px-2 py-0.5 rounded-full">🚿 D-Day</span>`;
-          cardBg = 'bg-rose-50/70';
-          tipText = '손가락으로 겉흙을 2cm 깊이로 만져보고 말랐다면 흠뻑 주세요!';
-        } else if (daysLeft <= 2) {
-          statusBadge = `<span class="bg-yellow-400 text-yellow-950 font-bold text-[10px] px-2 py-0.5 rounded-full">⏳ D-${daysLeft}</span>`;
-          cardBg = 'bg-yellow-50/50';
-          tipText = '흙이 서서히 말라가고 있어요. 내일쯤 흙 상태를 점검하세요.';
-        } else {
-          statusBadge = `<span class="bg-green-100 text-green-900 font-bold text-[10px] px-2 py-0.5 rounded-full">💧 D-${daysLeft}</span>`;
-          tipText = '아직 흙 속에 수분이 넉넉해요. 과습을 조심하세요!';
-        }
-
-        html += `
-          <div class="cartoon-border-sm rounded-xl p-3 ${cardBg} flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between mb-1.5">
-                <span class="font-cartoon text-base text-green-900 truncate">${p.nickname}</span>
-                ${statusBadge}
-              </div>
-              <p class="text-[11px] text-gray-500 mb-1.5">주기: <b>${p.waterCycle}일</b> (최근 준 날: ${p.lastWatered || '없음'})</p>
-              <p class="text-xs text-gray-700 bg-white p-2 rounded-lg cartoon-border-sm leading-relaxed">${tipText}</p>
-              
-              <div class="mt-2 pt-1.5 border-t border-gray-200/60 grid grid-cols-3 gap-1 text-[10px] text-center font-bold">
-                <span class="bg-amber-50 text-amber-900 rounded p-0.5 cartoon-border-sm">☀️ 채광 D-${calcDaysUntilCare(p, 'balcony')}</span>
-                <span class="bg-emerald-50 text-emerald-900 rounded p-0.5 cartoon-border-sm">🍃 환기 D-${calcDaysUntilCare(p, 'wind')}</span>
-                <span class="bg-sky-50 text-sky-900 rounded p-0.5 cartoon-border-sm">💦 잎닦기 D-${calcDaysUntilCare(p, 'spray')}</span>
-              </div>
-            </div>
-            <button onclick="quickWaterPlant('${p.id}')" class="mt-2.5 w-full py-1.5 cartoon-btn bg-blue-500 text-white rounded-lg font-cartoon text-xs flex items-center justify-center gap-1">
-              <span>🚿</span> 오늘 물주기 완료
-            </button>
-          </div>
-        `;
-      });
-      container.innerHTML = html;
+      // 중복 섹션이 '오늘의 초록 케어 플래너'로 단일 통합되었으므로 통일 렌더링 호출
+      renderHomeCareList();
     }
 
     function quickWaterPlant(plantId) {
