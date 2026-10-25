@@ -1678,6 +1678,7 @@
       renderRecommendations('all');
       renderHistoryArticles();
 
+      setupDateAutoRefresh();
       startAutoFirebaseSync();
     }
 
@@ -1908,15 +1909,90 @@
       document.getElementById('syncModal').classList.remove('hidden');
     }
 
+    // 사용자의 로컬 환경 시간대(한국 KST) 기준 정확한 YYYY-MM-DD 날짜 문자열 반환 (자정~오전9시 UTC 오차 원천 차단)
     function getTodayStr() {
-      return new Date().toISOString().split('T')[0];
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     }
 
     function formatDateKorean(dateStr) {
+      if (!dateStr) return '';
       const parts = dateStr.split('-');
-      const d = new Date(parts[0], parts[1]-1, parts[2]);
+      if (parts.length < 3) return dateStr;
+      const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
       const days = ['일', '월', '화', '수', '목', '금', '토'];
       return `${parts[0]}.${parts[1]}.${parts[2]} (${days[d.getDay()]})`;
+    }
+
+    // YYYY-MM-DD 문자열을 UTC 자정 밀리초로 변환 (서머타임/시차 오차 없이 순수 일수 차이 계산용)
+    function parseDateToUtcMs(dateStr) {
+      if (!dateStr) return null;
+      const parts = String(dateStr).split('-');
+      if (parts.length < 3) return null;
+      const y = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1;
+      const d = parseInt(parts[2], 10);
+      return Date.UTC(y, m, d);
+    }
+
+    /* ============================================================
+       ★ 자정 날짜 변경 및 창 활성화 자동 감지 & 화면 자동 갱신 엔진
+    ============================================================ */
+    let currentAppDate = getTodayStr();
+    let dateRefreshTimer = null;
+
+    function checkAndRefreshDate(force = false) {
+      const nowToday = getTodayStr();
+      if (force || nowToday !== currentAppDate) {
+        console.log(`[Planty] 날짜 변경 감지 및 자동 갱신: ${currentAppDate} ➡️ ${nowToday}`);
+        currentAppDate = nowToday;
+
+        // 1) 상단 날짜 헤더 갱신
+        const dateEl = document.getElementById('todayDateStr');
+        if (dateEl) dateEl.innerText = formatDateKorean(nowToday);
+
+        // 2) 모달 기본 날짜 입력창 갱신
+        const adoptEl = document.getElementById('plantAdoptDate');
+        if (adoptEl) adoptEl.value = nowToday;
+        const waterEl = document.getElementById('plantLastWatered');
+        if (waterEl) waterEl.value = nowToday;
+        const diaryEl = document.getElementById('diaryDate');
+        if (diaryEl) diaryEl.value = nowToday;
+
+        // 3) 핵심 케어 플래너 및 정원 화면 일제히 재렌더링
+        renderHomeCareList();
+        renderWaterSchedule();
+        renderGarden();
+        renderGlobalTimeline();
+        updateMoodBubble();
+        if (typeof renderWaterBanner === 'function') renderWaterBanner();
+      }
+    }
+
+    function setupDateAutoRefresh() {
+      currentAppDate = getTodayStr();
+
+      // 기존 타이머 정리 후 재등록
+      if (dateRefreshTimer) clearInterval(dateRefreshTimer);
+      // 15초마다 주기적으로 자정이 지났는지 체크
+      dateRefreshTimer = setInterval(() => {
+        checkAndRefreshDate(false);
+      }, 15000);
+
+      // 창 포커스 이벤트 (다른 작업 후 돌아오거나 절전모드 해제 시 즉시 체크)
+      window.addEventListener('focus', () => {
+        checkAndRefreshDate(false);
+      });
+
+      // 브라우저 탭/창 가시성 복귀 시 즉시 체크
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          checkAndRefreshDate(false);
+        }
+      });
     }
 
     const CARE_ACTIONS_CONFIG = {
@@ -2007,13 +2083,15 @@
     function calcDaysUntilCare(plant, actionType) {
       const { cycle, lastDate } = getCareConfig(plant, actionType);
       if (!lastDate) return 0;
-      const last = new Date(lastDate);
-      const next = new Date(last);
-      next.setDate(last.getDate() + cycle);
+      const lastUtc = parseDateToUtcMs(lastDate);
+      if (lastUtc === null) return 0;
       
-      const today = new Date(getTodayStr());
-      const diffTime = next - today;
-      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const nextUtc = lastUtc + (cycle * 24 * 60 * 60 * 1000);
+      const todayUtc = parseDateToUtcMs(getTodayStr());
+      if (todayUtc === null) return 0;
+
+      const diffDays = Math.round((nextUtc - todayUtc) / (24 * 60 * 60 * 1000));
+      return diffDays;
     }
 
     function calcDaysUntilWater(plant) {
