@@ -3933,7 +3933,7 @@
 
       const totalDueTasks = needWaterPlants.length + dueBalconyTasks.length + dueWindTasks.length + dueSprayTasks.length;
 
-      // 2. 4대 활동별(물주기, 통풍, 베란다, 잎닦기)로 다가오는 가장 빠른 다음 일정 계산
+      // 2. 4대 활동별(물주기, 통풍, 베란다, 잎닦기)로 다가오는 가장 빠른 다음 일정 계산 (다중 식물 모두 수집)
       const nextPerAction = {
         water: null,
         wind: null,
@@ -3973,17 +3973,21 @@
             minDaysPerAction[act] = remaining;
             const dateStr = `${targetDate.getMonth() + 1}월 ${targetDate.getDate()}일 (${daysArr[targetDate.getDay()]})`;
             nextPerAction[act] = {
-              plant: p,
+              plants: [p],
               act: act,
               cfg: cfg,
               days: remaining,
               dateStr: dateStr
             };
+          } else if (remaining === minDaysPerAction[act]) {
+            if (nextPerAction[act] && !nextPerAction[act].plants.some(existing => existing.id === p.id)) {
+              nextPerAction[act].plants.push(p);
+            }
           }
         });
       });
 
-      // 4대 활동별 다음 케어 일정 그리드 HTML 생성 헬퍼
+      // 4대 활동별 다음 케어 일정 그리드 HTML 생성 헬퍼 (모든 해당 식물 다 표시)
       const buildNextCareGridHtml = () => {
         const items = [
           { key: 'water', label: '물주기', emoji: '🚿', bg: 'bg-blue-50/90', border: 'border-blue-200', text: 'text-blue-900', badge: 'bg-blue-600 text-white' },
@@ -3998,34 +4002,37 @@
               <span class="text-xs font-bold text-gray-700 flex items-center gap-1">
                 <span>🗓️</span> 다음 케어 다가오는 일정 (4대 활동별)
               </span>
-              <span class="text-[10px] text-gray-500 font-medium">활동별 가장 빠른 차례</span>
+              <span class="text-[10px] text-gray-500 font-medium">활동별 빠른 차례 (동일 D-Day 식물 전체 표시)</span>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
         `;
 
         items.forEach(item => {
           const data = nextPerAction[item.key];
-          if (data) {
+          if (data && data.plants && data.plants.length > 0) {
             const isToday = data.days === 0;
             const isTomorrow = data.days === 1;
-            const dDayLabel = isToday ? '오늘 D-Day!' : (isTomorrow ? '내일' : `D-${data.days}`);
+            const countBadge = data.plants.length > 1 ? ` (${data.plants.length}개)` : '';
+            const dDayLabel = isToday ? `오늘 D-Day!${countBadge}` : (isTomorrow ? `내일${countBadge}` : `D-${data.days}${countBadge}`);
             const badgeClass = isToday ? 'bg-rose-500 text-white animate-bounce' : (isTomorrow ? 'bg-amber-500 text-white' : item.badge);
 
+            const plantsText = data.plants.map(p => `[${p.nickname}]`).join(', ');
+
             html += `
-              <div class="${item.bg} ${item.border} cartoon-border-sm p-2 rounded-xl flex flex-col justify-between text-left">
+              <div class="${item.bg} ${item.border} cartoon-border-sm p-2 sm:p-2.5 rounded-xl flex flex-col justify-between text-left shadow-xs">
                 <div class="flex items-center justify-between gap-1 mb-1">
-                  <span class="font-bold text-[11px] ${item.text} flex items-center gap-0.5 truncate">
+                  <span class="font-bold text-[11px] sm:text-xs ${item.text} flex items-center gap-0.5 truncate">
                     <span>${item.emoji}</span>${item.label}
                   </span>
-                  <span class="text-[9px] font-bold px-1.5 py-0.2 rounded-full ${badgeClass} flex-shrink-0">
+                  <span class="text-[9px] sm:text-[10px] font-bold px-1.5 py-0.2 rounded-full ${badgeClass} flex-shrink-0">
                     ${dDayLabel}
                   </span>
                 </div>
                 <div>
-                  <p class="font-cartoon text-xs text-gray-900 truncate font-bold">
-                    [${data.plant.nickname}]
+                  <p class="font-cartoon text-xs sm:text-sm text-gray-900 font-bold leading-snug break-words">
+                    ${plantsText}
                   </p>
-                  <p class="text-[10px] text-gray-500 truncate mt-0.5">
+                  <p class="text-[10px] sm:text-[11px] text-gray-500 truncate mt-0.5">
                     ${data.dateStr}
                   </p>
                 </div>
@@ -4046,10 +4053,10 @@
         const namesText = needWaterPlants.map(p => `<strong>[${p.nickname}]</strong>`).join(', ');
         
         const subTasksArr = [];
-        if (dueBalconyTasks.length > 0) subTasksArr.push(`☀️ 채광 ${dueBalconyTasks.length}개`);
-        if (dueWindTasks.length > 0) subTasksArr.push(`🍃 통풍 ${dueWindTasks.length}개`);
-        if (dueSprayTasks.length > 0) subTasksArr.push(`💦 잎닦기 ${dueSprayTasks.length}개`);
-        const subTasksText = subTasksArr.length > 0 ? ` · 함께 할 케어: ${subTasksArr.join(' / ')}` : '';
+        if (dueBalconyTasks.length > 0) subTasksArr.push(`☀️ 채광 [${dueBalconyTasks.map(p=>p.nickname).join(', ')}]`);
+        if (dueWindTasks.length > 0) subTasksArr.push(`🍃 통풍 [${dueWindTasks.map(p=>p.nickname).join(', ')}]`);
+        if (dueSprayTasks.length > 0) subTasksArr.push(`💦 잎닦기 [${dueSprayTasks.map(p=>p.nickname).join(', ')}]`);
+        const subTasksText = subTasksArr.length > 0 ? ` · 함께 할 케어: ${subTasksArr.join(' · ')}` : '';
 
         container.innerHTML = `
           <div class="cartoon-card p-3.5 sm:p-4 bg-gradient-to-r from-rose-100 via-amber-50 to-rose-50 border-rose-800 shadow-cartoon animate-in fade-in zoom-in duration-150">
@@ -4065,10 +4072,10 @@
                     </span>
                     <span class="text-xs text-rose-900 font-bold">목마른 식물 ${needWaterPlants.length}개</span>
                   </div>
-                  <h3 class="font-cartoon text-base sm:text-lg text-rose-950 truncate leading-snug">
+                  <h3 class="font-cartoon text-base sm:text-lg text-rose-950 leading-snug break-words">
                     ${namesText} 물주세요!
                   </h3>
-                  <p class="text-xs text-rose-900/80 font-medium truncate">오늘 흙을 확인하시고 시원하게 물을 주세요 🌱${subTasksText}</p>
+                  <p class="text-xs text-rose-900/90 font-medium break-words mt-0.5">오늘 흙을 확인하시고 시원하게 물을 주세요 🌱${subTasksText}</p>
                 </div>
               </div>
               <button onclick="scrollToCareList()" class="cartoon-btn bg-rose-500 hover:bg-rose-600 text-white font-cartoon text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl flex-shrink-0 flex items-center gap-1 shadow-cartoon-sm">
@@ -4081,11 +4088,11 @@
           </div>
         `;
       } else if (totalDueTasks > 0) {
-        // [케이스 2]: 물주기는 완료/미도래이나, 베란다/통풍/잎닦기 D-Day가 있는 경우
+        // [케이스 2]: 물주기는 완료/미도래이나, 베란다/통풍/잎닦기 D-Day가 있는 경우 (모든 대상 식물 전수 노출)
         const dueDescArr = [];
-        if (dueBalconyTasks.length > 0) dueDescArr.push(`☀️ 햇빛채광 [${dueBalconyTasks.map(p=>p.nickname).join(',')}]`);
-        if (dueWindTasks.length > 0) dueDescArr.push(`🍃 통풍 [${dueWindTasks.map(p=>p.nickname).join(',')}]`);
-        if (dueSprayTasks.length > 0) dueDescArr.push(`💦 잎 닦기 [${dueSprayTasks.map(p=>p.nickname).join(',')}]`);
+        if (dueBalconyTasks.length > 0) dueDescArr.push(`☀️ 햇빛채광 [${dueBalconyTasks.map(p=>p.nickname).join(', ')}]`);
+        if (dueWindTasks.length > 0) dueDescArr.push(`🍃 통풍 [${dueWindTasks.map(p=>p.nickname).join(', ')}]`);
+        if (dueSprayTasks.length > 0) dueDescArr.push(`💦 잎닦기 [${dueSprayTasks.map(p=>p.nickname).join(', ')}]`);
 
         container.innerHTML = `
           <div class="cartoon-card p-3.5 sm:p-4 bg-gradient-to-r from-amber-100 via-emerald-50 to-amber-50 border-amber-800 shadow-cartoon animate-in fade-in zoom-in duration-150">
@@ -4101,10 +4108,10 @@
                     </span>
                     <span class="text-xs text-amber-950 font-bold">케어 ${totalDueTasks}건 예정</span>
                   </div>
-                  <h3 class="font-cartoon text-base sm:text-lg text-amber-950 truncate leading-snug">
-                    오늘 초록 활동 주기 도래! (${dueDescArr.slice(0, 2).join(' · ')})
+                  <h3 class="font-cartoon text-base sm:text-lg text-amber-950 leading-snug break-words">
+                    오늘 초록 활동 주기 도래! (${dueDescArr.join(' · ')})
                   </h3>
-                  <p class="text-xs text-amber-900/80 font-medium truncate">햇빛과 바람을 쐬어주고 잎을 닦아주면 숨구멍이 활짝 열려요 🌿</p>
+                  <p class="text-xs text-amber-900/90 font-medium break-words mt-0.5">햇빛과 바람을 쐬어주고 잎을 닦아주면 숨구멍이 활짝 열려요 🌿</p>
                 </div>
               </div>
               <button onclick="scrollToCareList()" class="cartoon-btn bg-amber-400 hover:bg-amber-500 text-amber-950 font-cartoon text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl flex-shrink-0 flex items-center gap-1 shadow-cartoon-sm">
