@@ -1,0 +1,30 @@
+{
+  "name": "planty",
+  "version": "1.0.0",
+  "description": "플랜티(Planty) - 초보 식집사를 위한 감성 반려식물 비서",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:portable": "electron-builder --win portable",
+    "build": "electron-builder --win"
+  },
+  "author": "Planty Team",
+  "license": "MIT",
+  "build": {
+    "appId": "com.planty.app",
+    "productName": "플랜티",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "icon": "icon.ico",
+      "target": [
+        "portable"
+      ]
+    }
+  },
+  "devDependencies": {
+    "electron": "^45.0.0",
+    "electron-builder": "^26.18.0"
+  }
+}
