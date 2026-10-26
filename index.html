@@ -178,10 +178,10 @@
       </button>
 
       <div class="flex items-center gap-1.5 sm:gap-2">
-        <!-- 캐시 완전 정리 및 최신 소스/빌드 즉시 반영 새로고침 버튼 -->
-        <button type="button" onclick="hardRefreshApp()" id="refreshAppBtn" title="최신 빌드/수정내용 즉시 반영 및 캐시 정리 새로고침 (단축키: F5 / Ctrl+R)" class="cartoon-btn bg-white hover:bg-emerald-50 text-green-950 font-cartoon text-xs sm:text-sm px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1.5 shadow-cartoon-sm flex-shrink-0 transition-all active:scale-95 group">
+        <!-- 눈에 확 띄는 캐시 완전 정리 및 즉시 새로고침 버튼 -->
+        <button type="button" onclick="hardRefreshApp()" id="refreshAppBtn" title="최신 빌드/수정내용 즉시 반영 및 캐시 정리 새로고침 (단축키: F5 / Ctrl+R)" class="cartoon-btn bg-emerald-500 hover:bg-emerald-600 text-white font-cartoon text-xs sm:text-sm px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl flex items-center gap-1.5 shadow-cartoon-sm flex-shrink-0 transition-all active:scale-95 group">
           <span id="refreshIcon" class="inline-block transition-transform duration-500 text-sm sm:text-base group-hover:rotate-180">🔄</span>
-          <span class="hidden sm:inline font-bold">새로고침</span>
+          <span class="font-bold">새로고침</span>
         </button>
 
         <!-- 새 식물 추가 버튼 -->
@@ -348,9 +348,15 @@
               각 식물별 물주기·햇빛채광·통풍·잎닦기 D-Day를 확인하고 오늘 한 일을 톡톡 체크하세요!
             </p>
           </div>
-          <span class="text-xs sm:text-sm bg-plant-light cartoon-border-sm px-3 py-1 rounded-full font-bold text-green-900 self-start xs:self-auto shadow-sm flex items-center gap-1" id="todayDateStr">
-            📅 오늘
-          </span>
+          <div class="flex items-center gap-1.5 self-start xs:self-auto flex-wrap">
+            <span class="text-xs sm:text-sm bg-plant-light cartoon-border-sm px-3 py-1 rounded-full font-bold text-green-900 shadow-sm flex items-center gap-1" id="todayDateStr">
+              📅 오늘
+            </span>
+            <button type="button" onclick="hardRefreshApp()" title="오늘 날짜 및 최신 스케줄 즉시 갱신 (캐시 정리)" class="cartoon-btn bg-emerald-50 hover:bg-emerald-100 text-emerald-900 cartoon-border-sm px-2.5 py-1 rounded-full text-xs font-bold shadow-xs flex items-center gap-1 transition-all active:scale-95">
+              <span>🔄</span>
+              <span>새로고침</span>
+            </button>
+          </div>
         </div>
 
         <!-- 각 식물별 4대 케어 플래너 통합 카드 리스트 -->
@@ -574,6 +580,12 @@
       <span>매거진</span>
     </button>
   </footer>
+
+  <!-- 화면 우측 하단 플로팅 새로고침 퀵 버튼 -->
+  <button type="button" onclick="hardRefreshApp()" title="최신 상태 및 캐시 정리 새로고침 (단축키: F5 / Ctrl+R)" class="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-40 cartoon-btn bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 sm:p-3 rounded-full shadow-cartoon-sm flex items-center gap-1.5 font-cartoon text-xs sm:text-sm border-2 border-emerald-950 transition-all active:scale-95 group">
+    <span class="text-base sm:text-lg inline-block group-hover:rotate-180 transition-transform duration-500">🔄</span>
+    <span class="font-bold pr-1">새로고침</span>
+  </button>
 
 
   <!-- ============================================== -->
