@@ -61,6 +61,9 @@ function createWindow() {
     }
   });
 
+  // 최초 창 로드 시에도 디스크 및 코드 캐시 소거하여 항상 100% 최신 소스 반영
+  mainWindow.webContents.session.clearCache().catch(() => {});
+
   // index.html 로드
   mainWindow.loadFile('index.html');
 

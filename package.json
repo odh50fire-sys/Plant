@@ -1,6 +1,6 @@
 {
   "name": "planty",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "플랜티(Planty) - 초보 식집사를 위한 감성 반려식물 비서",
   "main": "main.js",
   "scripts": {

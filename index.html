@@ -158,36 +158,38 @@
 <body class="min-h-screen flex flex-col text-base sm:text-lg pb-24 md:pb-12 w-full max-w-full">
 
   <!-- 상단 헤더 -->
-  <header class="bg-[#FFFDF7] cartoon-border border-t-0 border-x-0 sticky top-0 z-40 px-3 sm:px-4 py-2.5 sm:py-3 shadow-md w-full">
-    <div class="max-w-5xl xl:max-w-6xl mx-auto flex items-center justify-between gap-2">
-      <div class="flex items-center gap-2 cursor-pointer flex-shrink-0" onclick="switchTab('home')">
-        <span class="text-3xl filter drop-shadow">🪴</span>
+  <header class="bg-[#FFFDF7] cartoon-border border-t-0 border-x-0 sticky top-0 z-40 px-2.5 sm:px-4 py-2 sm:py-2.5 shadow-md w-full">
+    <div class="max-w-5xl xl:max-w-6xl mx-auto flex items-center justify-between gap-1.5 sm:gap-2">
+      <!-- 로고 -->
+      <div class="flex items-center gap-1.5 sm:gap-2 cursor-pointer flex-shrink-0" onclick="switchTab('home')">
+        <span class="text-2xl sm:text-3xl filter drop-shadow">🪴</span>
         <div>
-          <h1 class="text-xl sm:text-2xl font-cartoon text-plant-dark tracking-wide flex items-center gap-1.5 leading-none">
+          <h1 class="text-lg sm:text-2xl font-cartoon text-plant-dark tracking-wide flex items-center gap-1 sm:gap-1.5 leading-none">
             플랜티
-            <span class="text-[11px] sm:text-xs bg-plant-butter cartoon-border-sm px-1.5 py-0.5 rounded-full text-green-900 font-sans font-bold">식집사 비서</span>
+            <span class="text-[10px] sm:text-xs bg-plant-butter cartoon-border-sm px-1.5 py-0.5 rounded-full text-green-900 font-sans font-bold">식집사</span>
           </h1>
-          <p class="text-[11px] sm:text-xs text-gray-500 font-medium mt-0.5 hidden xs:block">초보 식물 키우기 동반자</p>
+          <p class="text-[10px] sm:text-xs text-gray-500 font-medium mt-0.5 hidden md:block">초보 식물 키우기 동반자</p>
         </div>
       </div>
 
-      <!-- 클라우드 실시간 동기화 상태 뱃지 -->
-      <button onclick="openSyncModal()" id="syncStatusBadge" class="flex items-center gap-1.5 bg-green-100 cartoon-border-sm px-2.5 sm:px-3 py-1 rounded-full text-xs font-bold shadow-cartoon-sm hover:bg-green-200 transition cursor-pointer text-green-950">
-        <span id="syncStatusDot" class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
-        <span id="syncStatusText" class="truncate max-w-[110px] sm:max-w-none">☁️ 실시간 동기화 중</span>
+      <!-- 클라우드 실시간 동기화 상태 뱃지 (모바일 반응형 최적화) -->
+      <button onclick="openSyncModal()" id="syncStatusBadge" class="flex items-center gap-1 sm:gap-1.5 bg-green-100 cartoon-border-sm px-2 sm:px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold shadow-cartoon-sm hover:bg-green-200 transition cursor-pointer text-green-950 flex-shrink-0">
+        <span id="syncStatusDot" class="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+        <span id="syncStatusText" class="truncate max-w-[80px] sm:max-w-none">☁️ 동기화</span>
       </button>
 
-      <div class="flex items-center gap-1.5 sm:gap-2">
-        <!-- 눈에 확 띄는 캐시 완전 정리 및 즉시 새로고침 버튼 -->
-        <button type="button" onclick="hardRefreshApp()" id="refreshAppBtn" title="최신 빌드/수정내용 즉시 반영 및 캐시 정리 새로고침 (단축키: F5 / Ctrl+R)" class="cartoon-btn bg-emerald-500 hover:bg-emerald-600 text-white font-cartoon text-xs sm:text-sm px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl flex items-center gap-1.5 shadow-cartoon-sm flex-shrink-0 transition-all active:scale-95 group">
-          <span id="refreshIcon" class="inline-block transition-transform duration-500 text-sm sm:text-base group-hover:rotate-180">🔄</span>
-          <span class="font-bold">새로고침</span>
+      <!-- 우측 액션 버튼 그룹 (새로고침 & 식물 등록: 윈도우, 웹, 모바일 100% 동일 노출) -->
+      <div class="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+        <!-- 🔄 새로고침 버튼 (윈도우, 웹, 모바일 공통 핵심 버튼) -->
+        <button type="button" onclick="hardRefreshApp()" id="refreshAppBtn" title="최신 빌드/수정내용 즉시 반영 및 캐시 정리 새로고침 (단축키: F5 / Ctrl+R)" class="cartoon-btn bg-emerald-500 hover:bg-emerald-600 text-white font-cartoon text-xs sm:text-sm px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl flex items-center gap-1 shadow-cartoon-sm flex-shrink-0 transition-all active:scale-95 group">
+          <span id="refreshIcon" class="inline-block transition-transform duration-500 text-xs sm:text-sm group-hover:rotate-180">🔄</span>
+          <span class="font-bold text-xs sm:text-sm">새로고침</span>
         </button>
 
         <!-- 새 식물 추가 버튼 -->
-        <button onclick="openAddPlantModal()" class="cartoon-btn bg-plant-primary text-white font-cartoon text-sm sm:text-base px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl flex items-center gap-1.5 hover:bg-green-700 flex-shrink-0">
+        <button onclick="openAddPlantModal()" class="cartoon-btn bg-plant-primary text-white font-cartoon text-xs sm:text-sm px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl flex items-center gap-1 hover:bg-green-700 flex-shrink-0">
           <span>🌱</span>
-          <span>식물 등록</span>
+          <span class="hidden xs:inline">식물</span><span>등록</span>
         </button>
       </div>
     </div>
