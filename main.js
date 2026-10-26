@@ -1,7 +1,23 @@
-const { app, BrowserWindow, shell, Menu } = require('electron');
+const { app, BrowserWindow, shell, Menu, ipcMain } = require('electron');
 const path = require('path');
 
 let mainWindow = null;
+
+async function performHardReload() {
+  if (!mainWindow) return;
+  try {
+    // 1) HTTP 캐시 및 자바스크립트 코드 캐시 소거
+    await mainWindow.webContents.session.clearCache();
+    // 2) 서비스워커 및 캐시 스토리지 소거 (주의: 사용자의 소중한 식물/일지 데이터가 저장된 localStorage는 절대 안전하게 보존)
+    await mainWindow.webContents.session.clearStorageData({
+      storages: ['appcache', 'serviceworkers', 'cachestorage']
+    });
+  } catch (err) {
+    console.warn('Cache clear error:', err);
+  }
+  // 3) 캐시를 무시하고 최신 파일 강제 재로드
+  mainWindow.webContents.reloadIgnoringCache();
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -16,7 +32,8 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      webSecurity: true
+      webSecurity: true,
+      preload: path.join(__dirname, 'preload.js')
     }
   });
 
@@ -34,6 +51,16 @@ function createWindow() {
     return { action: 'deny' };
   });
 
+  // 단축키 (F5, Ctrl+R, Ctrl+Shift+R) 캐시 무시 강력 새로고침 지원
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.type === 'keyDown') {
+      if (input.key === 'F5' || ((input.control || input.meta) && input.key.toLowerCase() === 'r')) {
+        event.preventDefault();
+        performHardReload();
+      }
+    }
+  });
+
   // index.html 로드
   mainWindow.loadFile('index.html');
 
@@ -41,6 +68,11 @@ function createWindow() {
     mainWindow = null;
   });
 }
+
+// 렌더러 프로세스에서 캐시 정리 및 새로고침 요청 수신
+ipcMain.on('app:clear-cache-reload', () => {
+  performHardReload();
+});
 
 // 단일 인스턴스 잠금 (중복 실행 방지)
 const gotTheLock = app.requestSingleInstanceLock();

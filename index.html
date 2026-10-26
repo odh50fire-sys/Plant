@@ -177,11 +177,19 @@
         <span id="syncStatusText" class="truncate max-w-[110px] sm:max-w-none">☁️ 실시간 동기화 중</span>
       </button>
 
-      <!-- 새 식물 추가 버튼 -->
-      <button onclick="openAddPlantModal()" class="cartoon-btn bg-plant-primary text-white font-cartoon text-sm sm:text-base px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl flex items-center gap-1.5 hover:bg-green-700 flex-shrink-0">
-        <span>🌱</span>
-        <span>식물 등록</span>
-      </button>
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- 캐시 완전 정리 및 최신 소스/빌드 즉시 반영 새로고침 버튼 -->
+        <button type="button" onclick="hardRefreshApp()" id="refreshAppBtn" title="최신 빌드/수정내용 즉시 반영 및 캐시 정리 새로고침 (단축키: F5 / Ctrl+R)" class="cartoon-btn bg-white hover:bg-emerald-50 text-green-950 font-cartoon text-xs sm:text-sm px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl flex items-center gap-1.5 shadow-cartoon-sm flex-shrink-0 transition-all active:scale-95 group">
+          <span id="refreshIcon" class="inline-block transition-transform duration-500 text-sm sm:text-base group-hover:rotate-180">🔄</span>
+          <span class="hidden sm:inline font-bold">새로고침</span>
+        </button>
+
+        <!-- 새 식물 추가 버튼 -->
+        <button onclick="openAddPlantModal()" class="cartoon-btn bg-plant-primary text-white font-cartoon text-sm sm:text-base px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl flex items-center gap-1.5 hover:bg-green-700 flex-shrink-0">
+          <span>🌱</span>
+          <span>식물 등록</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -1994,6 +2002,52 @@
         }
       });
     }
+
+    /* ============================================================
+       ★ 완벽한 캐시 정리 & 최신 빌드/소스 즉시 반영 강력 새로고침 엔진
+    ============================================================ */
+    async function hardRefreshApp() {
+      const icon = document.getElementById('refreshIcon');
+      const btn = document.getElementById('refreshAppBtn');
+      if (icon) icon.classList.add('animate-spin');
+      if (btn) btn.disabled = true;
+
+      // 1) 캐시 스토리지 API 정리 (브라우저/PWA 캐시 리소스 완전 소거)
+      try {
+        if ('caches' in window) {
+          const cacheKeys = await caches.keys();
+          await Promise.all(cacheKeys.map(k => caches.delete(k)));
+        }
+      } catch (err) {
+        console.warn('CacheStorage 소거 오류:', err);
+      }
+
+      // 2) 임시 세션 스토리지 정리
+      try {
+        sessionStorage.clear();
+      } catch (err) {}
+
+      // ※ 중요: 사용자의 소중한 반려식물 및 일지가 저장된 localStorage(식물 목록, 케어 일지, 동기화 코드 등)는
+      //   데이터 유실을 방지하기 위해 안전하게 보존하고, 정적 리소스 캐시만 완벽히 소거합니다.
+
+      // 3) Electron 윈도우 데스크톱 앱 환경인 경우
+      if (window.electronAPI && typeof window.electronAPI.clearCacheAndReload === 'function') {
+        window.electronAPI.clearCacheAndReload();
+        return;
+      }
+
+      // 4) 웹 브라우저 환경인 경우: 고유 타임스탬프를 쿼리스트링에 붙여 브라우저 캐시 무시 강제 하드 리로드
+      const baseUrl = window.location.origin + window.location.pathname;
+      window.location.replace(`${baseUrl}?_t=${Date.now()}`);
+    }
+
+    // 전역 단축키 (F5 또는 Ctrl+R / Command+R) 감지하여 강력 새로고침 실행
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'F5' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'r')) {
+        e.preventDefault();
+        hardRefreshApp();
+      }
+    });
 
     const CARE_ACTIONS_CONFIG = {
       water: {
