@@ -253,20 +253,20 @@
         </div>
       </div>
 
-      <!-- 날씨 연동 & 햇빛채광 신호등 카드 -->
+      <!-- 날씨 연동 & 햇빛채광·통풍 신호등 카드 -->
       <section id="weatherSection" class="cartoon-card p-4 sm:p-5 bg-white">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b-2 border-gray-100 pb-3 mb-4">
           <div>
             <div class="flex items-center gap-2">
               <h2 class="text-lg sm:text-xl font-cartoon text-green-900 flex items-center gap-1.5">
-                <span>🌤️</span> 오늘 날씨 & 햇빛채광 신호등
+                <span>🌤️</span> 오늘 날씨 & 햇빛채광·통풍 신호등
               </h2>
               <span id="weatherSourceBadge" class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold cartoon-border-sm flex items-center gap-1">
                 <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span id="weatherSourceName">대구 실시간</span>
               </span>
             </div>
-            <p id="weatherSubDesc" class="text-xs text-gray-500 font-medium">대구의 실시간 기상 데이터를 바탕으로 햇빛채광과 물주기 안전 여부를 안내해 드려요!</p>
+            <p id="weatherSubDesc" class="text-xs text-gray-500 font-medium">실시간 기상 데이터를 바탕으로 햇빛채광과 자연 통풍(환기), 물주기 안전 여부를 종합 안내해 드려요!</p>
           </div>
           <div class="flex items-center gap-1.5 w-full sm:w-auto">
             <select id="weatherSelect" onchange="handleWeatherSelectChange(this.value)" class="w-full sm:w-auto cartoon-border-sm bg-plant-light rounded-xl px-2.5 py-1 text-xs font-bold text-green-900 focus:outline-none">
@@ -301,11 +301,11 @@
           </div>
           <div class="flex-grow min-w-0">
             <div class="flex flex-wrap items-center gap-1.5 mb-0.5">
-              <span id="balconyLightStatus" class="font-cartoon text-base sm:text-lg text-green-950 truncate">외출 추천 (초록불)</span>
+              <span id="balconyLightStatus" class="font-cartoon text-base sm:text-lg text-green-950 truncate">채광·통풍 추천 (초록불)</span>
               <span id="balconyLightBadge" class="bg-green-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0">쾌적</span>
             </div>
             <p id="balconyLightDesc" class="text-xs sm:text-sm text-gray-800 font-medium leading-relaxed break-words">
-              기온 22°C, 포근한 바람! 오전~낮 시간에 2~3시간 베란다 일광욕을 시켜주면 식물이 아주 튼튼해집니다.
+              기온 22°C, 포근한 바람! 오전~낮 시간에 2~3시간 베란다 일광욕과 창문 자연 통풍(환기)을 시켜주면 식물이 아주 튼튼해집니다.
             </p>
           </div>
         </div>
@@ -4004,36 +4004,36 @@
     const WEATHER_SCENARIOS = {
       sim_spring: {
         temp: 22, humidity: 50, wind: 1.8, sun: '부드러운 햇살', icon: '☀️', light: 'green',
-        lightText: '햇빛채광 추천 (초록불)', badge: '쾌적 최고', boxBg: 'bg-green-100 border-green-800', lightBg: 'bg-green-400',
-        desc: '기온 22°C 포근한 날씨! 오전~낮 시간에 2~3시간 햇빛채광을 시켜주면 식물 면역력이 쑥쑥 자라납니다.',
+        lightText: '채광·통풍 최고 (초록불)', badge: '채광/환기 쾌적', boxBg: 'bg-green-100 border-green-800', lightBg: 'bg-green-400',
+        desc: '기온 22°C 포근한 날씨와 산들바람! 2~3시간 햇빛채광과 창문 자연 환기(통풍)를 진행하기 가장 좋은 날입니다.',
         tempGuide: '적정 (18~25°C)', humidityGuide: '상쾌한 환경', windGuide: '산들바람 적기', sunGuide: '간접광 추천',
         locationName: '가상 시뮬레이션 (온화함)', isRaining: false
       },
       sim_summer: {
         temp: 32, humidity: 65, wind: 0.8, sun: '타는 직사광선', icon: '🥵', light: 'red',
-        lightText: '햇빛채광 피신 (빨강불)', badge: '잎 화상 주의', boxBg: 'bg-rose-100 border-rose-800', lightBg: 'bg-rose-500',
-        desc: '기온 32°C 폭염! 창가의 뜨거운 직사광선은 잎을 태울 수 있으니 시원한 거실 안쪽 반양지로 들여놓으세요.',
+        lightText: '폭염·직사광 주의 (빨강불)', badge: '화상/열풍 주의', boxBg: 'bg-rose-100 border-rose-800', lightBg: 'bg-rose-500',
+        desc: '기온 32°C 폭염! 직사광선은 잎 화상을 유발하며, 뜨거운 외기 대신 시원한 실내 서큘레이터 간접 통풍을 권장합니다.',
         tempGuide: '고온 (30°C 이상)', humidityGuide: '약간 습함', windGuide: '바람 없음', sunGuide: '차광막 필수',
         locationName: '가상 시뮬레이션 (폭염)', isRaining: false
       },
       sim_rain: {
         temp: 18, humidity: 88, wind: 3.2, sun: '흐리고 비', icon: '🌧️', light: 'yellow',
-        lightText: '비 맞음 주의 (노랑불)', badge: '과습 주의보', boxBg: 'bg-yellow-100 border-yellow-800', lightBg: 'bg-yellow-400',
-        desc: '습도가 88%로 높고 비가 옵니다! 비를 맞히면 과습 위험이 있으니 물주기를 하루이틀 미루고 실내 환기를 시켜주세요.',
+        lightText: '비바람·과습 주의 (노랑불)', badge: '비/고습도 환기주의', boxBg: 'bg-yellow-100 border-yellow-800', lightBg: 'bg-yellow-400',
+        desc: '습도 88%와 비 내림! 창문을 닫아 빗물 유입을 차단하고, 흙이 마를 때까지 실내 선풍기로 간접 통풍을 유지해 주세요.',
         tempGuide: '선선함', humidityGuide: '과습 주의 (>85%)', windGuide: '습한 바람', sunGuide: '일조량 부족',
         locationName: '가상 시뮬레이션 (비)', isRaining: true
       },
       sim_winter: {
         temp: 6, humidity: 35, wind: 4.5, sun: '쌀쌀한 햇빛', icon: '🥶', light: 'red',
-        lightText: '외출 금지 (빨강불)', badge: '냉해 위험 (10°C 미만)', boxBg: 'bg-blue-100 border-blue-800', lightBg: 'bg-blue-400',
-        desc: '기온 6°C! 열대 식물은 10°C 이하 바람에 냉해를 입습니다. 절대 창가 외부에 두지 마시고 따뜻한 실내에 두세요.',
+        lightText: '한파 환기/채광 금지 (빨강불)', badge: '찬바람 냉해 위험', boxBg: 'bg-blue-100 border-blue-800', lightBg: 'bg-blue-400',
+        desc: '기온 6°C 한파! 열대 식물은 10°C 이하 찬바람에 냉해를 입습니다. 창문을 꼭 닫고 따뜻한 실내 간접 환기를 해주세요.',
         tempGuide: '저온 (10°C 미만)', humidityGuide: '건조 환경', windGuide: '찬바람 주의', sunGuide: '실내 간접광',
         locationName: '가상 시뮬레이션 (한파)', isRaining: false
       },
       sim_wind: {
         temp: 19, humidity: 45, wind: 6.8, sun: '강풍 주의', icon: '💨', light: 'yellow',
-        lightText: '화분 주의 (노랑불)', badge: '강풍 주의', boxBg: 'bg-amber-100 border-amber-800', lightBg: 'bg-amber-400',
-        desc: '기온 19°C지만 바람이 셉니다! 작은 화분이 떨어지거나 잎이 꺾이지 않게 안전한 실내 쪽에 놓아주세요.',
+        lightText: '강풍 통풍 주의 (노랑불)', badge: '강풍 주의', boxBg: 'bg-amber-100 border-amber-800', lightBg: 'bg-amber-400',
+        desc: '기온 19°C지만 바람이 셉니다! 화분 낙하와 잎 꺾임 위험이 있으니 창문은 1~2cm 틈새 통풍만 진행해 주세요.',
         tempGuide: '적정', humidityGuide: '적정', windGuide: '강풍 위험 (>6m/s)', sunGuide: '안전 장소 배치',
         locationName: '가상 시뮬레이션 (강풍)', isRaining: false
       }
@@ -4063,47 +4063,47 @@
       const isRaining = codeInfo.isRain || rain > 0;
 
       let light = 'green';
-      let lightText = '햇빛채광 추천 (초록불)';
-      let badge = '쾌적 최고';
+      let lightText = '채광·통풍 최고 (초록불)';
+      let badge = '채광/환기 쾌적';
       let boxBg = 'bg-green-100 border-green-800';
       let lightBg = 'bg-green-400';
-      let desc = `${cityName} 기온 ${temp}°C, 산들바람으로 온화합니다! 오전~낮 시간에 햇빛채광을 2~3시간 시켜주면 식물이 건강해져요.`;
+      let desc = `${cityName} 기온 ${temp}°C, 산들바람으로 온화합니다! 오전~낮 시간에 햇빛채광과 창문 자연 환기(통풍)를 진행해주면 식물이 무럭무럭 자라나요.`;
 
       // 1. 비 내림 또는 극단적 고습도(>85%)
       if (isRaining || humidity >= 88) {
         light = 'yellow';
-        lightText = '비 맞음 주의 (노랑불)';
-        badge = isRaining ? '비 내림 / 과습 주의' : '고습도 과습 주의';
+        lightText = '비바람·과습 주의 (노랑불)';
+        badge = isRaining ? '비 내림 / 빗물 차단' : '고습도 환기주의';
         boxBg = 'bg-yellow-100 border-yellow-800';
         lightBg = 'bg-yellow-400';
-        desc = `${cityName}에 ${codeInfo.label}(습도 ${humidity}%)이 감지되었습니다! 화분이 직접 비를 맞으면 과습으로 뿌리가 상할 수 있으니 창가 안쪽으로 들이고 물주기를 하루이틀 미뤄주세요.`;
+        desc = `${cityName}에 ${codeInfo.label}(습도 ${humidity}%)이 감지되었습니다! 화분이 직접 비를 맞지 않게 창문을 닫고, 실내 선풍기로 간접 통풍을 쐬어주세요.`;
       }
       // 2. 냉해 위험 (10도 미만)
       else if (temp < 10) {
         light = 'red';
-        lightText = '외출 금지 (빨강불)';
-        badge = `냉해 위험 (${temp}°C)`;
+        lightText = '한파 환기/채광 금지 (빨강불)';
+        badge = `찬바람 냉해 (${temp}°C)`;
         boxBg = 'bg-blue-100 border-blue-800';
         lightBg = 'bg-blue-400';
-        desc = `현재 기온 ${temp}°C로 쌀쌀합니다. 열대 관엽식물은 10°C 이하 찬바람에 냉해를 입을 수 있으니 창문을 닫고 따뜻한 실내에 두세요.`;
+        desc = `현재 기온 ${temp}°C로 쌀쌀합니다. 열대 관엽식물은 10°C 이하 찬바람에 냉해를 입을 수 있으니 창문을 닫고 실내 안쪽에서 간접 채광/환기해 주세요.`;
       }
       // 3. 폭염/강한 햇빛 (30도 이상)
       else if (temp >= 30) {
         light = 'red';
-        lightText = '햇빛채광 피신 (빨강불)';
+        lightText = '폭염·직사광 주의 (빨강불)';
         badge = `폭염/화상 주의 (${temp}°C)`;
         boxBg = 'bg-rose-100 border-rose-800';
         lightBg = 'bg-rose-500';
-        desc = `기온 ${temp}°C의 무더위입니다! 창가의 뜨거운 직사광선은 식물 잎을 까맣게 태울 수 있으니 서늘한 실내 반양지로 이동시켜 주세요.`;
+        desc = `기온 ${temp}°C의 무더위입니다! 창가의 뜨거운 직사광선은 식물 잎을 태울 수 있으니 서늘한 실내 반양지로 옮기고 부드러운 간접 바람을 쐬어주세요.`;
       }
       // 4. 강풍 (6m/s 이상)
       else if (wind >= 6.0) {
         light = 'yellow';
-        lightText = '화분 주의 (노랑불)';
+        lightText = '강풍 통풍 주의 (노랑불)';
         badge = `강풍 주의 (${wind}m/s)`;
         boxBg = 'bg-amber-100 border-amber-800';
         lightBg = 'bg-amber-400';
-        desc = `바람이 ${wind}m/s로 강하게 불고 있습니다! 가벼운 화분이 넘어지거나 잎이 꺾이지 않도록 창문을 적당히 닫아주세요.`;
+        desc = `바람이 ${wind}m/s로 강하게 불고 있습니다! 화분 낙하와 잎 꺾임 위험이 있으니 창문은 1~2cm 틈새 환기만 진행해 주세요.`;
       }
 
       let tempGuide = temp >= 18 && temp <= 25 ? '적정 (18~25°C)' : (temp < 10 ? '냉해 위험 저온' : (temp > 28 ? '고온 주의' : '선선함'));
@@ -4304,7 +4304,7 @@
           const loc = data.locationName ? data.locationName.replace(' (실시간)', '') : '지금';
           bubble.innerText = `"주인님! ${loc}에 비가 내리고 있어요 🌧️ 화분이 비를 맞지 않게 창가 안쪽으로 들이고, 흙이 마를 때까지 물주기는 잠시 미뤄주세요! 🌱"`;
         } else if (data.light === 'green') {
-          bubble.innerText = `"주인님! 오늘 햇살과 바람이 정말 환상적이에요! 창가나 베란다에서 기분 좋은 햇빛채광을 즐기고 싶어요~ ☀️"`;
+          bubble.innerText = `"주인님! 오늘 햇살과 바람이 정말 환상적이에요! 창문을 열어 기분 좋은 햇빛채광과 상쾌한 통풍(자연 환기)을 선물해주세요~ 🌿"`;
         } else if (data.light === 'red') {
           bubble.innerText = `"으아~ 바깥 날씨가 너무 춥거나 뜨거워요! 베란다 창가 대신 포근한 거실에 쏙 안겨있을래요 🥺"`;
         } else {
