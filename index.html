@@ -2148,6 +2148,197 @@
       return { ...cfg, cycle, lastDate };
     }
 
+    /* ============================================================
+       ★ 스마트 날씨 연동 능동 권고 엔진 (식물 특성 vs 날씨 종합 판별)
+       추위, 비, 폭염, 강풍, 직사광선 시 통풍/햇빛채광 능동 안전 가이드
+    ============================================================ */
+    function evaluatePlantCareByWeather(plant, actionType) {
+      if (actionType !== 'balcony' && actionType !== 'wind') {
+        return null;
+      }
+
+      const weather = activeWeatherData || (typeof WEATHER_SCENARIOS !== 'undefined' ? WEATHER_SCENARIOS.sim_spring : null) || {
+        temp: 22, humidity: 50, wind: 1.5, isRaining: false, light: 'green'
+      };
+
+      const temp = typeof weather.temp === 'number' ? weather.temp : 22;
+      const isRaining = !!weather.isRaining;
+      const wind = typeof weather.wind === 'number' ? weather.wind : 1.5;
+      const humidity = typeof weather.humidity === 'number' ? weather.humidity : 50;
+      const isHarshSun = temp >= 30;
+
+      const sp = (((plant.species || '') + ' ' + (plant.nickname || '') + ' ' + (plant.name || ''))).toLowerCase();
+
+      // 1. 열대 관엽식물 (10~12°C 이하 찬바람 냉해 위험)
+      const isTropical = sp.includes('몬스테라') || sp.includes('여인초') || sp.includes('극락조') || 
+                         sp.includes('알로카시아') || sp.includes('안스리움') || sp.includes('스파티필름') || 
+                         sp.includes('아레카야자') || sp.includes('칼라데아') || sp.includes('마란타') || 
+                         sp.includes('버킨') || sp.includes('필로덴드론') || sp.includes('싱고니움');
+
+      // 2. 건조 다육 / 알뿌리 / 괴근 (비 맞거나 과습 시 무름병 치명적)
+      const isSucculent = sp.includes('스투키') || sp.includes('산세베리아') || sp.includes('다육') || 
+                          sp.includes('선인장') || sp.includes('금전수') || sp.includes('호야') || 
+                          sp.includes('스테파니아') || sp.includes('괴근');
+
+      // 3. 지중해 / 온대 수목 (빛과 바람을 즐기며 5°C 내외까지는 비교적 잘 버팀)
+      const isMediterranean = sp.includes('올리브') || sp.includes('로즈마리') || sp.includes('라벤더') || 
+                              sp.includes('제라늄') || sp.includes('시클라멘') || sp.includes('유칼립투스');
+
+      // 4. 연약한 양치류 및 반음지 식물 (직사광선에 잎이 타는 일소 피해 위험)
+      const isShadePlant = sp.includes('고사리') || sp.includes('아비스') || sp.includes('보스턴') || 
+                           sp.includes('박쥐란') || sp.includes('테이블야자') || sp.includes('칼라데아');
+
+      // 식물별 최저 안전 온도 판별
+      let minSafeTemp = 10;
+      if (isTropical) minSafeTemp = 12;
+      else if (isMediterranean) minSafeTemp = 5;
+      else if (isSucculent) minSafeTemp = 10;
+
+      const plantDisplayName = plant.nickname || plant.species || '식물';
+
+      // ==========================================
+      // [A] 햇빛채광 (베란다 일광욕) 판정
+      // ==========================================
+      if (actionType === 'balcony') {
+        // 1. 비/눈 내림
+        if (isRaining) {
+          return {
+            level: 'danger',
+            badge: '🌧️ 비 내림 (베란다 외출 금지)',
+            badgeClass: 'bg-blue-600 text-white',
+            canDoOutdoor: false,
+            btnLabel: '🌧️ 비 피신 & 실내 대체 완료',
+            tip: `현재 비가 내리고 있어요! 화분이 비를 맞으면 흙이 과습되어 뿌리가 썩을 수 있습니다. 베란다에 내놓지 마시고 실내 창가 안쪽에서 간접광을 쬐어주세요.`
+          };
+        }
+        // 2. 냉해/한파 위험
+        if (temp < minSafeTemp) {
+          return {
+            level: 'danger',
+            badge: `🥶 냉해 위험 (${temp}°C < 최저 ${minSafeTemp}°C)`,
+            badgeClass: 'bg-rose-600 text-white',
+            canDoOutdoor: false,
+            btnLabel: '🥶 실내 창가 채광 완료',
+            tip: `현재 기온이 ${temp}°C로 쌀쌀합니다. ${plantDisplayName}은(는) 찬바람에 잎이 얼거나 냉해를 입을 수 있으니, 베란다 외출을 피하고 따뜻한 거실 안쪽 창가의 부드러운 햇살로 대신해 주세요.`
+          };
+        }
+        // 3. 폭염 / 뜨거운 직사광선
+        if (isHarshSun) {
+          return {
+            level: 'danger',
+            badge: `🔥 폭염·잎 화상 주의 (${temp}°C)`,
+            badgeClass: 'bg-orange-600 text-white',
+            canDoOutdoor: false,
+            btnLabel: '☀️ 차광/실내 피신 완료',
+            tip: `기온 ${temp}°C의 무더위입니다! 뜨거운 유리창 직사광선은 잎을 까맣게 태울 수 있으니, 얇은 커튼을 친 은은한 창가나 서늘한 거실 반양지로 이동시켜 주세요.`
+          };
+        }
+        // 4. 연약한 반음지 식물에 강한 햇살
+        if (isShadePlant && temp > 25) {
+          return {
+            level: 'warning',
+            badge: '⛱️ 직사광 주의 (차광 필요)',
+            badgeClass: 'bg-amber-600 text-white',
+            canDoOutdoor: false,
+            btnLabel: '⛱️ 부드러운 간접광 완료',
+            tip: `${plantDisplayName}은(는) 강한 직사광선을 싫어하는 반음지 식물입니다. 베란다 땡볕 대신 커튼을 거친 부드러운 산란광이나 실내 밝은 곳에 두세요.`
+          };
+        }
+        // 5. 최적의 일광욕 날씨 (18~26°C, 포근함)
+        if (temp >= 18 && temp <= 26 && !isRaining) {
+          return {
+            level: 'optimal',
+            badge: '✨ 최적의 일광욕 찬스!',
+            badgeClass: 'bg-emerald-600 text-white',
+            canDoOutdoor: true,
+            btnLabel: '☀️ 오늘 베란다 일광욕 완료',
+            tip: `기온 ${temp}°C의 포근하고 상쾌한 날씨입니다! 지금 1~2시간 베란다에서 기분 좋은 햇살을 듬뿍 쐬어주시면 식물이 건강해집니다.`
+          };
+        }
+        // 6. 무난한 채광
+        return {
+          level: 'normal',
+          badge: '🌤️ 온화한 채광 가능',
+          badgeClass: 'bg-amber-100 text-amber-900 border border-amber-300',
+          canDoOutdoor: true,
+          btnLabel: '☀️ 햇빛채광 완료 체크',
+          tip: `무난한 날씨입니다. 잎 상태를 살피며 1~2시간 부드러운 햇살을 쬐어주세요.`
+        };
+      }
+
+      // ==========================================
+      // [B] 통풍 / 환기 판정
+      // ==========================================
+      if (actionType === 'wind') {
+        // 1. 혹한 찬바람 (6°C 미만)
+        if (temp < 6) {
+          return {
+            level: 'danger',
+            badge: `🥶 찬바람 주의 (${temp}°C)`,
+            badgeClass: 'bg-rose-600 text-white',
+            canDoOutdoor: false,
+            btnLabel: '🍃 실내 간접 순환 완료',
+            tip: `바깥 기온이 ${temp}°C로 차갑습니다. 바깥 창문을 바로 열면 식물이 찬바람 쇼크를 받을 수 있으니, 바깥 창문 대신 방문을 열어 실내 공기를 간접 순환시켜 주세요.`
+          };
+        }
+        // 2. 강풍 / 태풍 (풍속 5.5m/s 이상)
+        if (wind >= 5.5) {
+          return {
+            level: 'danger',
+            badge: `💨 강풍 주의 (${wind}m/s)`,
+            badgeClass: 'bg-amber-600 text-white',
+            canDoOutdoor: false,
+            btnLabel: '🍃 미풍 간접 환기 완료',
+            tip: `바람이 ${wind}m/s로 거세게 불고 있습니다! 화분이 넘어지거나 잎이 꺾일 수 있으니, 창문을 1~2cm만 살짝 열거나 실내 서큘레이터로 부드럽게 통풍해 주세요.`
+          };
+        }
+        // 3. 비바람 들이침
+        if (isRaining && wind >= 3.5) {
+          return {
+            level: 'warning',
+            badge: '🌧️ 비바람 들이침 주의',
+            badgeClass: 'bg-blue-600 text-white',
+            canDoOutdoor: false,
+            btnLabel: '🍃 비 안 맞는 실내 환기 완료',
+            tip: `비바람이 들이쳐 흙이 과습해질 수 있습니다. 비가 들이치지 않는 반대편 창문이나 방문을 열어 환기해 주세요.`
+          };
+        }
+        // 4. 폭염 한낮 열풍 (32°C 이상)
+        if (temp >= 32) {
+          return {
+            level: 'warning',
+            badge: `🔥 한낮 열풍 주의 (${temp}°C)`,
+            badgeClass: 'bg-orange-600 text-white',
+            canDoOutdoor: false,
+            btnLabel: '🍃 서늘한 시간 환기 완료',
+            tip: `한낮의 뜨거운 열풍은 식물의 수분을 급격히 빼앗습니다. 지금 창문을 열지 마시고, 해가 진 저녁이나 이른 아침 서늘할 때 환기해 주세요.`
+          };
+        }
+        // 5. 최적의 환기 적기 (풍속 1.0~4.5m/s, 15~27°C)
+        if (temp >= 15 && temp <= 27 && wind <= 4.5 && !isRaining) {
+          return {
+            level: 'optimal',
+            badge: '🍃 자연 바람 환기 적기!',
+            badgeClass: 'bg-emerald-600 text-white',
+            canDoOutdoor: true,
+            btnLabel: '🍃 오늘 통풍 환기 완료',
+            tip: `산들바람(${wind}m/s)이 부는 쾌적한 날씨입니다! 창문을 열어 30분~1시간 동안 신선한 숲속 자연 바람을 쐬어주세요.`
+          };
+        }
+        // 6. 무난한 환기
+        return {
+          level: 'normal',
+          badge: '🍃 통풍 환기 가능',
+          badgeClass: 'bg-emerald-100 text-emerald-900 border border-emerald-300',
+          canDoOutdoor: true,
+          btnLabel: '🍃 통풍 환기 완료',
+          tip: `적당히 공기를 순환시켜 주시면 흙 속 박테리아 번식과 곰팡이를 예방할 수 있습니다.`
+        };
+      }
+
+      return null;
+    }
+
     function calcDaysUntilCare(plant, actionType) {
       const { cycle, lastDate } = getCareConfig(plant, actionType);
       if (!lastDate) return 0;
@@ -2317,6 +2508,7 @@
           const { cfg, days, isDone, isDue } = careStates[act];
           const meta = activityMeta[act] || activityMeta.water;
           const cycle = cfg.cycle;
+          const advice = evaluatePlantCareByWeather(p, act);
 
           let ddayDisplayHtml = '';
           let actionButtonHtml = '';
@@ -2341,26 +2533,83 @@
               </button>
             `;
           } else if (isDue) {
-            // 오늘 D-Day인 상태: 강렬한 시각적 알림 (펄스 애니메이션 + 붉은색)
-            ddayDisplayHtml = `
-              <div class="bg-rose-100 text-rose-950 border-2 border-rose-500 rounded-xl py-1.5 px-2 text-center shadow-xs animate-pulse">
-                <div class="text-xs sm:text-sm font-black flex items-center justify-center gap-1 text-rose-700">
-                  <span>🚨</span> 오늘 D-Day!
+            // 오늘 D-Day인 상태: 날씨 조건에 따른 능동 권고 분기!
+            if (advice && (advice.level === 'danger' || advice.level === 'warning')) {
+              // 🚨 날씨 위험(혹한/비/폭염/강풍): 실내 대체 권고
+              ddayDisplayHtml = `
+                <div class="bg-rose-50 border-2 border-rose-500 rounded-xl py-1.5 px-2 text-center shadow-xs">
+                  <div class="text-xs sm:text-sm font-black flex items-center justify-center gap-1 text-rose-800">
+                    <span>🚨</span> D-Day 도래! (날씨 경고)
+                  </div>
+                  <div class="inline-block ${advice.badgeClass} text-[10px] font-extrabold px-2 py-0.5 rounded-full mt-1 shadow-xs">
+                    ${advice.badge}
+                  </div>
                 </div>
-                <div class="text-[11px] sm:text-xs text-rose-800 font-bold mt-0.5">
-                  지금 보살펴주세요
+                <div class="mt-2 p-2 rounded-xl bg-white/95 cartoon-border-sm text-[11px] leading-relaxed shadow-xs text-left">
+                  <span class="font-extrabold text-rose-700 flex items-center gap-1 mb-0.5">
+                    <span>💡</span> 닥터 능동 권고
+                  </span>
+                  <p class="text-gray-800 break-keep font-medium">${advice.tip}</p>
                 </div>
-              </div>
-            `;
-            actionButtonHtml = `
-              <button onclick="toggleCareAction('${p.id}', '${act}')" 
-                      title="오늘 ${meta.label}을 완료하고 다음 D-Day로 갱신합니다"
-                      class="w-full mt-2 py-1.5 px-1.5 rounded-xl font-cartoon text-xs sm:text-sm bg-rose-500 hover:bg-rose-600 text-white cartoon-border-sm transition flex items-center justify-center gap-1 shadow-cartoon-sm font-bold animate-bounce" style="animation-duration: 2.5s;">
-                <span>⚡</span> 오늘 완료 체크
-              </button>
-            `;
+              `;
+              actionButtonHtml = `
+                <button onclick="toggleCareAction('${p.id}', '${act}')" 
+                        title="${advice.btnLabel}"
+                        class="w-full mt-2 py-1.5 px-1.5 rounded-xl font-cartoon text-xs sm:text-sm bg-amber-600 hover:bg-amber-700 text-white cartoon-border-sm transition flex items-center justify-center gap-1 shadow-cartoon-sm font-bold animate-pulse">
+                  <span>✓</span> ${advice.btnLabel}
+                </button>
+              `;
+            } else if (advice && advice.level === 'optimal') {
+              // ✨ 최적의 날씨 찬스!
+              ddayDisplayHtml = `
+                <div class="bg-emerald-50 border-2 border-emerald-500 rounded-xl py-1.5 px-2 text-center shadow-xs animate-pulse">
+                  <div class="text-xs sm:text-sm font-black flex items-center justify-center gap-1 text-emerald-800">
+                    <span>🌟</span> 오늘 D-Day!
+                  </div>
+                  <div class="inline-block ${advice.badgeClass} text-[10px] font-extrabold px-2 py-0.5 rounded-full mt-1 shadow-xs">
+                    ${advice.badge}
+                  </div>
+                </div>
+                <div class="mt-2 p-2 rounded-xl bg-white/95 cartoon-border-sm text-[11px] leading-relaxed shadow-xs text-left">
+                  <span class="font-extrabold text-emerald-800 flex items-center gap-1 mb-0.5">
+                    <span>💡</span> 닥터 날씨 찬스
+                  </span>
+                  <p class="text-gray-800 break-keep font-medium">${advice.tip}</p>
+                </div>
+              `;
+              actionButtonHtml = `
+                <button onclick="toggleCareAction('${p.id}', '${act}')" 
+                        title="${advice.btnLabel}"
+                        class="w-full mt-2 py-1.5 px-1.5 rounded-xl font-cartoon text-xs sm:text-sm bg-emerald-600 hover:bg-emerald-700 text-white cartoon-border-sm transition flex items-center justify-center gap-1 shadow-cartoon-sm font-bold animate-bounce" style="animation-duration: 2.5s;">
+                  <span>⚡</span> ${advice.btnLabel}
+                </button>
+              `;
+            } else {
+              // 일반 D-Day
+              ddayDisplayHtml = `
+                <div class="bg-rose-100 text-rose-950 border-2 border-rose-500 rounded-xl py-1.5 px-2 text-center shadow-xs animate-pulse">
+                  <div class="text-xs sm:text-sm font-black flex items-center justify-center gap-1 text-rose-700">
+                    <span>🚨</span> 오늘 D-Day!
+                  </div>
+                  <div class="text-[11px] sm:text-xs text-rose-800 font-bold mt-0.5">
+                    지금 보살펴주세요
+                  </div>
+                </div>
+              `;
+              actionButtonHtml = `
+                <button onclick="toggleCareAction('${p.id}', '${act}')" 
+                        title="오늘 ${meta.label}을 완료하고 다음 D-Day로 갱신합니다"
+                        class="w-full mt-2 py-1.5 px-1.5 rounded-xl font-cartoon text-xs sm:text-sm bg-rose-500 hover:bg-rose-600 text-white cartoon-border-sm transition flex items-center justify-center gap-1 shadow-cartoon-sm font-bold animate-bounce" style="animation-duration: 2.5s;">
+                  <span>⚡</span> 오늘 완료 체크
+                </button>
+              `;
+            }
           } else if (days === 1) {
             // 내일 D-1인 상태: 주의 환기 (노랑/주황)
+            let weatherNoteHtml = '';
+            if (advice && (advice.level === 'danger' || advice.level === 'warning')) {
+              weatherNoteHtml = `<div class="mt-1 text-[10px] text-rose-600 font-bold">⚠️ 현재 날씨: ${advice.badge.split('(')[0]}</div>`;
+            }
             ddayDisplayHtml = `
               <div class="bg-amber-100/90 text-amber-950 border border-amber-300 rounded-xl py-1.5 px-2 text-center shadow-xs">
                 <div class="text-xs sm:text-sm font-bold flex items-center justify-center gap-1 text-amber-900">
@@ -2369,6 +2618,7 @@
                 <div class="text-[11px] sm:text-xs text-amber-800 font-medium mt-0.5">
                   내일 순서입니다
                 </div>
+                ${weatherNoteHtml}
               </div>
             `;
             actionButtonHtml = `
@@ -3946,6 +4196,7 @@
       }
 
       renderActiveWeather();
+      renderHomeCareList();
       updateMoodBubble();
     }
 
@@ -4009,12 +4260,49 @@
     }
 
     function updateMoodBubble() {
-      const data = activeWeatherData || WEATHER_SCENARIOS.sim_spring;
+      const data = activeWeatherData || (typeof WEATHER_SCENARIOS !== 'undefined' ? WEATHER_SCENARIOS.sim_spring : null) || {
+        temp: 22, humidity: 50, wind: 1.5, isRaining: false, light: 'green'
+      };
       const bubble = document.getElementById('plantMoodBubble');
+
+      // 1. 오늘 햇빛채광/통풍 D-Day인 식물 중 날씨 주의보가 발령된 식물 수집
+      const dueWeatherAlerts = [];
+      const dueOptimalPlants = [];
+      plants.forEach(p => {
+        const log = getTodayLog(p.id);
+        ['balcony', 'wind'].forEach(act => {
+          const days = calcDaysUntilCare(p, act);
+          if (days <= 0 && !log[act]) {
+            const adv = evaluatePlantCareByWeather(p, act);
+            if (adv) {
+              if (adv.level === 'danger' || adv.level === 'warning') {
+                dueWeatherAlerts.push({ plant: p, act, adv });
+              } else if (adv.level === 'optimal') {
+                dueOptimalPlants.push({ plant: p, act, adv });
+              }
+            }
+          }
+        });
+      });
+
       if (bubble) {
-        if (data.isRaining) {
+        if (dueWeatherAlerts.length > 0) {
+          // 🚨 능동적 날씨 주의 브리핑 (최우선)
+          const first = dueWeatherAlerts[0];
+          const actName = first.act === 'balcony' ? '햇빛채광' : '통풍환기';
+          const pName = first.plant.nickname || first.plant.species;
+          const othersCount = dueWeatherAlerts.length > 1 ? ` (외 ${dueWeatherAlerts.length - 1}건 주의)` : '';
+          const tipSummary = first.adv.tip.includes('!') ? first.adv.tip.split('!')[1].trim() : first.adv.tip;
+          bubble.innerText = `"주인님 능동 권고! 🚨 오늘 [${pName}]의 ${actName} D-Day이지만 ${first.adv.badge}! ${tipSummary}${othersCount} 🌿"`;
+        } else if (dueOptimalPlants.length > 0) {
+          // ✨ 최적 날씨 찬스 브리핑
+          const first = dueOptimalPlants[0];
+          const pName = first.plant.nickname || first.plant.species;
+          const actName = first.act === 'balcony' ? '베란다 일광욕' : '신선한 자연 환기';
+          bubble.innerText = `"주인님! 🌤️ 오늘 날씨가 아주 쾌적해요! [${pName}]의 ${actName}을 지금 1~2시간 진행해주시면 식물이 무럭무럭 건강해져요! 🌱"`;
+        } else if (data.isRaining) {
           const loc = data.locationName ? data.locationName.replace(' (실시간)', '') : '지금';
-          bubble.innerText = `"주인님! ${loc}에 비가 내리고 있어요 🌧️ 비를 맞아 흙이 축축해지지 않게 창가 안쪽으로 들이고, 물주기는 잠시 미뤄주세요! 🌱"`;
+          bubble.innerText = `"주인님! ${loc}에 비가 내리고 있어요 🌧️ 화분이 비를 맞지 않게 창가 안쪽으로 들이고, 흙이 마를 때까지 물주기는 잠시 미뤄주세요! 🌱"`;
         } else if (data.light === 'green') {
           bubble.innerText = `"주인님! 오늘 햇살과 바람이 정말 환상적이에요! 창가나 베란다에서 기분 좋은 햇빛채광을 즐기고 싶어요~ ☀️"`;
         } else if (data.light === 'red') {
