@@ -347,7 +347,7 @@
               </span>
             </div>
             <p class="text-xs sm:text-sm text-gray-500 font-medium mt-0.5">
-              각 식물별 물주기·햇빛채광·통풍·잎닦기 D-Day를 확인하고 오늘 한 일을 톡톡 체크하세요!
+              각 식물별 물주는 정도(흠뻑/촉촉)와 채광·환기 시간, 4대 케어 D-Day를 확인하고 오늘 한 일을 톡톡 체크하세요!
             </p>
           </div>
           <div class="flex items-center gap-1.5 self-start xs:self-auto flex-wrap">
@@ -2149,6 +2149,74 @@
     }
 
     /* ============================================================
+       ★ 식물별 맞춤 생육 가이드 엔진 (물주기 정도, 채광 시간, 환기 시간)
+       원예학 표준 가이드라인 기반: 품종별 최적 수분량, 일조 시간, 통풍 시간 판별
+    ============================================================ */
+    function getPlantCareGuide(plant) {
+      if (!plant) {
+        return {
+          waterMethod: '배수구까지 흠뻑',
+          waterDetail: '속흙이 마르면 화분 밑으로 물이 충분히 흘러나올 때까지 흠뻑',
+          sunDuration: '하루 2~3시간 간접광',
+          sunDetail: '커튼을 거친 부드러운 햇빛 2~3시간 (오전 일광욕 최고)',
+          windDuration: '매일 1~2시간 창문 환기',
+          windDetail: '매일 1~2시간 이상 창문 자연 환기 (또는 서큘레이터 1시간)'
+        };
+      }
+
+      const sp = (((plant.species || '') + ' ' + (plant.nickname || '') + ' ' + (plant.name || ''))).toLowerCase();
+
+      // 1. 다육 / 선인장 / 스투키 / 산세베리아 / 금전수 (과습에 극도로 취약한 건조 식물)
+      if (sp.includes('스투키') || sp.includes('산세베리아') || sp.includes('금전수') || sp.includes('돈나무') || 
+          sp.includes('다육') || sp.includes('선인장') || sp.includes('괴근') || sp.includes('하월시아') || sp.includes('세덤')) {
+        return {
+          waterMethod: '화분 둘레 소량만',
+          waterDetail: '종이컵 1잔 분량으로 흙 둘레에 소량만 촉촉하게 (흠뻑 금지, 과습 치명적)',
+          sunDuration: '하루 1~2시간 간접광',
+          sunDetail: '은은한 간접 채광 1~2시간 (뜨거운 직사광선 줄기 화상 주의)',
+          windDuration: '30분~1시간 환기',
+          windDetail: '가벼운 공기 순환 30분~1시간 (물 준 날은 흙 마름을 위해 2시간 환기)'
+        };
+      }
+
+      // 2. 허브 / 지중해 / 직사광 양지 수목 (로즈마리, 올리브, 유칼립투스, 라벤더, 율마, 바질 등)
+      if (sp.includes('로즈마리') || sp.includes('올리브') || sp.includes('유칼립투스') || 
+          sp.includes('라벤더') || sp.includes('허브') || sp.includes('율마') || sp.includes('바질') || sp.includes('민트')) {
+        return {
+          waterMethod: '배수구까지 흠뻑',
+          waterDetail: '겉흙이 바짝 마르면 화분 밑 배수구로 물이 콸콸 빠져나오게 흠뻑',
+          sunDuration: '하루 4~6시간 이상',
+          sunDetail: '밝은 직사광선/베란다 햇살 4~6시간 이상 (채광 부족 시 웃자람/잎마름)',
+          windDuration: '2~4시간 이상 상시',
+          windDetail: '신선한 자연 바람 2~4시간 이상 충분한 통풍 (통풍 부족 시 곰팡이/낙엽)'
+        };
+      }
+
+      // 3. 고사리 / 양치류 / 음지 다습 식물 (보스턴고사리, 아디안툼, 아비스, 피토니아, 칼라디움 등)
+      if (sp.includes('고사리') || sp.includes('보스턴') || sp.includes('아디안툼') || sp.includes('아비스') ||
+          sp.includes('피토니아') || sp.includes('칼라디움') || sp.includes('칼라데아')) {
+        return {
+          waterMethod: '속흙까지 촉촉하게',
+          waterDetail: '겉흙 마르기 직전 속흙까지 고루 촉촉하게 (과습 물고임 주의, 잎 분무 병행)',
+          sunDuration: '하루 1~2시간 은은한 빛',
+          sunDetail: '밝은 실내 산란광 1~2시간 (강한 직사광선은 잎끝이 까맣게 타버려요)',
+          windDuration: '매일 1~2시간 부드럽게',
+          windDetail: '매일 1~2시간 실내 부드러운 환기 (차가운 강풍/맞바람 피하기)'
+        };
+      }
+
+      // 4. 일반 열대 관엽식물 (죽백, 몬스테라, 여인초, 극락조, 고무나무, 아레카야자, 스킨답서스, 홍콩야자, 호야 등)
+      return {
+        waterMethod: '배수구까지 흠뻑',
+        waterDetail: '속흙이 마르면 화분 밑 배수구로 물이 충분히 흘러나올 때까지 흠뻑',
+        sunDuration: '하루 2~3시간 간접광',
+        sunDetail: '커튼을 거친 부드러운 햇빛 2~3시간 (오전 시간대 일광욕 추천)',
+        windDuration: '매일 1~2시간 창문 환기',
+        windDetail: '매일 1~2시간 이상 창문 자연 환기 (또는 서큘레이터 간접 회전 1시간)'
+      };
+    }
+
+    /* ============================================================
        ★ 스마트 날씨 연동 능동 권고 엔진 (식물 특성 vs 날씨 종합 판별)
        추위, 비, 폭염, 강풍, 직사광선 시 통풍/햇빛채광 능동 안전 가이드
     ============================================================ */
@@ -2503,12 +2571,82 @@
           statusBadge = `<span class="bg-blue-100 text-blue-900 font-bold text-xs sm:text-sm px-3 py-1 rounded-full cartoon-border-sm flex-shrink-0">다음 물: D-${careStates.water.days}</span>`;
         }
 
+        const plantGuide = getPlantCareGuide(p);
+
         // 4대 활동 개별 통합 카드 생성
         const renderActionCard = (act) => {
           const { cfg, days, isDone, isDue } = careStates[act];
           const meta = activityMeta[act] || activityMeta.water;
           const cycle = cfg.cycle;
           const advice = evaluatePlantCareByWeather(p, act);
+
+          // ★ [사용자 요청 반영] 활동별 적정 가이드라인 (물주기 정도, 햇빛 시간, 환기 시간)
+          let guideBoxHtml = '';
+          if (act === 'water') {
+            guideBoxHtml = `
+              <div class="mb-2 bg-blue-100/90 text-blue-950 border border-blue-300/80 rounded-xl p-2 text-left shadow-2xs">
+                <div class="flex items-center justify-between gap-1 mb-0.5">
+                  <span class="text-[10px] font-extrabold text-blue-900 flex items-center gap-0.5">
+                    <span>💧</span> 물주는 정도
+                  </span>
+                  <span class="text-[9px] sm:text-[10px] font-black bg-blue-600 text-white px-1.5 py-0.2 rounded-md shadow-2xs flex-shrink-0">
+                    ${plantGuide.waterMethod}
+                  </span>
+                </div>
+                <p class="text-[10px] sm:text-[11px] text-blue-950 font-bold leading-tight break-keep">
+                  ${plantGuide.waterDetail}
+                </p>
+              </div>
+            `;
+          } else if (act === 'balcony') {
+            guideBoxHtml = `
+              <div class="mb-2 bg-amber-100/90 text-amber-950 border border-amber-300/80 rounded-xl p-2 text-left shadow-2xs">
+                <div class="flex items-center justify-between gap-1 mb-0.5">
+                  <span class="text-[10px] font-extrabold text-amber-950 flex items-center gap-0.5">
+                    <span>☀️</span> 권장 채광 시간
+                  </span>
+                  <span class="text-[9px] sm:text-[10px] font-black bg-amber-600 text-white px-1.5 py-0.2 rounded-md shadow-2xs flex-shrink-0">
+                    ${plantGuide.sunDuration}
+                  </span>
+                </div>
+                <p class="text-[10px] sm:text-[11px] text-amber-950 font-bold leading-tight break-keep">
+                  ${plantGuide.sunDetail}
+                </p>
+              </div>
+            `;
+          } else if (act === 'wind') {
+            guideBoxHtml = `
+              <div class="mb-2 bg-emerald-100/90 text-emerald-950 border border-emerald-300/80 rounded-xl p-2 text-left shadow-2xs">
+                <div class="flex items-center justify-between gap-1 mb-0.5">
+                  <span class="text-[10px] font-extrabold text-emerald-950 flex items-center gap-0.5">
+                    <span>🍃</span> 권장 환기 시간
+                  </span>
+                  <span class="text-[9px] sm:text-[10px] font-black bg-emerald-700 text-white px-1.5 py-0.2 rounded-md shadow-2xs flex-shrink-0">
+                    ${plantGuide.windDuration}
+                  </span>
+                </div>
+                <p class="text-[10px] sm:text-[11px] text-emerald-950 font-bold leading-tight break-keep">
+                  ${plantGuide.windDetail}
+                </p>
+              </div>
+            `;
+          } else if (act === 'spray') {
+            guideBoxHtml = `
+              <div class="mb-2 bg-sky-100/90 text-sky-950 border border-sky-300/80 rounded-xl p-2 text-left shadow-2xs">
+                <div class="flex items-center justify-between gap-1 mb-0.5">
+                  <span class="text-[10px] font-extrabold text-sky-950 flex items-center gap-0.5">
+                    <span>💦</span> 잎 케어 방법
+                  </span>
+                  <span class="text-[9px] sm:text-[10px] font-black bg-sky-600 text-white px-1.5 py-0.2 rounded-md shadow-2xs flex-shrink-0">
+                    부드러운 거즈 / 분무
+                  </span>
+                </div>
+                <p class="text-[10px] sm:text-[11px] text-sky-950 font-bold leading-tight break-keep">
+                  잎 앞뒷면 먼지를 젖은 천으로 부드럽게 닦아 숨구멍을 활짝 열어주세요
+                </p>
+              </div>
+            `;
+          }
 
           let ddayDisplayHtml = '';
           let actionButtonHtml = '';
@@ -2660,6 +2798,7 @@
                     ${cycle}일 주기
                   </span>
                 </div>
+                ${guideBoxHtml}
                 ${ddayDisplayHtml}
               </div>
               ${actionButtonHtml}
@@ -2681,10 +2820,14 @@
                       <span>✏️</span>수정
                     </button>
                   </div>
-                  <p class="text-xs sm:text-sm text-gray-600 font-medium mt-1 flex flex-wrap items-center gap-2">
+                  <p class="text-xs sm:text-sm text-gray-600 font-medium mt-1 flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <span class="truncate">📍 ${p.location || '실내 거실'}</span>
                     <span>·</span>
                     <span>입양: ${p.adoptDate || '2026-10-23'}</span>
+                    <span class="hidden sm:inline">·</span>
+                    <span class="text-[11px] sm:text-xs bg-emerald-50 text-emerald-900 font-bold px-2 py-0.5 rounded-md cartoon-border-sm">
+                      💧 ${plantGuide.waterMethod} · ☀️ 채광 ${plantGuide.sunDuration} · 🍃 환기 ${plantGuide.windDuration}
+                    </span>
                   </p>
                 </div>
               </div>
